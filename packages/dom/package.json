@@ -1,0 +1,33 @@
+{
+  "name": "@atflux/astroflare-dom",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Type-safe DOM helpers for Astroflare projects",
+  "author": "Taylor Siviter <taylor@siviter.xyz>",
+  "license": "MIT",
+  "keywords": [
+    "astro",
+    "dom",
+    "utilities",
+    "typescript"
+  ],
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src/**/*",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "vitest": "^3.2.4"
+  }
+}
+

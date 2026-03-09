@@ -1,0 +1,29 @@
+/**
+ * Accessibility utilities.
+ * Focus styles, reduced motion, and selection styling.
+ * Uses --color-brand for theming.
+ */
+
+*:focus-visible {
+  outline: 2px solid var(--color-brand, #7c5cff);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-brand, #7c5cff) 25%, transparent);
+}
+
+:where([data-theme='dark']) ::selection {
+  background: color-mix(in oklab, var(--color-brand, #7c5cff) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,36 @@
+# Build output
+dist/
+.astro/
+.output/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.production
+
+# macOS
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Wrangler
+.wrangler/
+.dev.vars
+
+# Editor directories
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Temp files
+*.swp
+*.swo
+*~

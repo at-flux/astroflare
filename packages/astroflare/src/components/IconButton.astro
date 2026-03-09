@@ -1,0 +1,80 @@
+---
+/**
+ * Accessible icon button component.
+ * Renders as <button> by default, or <a> when href is provided.
+ * Consumers must supply their own icon via slot.
+ */
+interface Props {
+  label: string;
+  href?: string;
+  class?: string;
+  id?: string;
+  [key: string]: unknown;
+}
+
+const { label, href, class: extraClass, id, ...rest } = Astro.props as Props;
+---
+
+{
+  href ? (
+    <a
+      href={href}
+      id={id}
+      aria-label={label}
+      class:list={['icon-btn', extraClass]}
+      {...rest}
+    >
+      <slot />
+    </a>
+  ) : (
+    <button
+      type='button'
+      id={id}
+      aria-label={label}
+      class:list={['icon-btn', extraClass]}
+      {...rest}
+    >
+      <slot />
+    </button>
+  )
+}
+
+<style>
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-light-border, #e8e4f0);
+    color: var(--color-light-text-body, #2f2a44);
+    text-decoration: none;
+    background: transparent;
+    transition:
+      color 0.3s ease,
+      border-color 0.3s ease,
+      border-radius 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  :global([data-theme='dark']) .icon-btn {
+    border-color: var(--color-dark-border, #2a2545);
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+
+  .icon-btn:hover {
+    border-radius: 0.75rem;
+    border-color: var(--color-brand, #8b5cf6);
+    color: var(--color-brand, #8b5cf6);
+  }
+
+  :global([data-theme='dark']) .icon-btn:hover {
+    border-color: var(--color-brand, #8b5cf6);
+    color: var(--color-brand, #8b5cf6);
+  }
+</style>
