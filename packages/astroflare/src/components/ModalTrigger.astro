@@ -1,0 +1,40 @@
+---
+/**
+ * Headless modal trigger. Clicking opens a <dialog> by ID.
+ */
+interface Props {
+  modalId: string;
+  class?: string;
+}
+
+const { modalId, class: className = '' } = Astro.props;
+---
+
+<modal-trigger data-modal-id={modalId} class={className}>
+  <slot />
+</modal-trigger>
+
+<script>
+  class ModalTrigger extends HTMLElement {
+    connectedCallback() {
+      this.addEventListener('click', this.onClick);
+    }
+
+    disconnectedCallback() {
+      this.removeEventListener('click', this.onClick);
+    }
+
+    onClick = () => {
+      const id = this.getAttribute('data-modal-id');
+      if (!id) return;
+      const dialog = document.getElementById(id);
+      if (dialog instanceof HTMLDialogElement) {
+        dialog.showModal();
+      }
+    };
+  }
+
+  if (!customElements.get('modal-trigger')) {
+    customElements.define('modal-trigger', ModalTrigger);
+  }
+</script>

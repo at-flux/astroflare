@@ -1,0 +1,13 @@
+/**
+ * Branded scrollbar styling.
+ * Uses --color-brand and --color-brand-pastel for theming.
+ */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-pastel, color-mix(in oklab, var(--color-brand, #7c5cff) 60%, white));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand, #7c5cff);
+}

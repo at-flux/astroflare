@@ -1,0 +1,22 @@
+{
+  "name": "@atflux/astroflare-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.16.1",
+  "engines": {
+    "node": "24.x",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write '**/*.{ts,js,json,md,astro,css}' --ignore-unknown",
+    "format:check": "prettier --check '**/*.{ts,js,json,md,astro,css}' --ignore-unknown"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.9.3"
+  }
+}

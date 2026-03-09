@@ -1,0 +1,63 @@
+---
+/**
+ * Headless modal component using native <dialog>.
+ * Provides no visual styling beyond structure -- consumers apply their own theme.
+ */
+interface Props {
+  id: string;
+  class?: string;
+  backdropClass?: string;
+  panelClass?: string;
+}
+
+const {
+  id,
+  class: className = '',
+  backdropClass = 'backdrop:bg-black/80',
+  panelClass = '',
+} = Astro.props;
+---
+
+<app-modal>
+  <dialog
+    id={id}
+    class:list={['bg-transparent p-0 w-full h-full max-w-none max-h-none', backdropClass, className]}
+  >
+    <div class='flex items-center justify-center min-h-full p-0 md:p-4'>
+      <div
+        class:list={['relative overflow-hidden outline-none w-[100dvw] max-w-4xl max-h-[100dvh]', panelClass]}
+        role='dialog'
+      >
+        <button
+          id={`${id}-close`}
+          class='absolute top-3 right-6 w-10 h-10 rounded-full z-50 flex items-center justify-center'
+          aria-label='Close modal'
+        >
+          <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
+            <path d='M18 6L6 18' /><path d='M6 6L18 18' />
+          </svg>
+        </button>
+
+        <div class='relative overflow-y-auto max-h-[calc(100dvh-2rem)]'>
+          <slot />
+        </div>
+      </div>
+    </div>
+  </dialog>
+</app-modal>
+
+<script>
+  class AppModal extends HTMLElement {
+    connectedCallback() {
+      const dialog = this.querySelector<HTMLDialogElement>('dialog');
+      if (!dialog) return;
+
+      const closeBtn = this.querySelector<HTMLButtonElement>(`#${dialog.id}-close`);
+      closeBtn?.addEventListener('click', () => dialog.close());
+    }
+  }
+
+  if (!customElements.get('app-modal')) {
+    customElements.define('app-modal', AppModal);
+  }
+</script>

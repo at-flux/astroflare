@@ -1,0 +1,127 @@
+---
+/**
+ * Animated theme toggle web component.
+ * Uses data-theme="dark"|"light" on <html>.
+ * Persists to localStorage. Respects prefers-color-scheme on first visit.
+ * Sun/moon icons animate in/out with opacity and rotation transitions.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<theme-toggle class={className}>
+  <button class='theme-toggle-btn icon-btn' aria-label='Toggle light/dark mode' type='button'>
+    <!-- Sun (shown in dark mode to switch to light) -->
+    <span class='tt-icon tt-sun' aria-hidden='true'>
+      <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
+        <circle cx='12' cy='12' r='5' />
+        <line x1='12' y1='1' x2='12' y2='3' />
+        <line x1='12' y1='21' x2='12' y2='23' />
+        <line x1='4.22' y1='4.22' x2='5.64' y2='5.64' />
+        <line x1='18.36' y1='18.36' x2='19.78' y2='19.78' />
+        <line x1='1' y1='12' x2='3' y2='12' />
+        <line x1='21' y1='12' x2='23' y2='12' />
+        <line x1='4.22' y1='19.78' x2='5.64' y2='18.36' />
+        <line x1='18.36' y1='5.64' x2='19.78' y2='4.22' />
+      </svg>
+    </span>
+    <!-- Moon (shown in light mode to switch to dark) -->
+    <span class='tt-icon tt-moon' aria-hidden='true'>
+      <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
+        <path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' />
+      </svg>
+    </span>
+  </button>
+</theme-toggle>
+
+<style>
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-light-border, #e8e4f0);
+    color: var(--color-light-text-body, #2f2a44);
+    background: transparent;
+    transition:
+      color 0.3s ease,
+      border-color 0.3s ease,
+      border-radius 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  :global([data-theme='dark']) .icon-btn {
+    border-color: var(--color-dark-border, #2a2545);
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+
+  .icon-btn:hover {
+    border-radius: 0.75rem;
+    border-color: var(--color-brand, #8b5cf6);
+    color: var(--color-brand, #8b5cf6);
+  }
+
+  /* Icon animation */
+  .tt-icon {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition:
+      opacity 240ms ease,
+      transform 240ms ease;
+  }
+
+  /* Light mode: show moon, hide sun */
+  .tt-sun {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.9);
+  }
+  .tt-moon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  /* Dark mode: show sun, hide moon */
+  :global([data-theme='dark']) .tt-sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  :global([data-theme='dark']) .tt-moon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.9);
+  }
+</style>
+
+<script>
+  class ThemeToggle extends HTMLElement {
+    private btn: HTMLButtonElement | null = null;
+
+    connectedCallback() {
+      this.btn = this.querySelector<HTMLButtonElement>('.theme-toggle-btn');
+      this.btn?.addEventListener('click', () => this.toggle());
+    }
+
+    toggle() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+    }
+  }
+
+  if (!customElements.get('theme-toggle')) {
+    customElements.define('theme-toggle', ThemeToggle);
+  }
+</script>

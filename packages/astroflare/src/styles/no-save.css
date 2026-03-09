@@ -1,0 +1,34 @@
+/**
+ * Image protection utilities.
+ * Prevents right-click save, drag, and text selection on images.
+ *
+ * Usage:
+ *   <div class="no-save-container">
+ *     <img class="no-save" src="..." alt="..." />
+ *   </div>
+ */
+.no-save {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+.no-save-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.no-save-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+a:has(.no-save)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
