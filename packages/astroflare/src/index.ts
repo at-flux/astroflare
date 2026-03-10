@@ -1,6 +1,1 @@
-export {
-  getElementById,
-  getElementByIdOrThrow,
-  getElementByQuery,
-  getElementByQueryOrThrow,
-} from './dom';
+export * from './core';

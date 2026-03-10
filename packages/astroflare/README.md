@@ -1,4 +1,4 @@
-# @atflux/astroflare
+# @at-flux/astroflare
 
 Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cloudflare projects.
 
@@ -29,7 +29,7 @@ Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cl
 ```json
 {
   "dependencies": {
-    "@atflux/astroflare": "file:../../ts-libs/astroflare/packages/astroflare"
+    "@at-flux/astroflare": "file:../../ts-libs/astroflare/packages/astroflare"
   }
 }
 ```
@@ -38,22 +38,22 @@ Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cl
 
 ```astro
 ---
-import Modal from '@atflux/astroflare/components/Modal.astro';
-import ModalTrigger from '@atflux/astroflare/components/ModalTrigger.astro';
+import Modal from '@at-flux/astroflare/components/Modal.astro';
+import ModalTrigger from '@at-flux/astroflare/components/ModalTrigger.astro';
 ---
 ```
 
 ### Client Utilities
 
 ```ts
-import { getElementById, getElementByQuery } from '@atflux/astroflare/client/dom';
+import { getElementById, getElementByQuery } from '@at-flux/astroflare/client/dom';
 ```
 
 ### Styles
 
 ```css
-@import '@atflux/astroflare/styles/prose.css';
-@import '@atflux/astroflare/styles/no-save.css';
+@import '@at-flux/astroflare/styles/prose.css';
+@import '@at-flux/astroflare/styles/no-save.css';
 ```
 
 ## Testing
