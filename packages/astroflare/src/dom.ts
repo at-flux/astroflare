@@ -1,5 +1,5 @@
 /**
- * Type-safe DOM helpers (inlined from @atflux/astroflare-dom for published bundle).
+ * Type-safe DOM helpers (inlined from @at-flux/astroflare/dom for published bundle).
  */
 export const getElementById = <T extends HTMLElement>(
   id: string,

@@ -6,7 +6,7 @@ Monorepo for reusable Astro + Tailwind v4 + Cloudflare Workers libraries.
 
 | Package | Description |
 |---------|-------------|
-| [@atflux/astroflare](packages/astroflare/) | Headless components, styles, and utilities |
+| [@at-flux/astroflare](packages/astroflare/) | Headless components, styles, and utilities |
 
 ## Development
 
