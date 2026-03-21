@@ -10,7 +10,7 @@ Monorepo for reusable Astro + Tailwind v4 + Cloudflare Workers libraries.
 
 ## Requirements
 
-- **Node.js** 18+ (CI uses Node 20)
+- **Node.js** 24.x (matches `engines` in root `package.json`; CI uses Node 24 + actions on the Node 24 runtime)
 - **pnpm** — version pinned in root `package.json` (`packageManager` field). GitHub Actions use that version via `pnpm/action-setup` (do not set a conflicting `version` in the workflow).
 
 ## Development
