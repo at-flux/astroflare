@@ -10,42 +10,49 @@ on:
 
 jobs:
   release:
-    name: Determine Release
+    name: Multi semantic release
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: write
       issues: write
       pull-requests: write
+      id-token: write
     steps:
-      # GH_PAT optional: use repo secret so tag pushes can trigger Publish; else default token (checkout only)
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT || github.token }}
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Install semantic-release
+      # Trusted publishing (OIDC): npm >= 11.5.1 — see https://docs.npmjs.com/trusted-publishers
+      - name: Ensure npm CLI for OIDC publish
         run: |
-          npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/exec
+          npm install -g npm@^11.5.1
+          npm --version
 
-      - name: Run semantic-release
-        id: release
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Release (per-package versions + npm publish)
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT || github.token }}
-        run: |
-          npx semantic-release
+        run: pnpm exec multi-semantic-release
 
       - name: Summary
-        run: |
-          echo "Release workflow completed"
-          echo "If a new version was determined, a git tag was created and the publish workflow will be triggered automatically"
+        run: echo "multi-semantic-release completed (tags + npm per changed package)"

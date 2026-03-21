@@ -6,7 +6,8 @@ Monorepo for reusable Astro + Tailwind v4 + Cloudflare Workers libraries.
 
 | Package | Description |
 |---------|-------------|
-| [@at-flux/astroflare](packages/astroflare/) | Headless components, styles, and utilities (npm: `@at-flux/astroflare`) |
+| [@at-flux/astroflare](packages/astroflare/) | Headless components, styles, and utilities |
+| [@at-flux/dom](packages/dom/) | Type-safe DOM helpers (standalone package; import from `@at-flux/dom`) |
 
 ## Requirements
 
@@ -32,7 +33,6 @@ pnpm build   # all workspace packages that define build
 ## CI
 
 - **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`: install, typecheck, test, build, pack tarball.
-- **Release** — semantic-release on `main` after CI succeeds. Uses `GITHUB_TOKEN` by default; add repo secret **`GH_PAT`** (fine-grained or classic PAT with `contents` + ability to push) if you want tag pushes to trigger the Publish workflow (default token often does not trigger `workflow_run` from the same repo).
-- **Publish** — `.github/workflows/publish.yml` publishes `@at-flux/astroflare` after Release. Prefer **[npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)** — no `NPM_TOKEN` needed; configure the trusted publisher on npm for org `at-flux`, repo `astroflare`, workflow `publish.yml`. See **[docs/PUBLISHING.md](docs/PUBLISHING.md)**.
+- **Release** — `@qiwi/multi-semantic-release` on `main` after CI succeeds: **independent versions** per package, publish only what changed. Uses `GITHUB_TOKEN` by default; add repo secret **`GH_PAT`** if the default token cannot push tags/commits for releases. **[npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)** — register workflow **`release.yml`** on npm for each package. See **[docs/PUBLISHING.md](docs/PUBLISHING.md)**.
 
 See `packages/astroflare/README.md` for import paths and subpackages.

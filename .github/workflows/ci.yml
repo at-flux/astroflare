@@ -41,15 +41,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: pnpm --filter @at-flux/astroflare typecheck
+        run: pnpm --filter './packages/*' run typecheck
 
       - name: Run tests
-        run: pnpm --filter @at-flux/astroflare test
+        run: pnpm test
 
-      - name: Build package
-        run: pnpm --filter @at-flux/astroflare build
+      - name: Build packages
+        run: pnpm build
 
-      - name: Pack package
+      - name: Pack astroflare tarball
         run: |
           cd packages/astroflare
           pnpm pack

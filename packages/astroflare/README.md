@@ -2,13 +2,16 @@
 
 Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cloudflare projects.
 
+For type-safe DOM helpers, use the separate package **`@at-flux/dom`**.
+
+**There is no `@at-flux/astroflare/dom` subpath** (it is not published and must not be used). Add `@at-flux/dom` as its own dependency.
+
 ## Package entrypoints
 
 | Subpath | Contents |
 |---------|----------|
-| `@at-flux/astroflare` | **Core** — re-exports DOM + forms (same as `./core`) |
-| `@at-flux/astroflare/core` | DOM + forms; also exposes `dom` and `forms` namespaces |
-| `@at-flux/astroflare/dom` | Type-safe DOM helpers only |
+| `@at-flux/astroflare` | **Core** — forms utilities (same as `./core`) |
+| `@at-flux/astroflare/core` | Forms; also exposes the `forms` namespace |
 | `@at-flux/astroflare/forms` | Resend email + form HTML helpers |
 | `@at-flux/astroflare/components/*` | Astro components (source) |
 | `@at-flux/astroflare/styles/*` | CSS (source) |
@@ -17,21 +20,16 @@ Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cl
 
 ```ts
 // Flat imports from core
-import { getElementById, sendEmail } from '@at-flux/astroflare';
+import { sendEmail } from '@at-flux/astroflare';
 
 // Explicit subpaths
-import { getElementByQuery } from '@at-flux/astroflare/dom';
 import { renderEmailTemplate } from '@at-flux/astroflare/forms';
 
 // Namespaced (from core / root)
-import { dom, forms } from '@at-flux/astroflare/core';
+import { forms } from '@at-flux/astroflare/core';
 ```
 
 ## Contents
-
-### Client Utilities (`src/dom.ts`)
-
-- `getElementById`, `getElementByIdOrThrow`, `getElementByQuery`, `getElementByQueryOrThrow`
 
 ### Components (Astro)
 
