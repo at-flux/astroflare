@@ -44,6 +44,10 @@ Requirements from npm: **npm CLI ≥ 11.5.1**, **Node ≥ 22.14** (this repo use
 - Use a **conventional commit** that touches those paths, or
 - Run a **manual** `pnpm publish` from your machine for the packages you need (after bumping versions as appropriate).
 
+## Release workflow note (`npm version` vs pnpm)
+
+The repo does **not** use `@semantic-release/npm` to bump versions: its `npm version` step can fail in CI with **pnpm workspaces** and **npm 11+** (`Cannot read properties of null (reading 'matches')`). Instead, **`scripts/semantic-release-set-version.mjs`** runs in the **prepare** step via `@semantic-release/exec`, then **`pnpm publish`** runs in the publish step.
+
 ## Manual publish (bootstrap or emergency)
 
 ```bash

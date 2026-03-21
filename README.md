@@ -33,6 +33,6 @@ pnpm build   # all workspace packages that define build
 ## CI
 
 - **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`: install, typecheck, test, build, pack tarball.
-- **Release** — `@qiwi/multi-semantic-release` on `main` after CI succeeds: **independent versions** per package, publish only what changed. Uses `GITHUB_TOKEN` by default; add repo secret **`GH_PAT`** if the default token cannot push tags/commits for releases. **[npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)** — register workflow **`release.yml`** on npm for each package. See **[docs/PUBLISHING.md](docs/PUBLISHING.md)**.
+- **Release** — `@qiwi/multi-semantic-release` on `main` after CI succeeds: **independent versions** per package, publish only what changed (uses **`GITHUB_TOKEN`**). **[npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)** — register workflow **`release.yml`** on npm for each package. See **[docs/PUBLISHING.md](docs/PUBLISHING.md)**.
 
 See `packages/astroflare/README.md` for import paths and subpackages.

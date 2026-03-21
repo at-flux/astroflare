@@ -29,14 +29,9 @@
       }
     ],
     [
-      "@semantic-release/npm",
-      {
-        "npmPublish": false
-      }
-    ],
-    [
       "@semantic-release/exec",
       {
+        "prepareCmd": "node ../../scripts/semantic-release-set-version.mjs ${nextRelease.version}",
         "publishCmd": "pnpm publish --access public --no-git-checks"
       }
     ],
