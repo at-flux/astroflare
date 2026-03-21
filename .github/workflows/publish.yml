@@ -86,8 +86,10 @@ jobs:
           run_install: false
 
       # Trusted publishing (OIDC): npm >= 11.5.1 + Node >= 22.14 — see https://docs.npmjs.com/trusted-publishers
-      - name: Install npm for OIDC publish
-        run: npm install -g 'npm@^11.5.1' && npm -v
+      - name: Ensure npm CLI for OIDC publish
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
 
       - name: Update package.json version
         run: |
@@ -102,9 +104,10 @@ jobs:
       - name: Build package
         run: pnpm --filter @at-flux/astroflare build
 
-      # Do not set NODE_AUTH_TOKEN here — that forces token auth and can hit EOTP if 2FA is required.
-      # Configure the package on npmjs.com → Settings → Trusted publishing → GitHub Actions (workflow: publish.yml).
-      - name: Publish to npm (OIDC)
+      # Do not set NODE_AUTH_TOKEN here: OIDC trusted publishing authenticates automatically on
+      # GitHub-hosted runners when the package has a matching Trusted Publisher on npmjs.com.
+      # A classic/granular token with 2FA can trigger EOTP in CI; use OIDC or an Automation token instead.
+      - name: Publish to npm
         run: |
           cd packages/astroflare
           npm publish --access public
