@@ -32,7 +32,7 @@ pnpm build   # all workspace packages that define build
 ## CI
 
 - **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`: install, typecheck, test, build, pack tarball.
-- **Release** — semantic-release on `main` after CI (requires `GH_PAT`).
-- **Publish** — npm publish for `@at-flux/astroflare` after release (requires `NPM_TOKEN`).
+- **Release** — semantic-release on `main` after CI succeeds. Uses `GITHUB_TOKEN` by default; add repo secret **`GH_PAT`** (fine-grained or classic PAT with `contents` + ability to push) if you want tag pushes to trigger the Publish workflow (default token often does not trigger `workflow_run` from the same repo).
+- **Publish** — npm publish for `@at-flux/astroflare` after release (requires **`NPM_TOKEN`**).
 
 See `packages/astroflare/README.md` for import paths and subpackages.
