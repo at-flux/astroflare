@@ -33,6 +33,6 @@ pnpm build   # all workspace packages that define build
 
 - **CI** (`.github/workflows/ci.yml`) — on push/PR to `main`: install, typecheck, test, build, pack tarball.
 - **Release** — semantic-release on `main` after CI succeeds. Uses `GITHUB_TOKEN` by default; add repo secret **`GH_PAT`** (fine-grained or classic PAT with `contents` + ability to push) if you want tag pushes to trigger the Publish workflow (default token often does not trigger `workflow_run` from the same repo).
-- **Publish** (`.github/workflows/publish.yml`) — publishes `@at-flux/astroflare` after Release. Uses **[trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)** — no long-lived `NPM_TOKEN` in GitHub. On npmjs.com → package **Settings** → **Trusted publishing**, add **GitHub Actions** with org `at-flux`, repo `astroflare`, workflow file **`publish.yml`** (exact name). The publish job already sets `permissions: id-token: write` and installs **npm ≥ 11.5.1** (required for OIDC). **GitHub-hosted runners only** (self-hosted not supported by npm OIDC yet).
+- **Publish** — `.github/workflows/publish.yml` publishes `@at-flux/astroflare` after Release. Prefer **[npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)** — no `NPM_TOKEN` needed; configure the trusted publisher on npm for org `at-flux`, repo `astroflare`, workflow `publish.yml`. See **[docs/PUBLISHING.md](docs/PUBLISHING.md)**.
 
 See `packages/astroflare/README.md` for import paths and subpackages.
