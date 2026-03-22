@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/at-flux/astroflare/compare/v1.0.1...v1.0.2) (2026-03-21)
+
+
+### Bug Fixes
+
+* **publish:** use npm OIDC trusted publishing; normalize package.json ([10309d3](https://github.com/at-flux/astroflare/commit/10309d3109430d6c983ec74bb7472afc9b479ef5))
+
 ## [1.0.1](https://github.com/at-flux/astroflare/compare/v1.0.0...v1.0.1) (2026-03-21)
 
 
