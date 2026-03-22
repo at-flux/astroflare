@@ -30,6 +30,9 @@ pnpm-debug.log*
 !.vscode/settings.json
 .idea/
 
+# Pack artifacts (pnpm pack / npm pack)
+*.tgz
+
 # Temp files
 *.swp
 *.swo

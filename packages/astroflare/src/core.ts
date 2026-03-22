@@ -1,8 +1,5 @@
-// Opinionated core surface: DOM + forms utilities
-export * from './dom';
+// Opinionated core surface: forms utilities
 export * from './forms/index';
 
-// Also expose namespaced access for clearer call sites
-export * as dom from './dom';
+// Namespaced access for clearer call sites
 export * as forms from './forms/index';
-

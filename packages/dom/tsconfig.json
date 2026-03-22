@@ -8,7 +8,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "skipLibCheck": true,
+    "noEmit": true
   },
   "include": ["src/**/*", "tests/**/*"],
   "exclude": ["dist", "node_modules"]
