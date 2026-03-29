@@ -1,0 +1,30 @@
+---
+import ModalTrigger from './ModalTrigger.astro';
+
+interface Props {
+  /** Target dialog id (must match `<dialog id="…">`). */
+  modalId?: string;
+  label: string;
+  /** `solid` — primary pill; `text` — tertiary link style (e.g. inline in prose). */
+  variant?: 'solid' | 'text';
+  class?: string;
+}
+
+const {
+  modalId = 'contact-modal',
+  label,
+  variant = 'solid',
+  class: className = '',
+} = Astro.props;
+
+const solidClass =
+  'btn-primary-solid inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold shadow-md transition-all hover:scale-105 hover:opacity-95 hover:shadow-lg no-underline';
+const textClass =
+  'inline-flex items-center gap-2 font-bold text-[var(--color-tertiary)] no-underline hover:text-[var(--color-secondary)]';
+---
+
+<ModalTrigger modalId={modalId} class={className}>
+  <button type='button' class:list={[variant === 'solid' ? solidClass : textClass]}>
+    {label}
+  </button>
+</ModalTrigger>

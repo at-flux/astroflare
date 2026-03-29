@@ -35,6 +35,8 @@ import { forms } from '@at-flux/astroflare/core';
 
 - `Modal.astro` — Headless modal using native `<dialog>` and `<app-modal>` web component (`class` applies to the panel)
 - `ModalTrigger.astro` — Trigger that opens a modal by ID using `<modal-trigger>` web component
+- `ContactModalCta.astro` — Opinionated contact button (solid pill or text link) wrapped in `ModalTrigger`
+- `InstagramProfileLink.astro` — Small Instagram icon + `@handle` link with safe defaults
 - `Section.astro` — Page section with optional `narrow` and `contentOnly` (inner width wrapper without outer padding)
 - `ThemeToggle.astro` — Dark/light mode toggle using `<theme-toggle>` web component
 - `ClientRouterLoadingSpinner.astro` — Loading spinner for Astro view transitions
