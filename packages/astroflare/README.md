@@ -48,7 +48,28 @@ import { forms } from '@at-flux/astroflare/core';
 
 ## Usage
 
-### Local Import (file: protocol)
+### Local checkout without changing package.json or lockfile
+
+Keep **`@at-flux/astroflare`** on a normal semver range in `package.json` and run **`pnpm install`** so the lockfile records the registry version. Then overlay the install with a symlink (only under `node_modules`):
+
+```bash
+pnpm exec astroflare-link-local link /absolute/or/relative/path/to/astroflare/packages/astroflare
+# or
+ASTROFLARE_LOCAL_PATH=../../ts-libs/astroflare/packages/astroflare pnpm exec astroflare-link-local
+```
+
+- **`USE_LOCAL_ASTROFLARE=1`** (or `true` / `yes`) is supported only together with **`ASTROFLARE_LOCAL_PATH`** or **`USE_LOCAL_ASTROFLARE_PATH`** (path to `packages/astroflare`).
+- **`unlink`** removes the overlay and runs **`pnpm install`** again so `node_modules` matches the lockfile:
+
+```bash
+pnpm exec astroflare-link-local unlink
+```
+
+- **`status`** shows whether an overlay is active.
+
+Re-running **`pnpm install`** may replace the symlink with the store copy; run **`link`** again if that happens.
+
+### Local Import (file: protocol) — alternative
 
 ```json
 {
