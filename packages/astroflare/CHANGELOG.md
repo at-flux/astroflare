@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.2](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.1...@at-flux/astroflare@1.0.2) (2026-03-29)
+
+
+### Features
+
+* **components:** add ContactModalCta and InstagramProfileLink ([c31d9f7](https://github.com/at-flux/astroflare/commit/c31d9f7ece91724e8369856168aea80d94ac9fcb))
+
 # @at-flux/astroflare 1.0.0 (2026-03-26)
 
 
