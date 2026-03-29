@@ -1,0 +1,27 @@
+---
+interface Props {
+  id?: string;
+  class?: string;
+  narrow?: boolean;
+  /** Inner max-width wrapper only — no section padding (e.g. modal body). */
+  contentOnly?: boolean;
+}
+
+const { id, class: className = '', narrow = false, contentOnly = false } = Astro.props;
+
+const innerClass = ['mx-auto w-full', narrow ? 'max-w-4xl' : 'max-w-6xl'];
+---
+
+{
+  contentOnly ? (
+    <div class:list={innerClass}>
+      <slot />
+    </div>
+  ) : (
+    <section id={id} class:list={['px-6 pt-10 pb-16 md:px-8 md:pt-16 md:pb-24', className]}>
+      <div class:list={innerClass}>
+        <slot />
+      </div>
+    </section>
+  )
+}

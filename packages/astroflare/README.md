@@ -33,8 +33,9 @@ import { forms } from '@at-flux/astroflare/core';
 
 ### Components (Astro)
 
-- `Modal.astro` — Headless modal using native `<dialog>` and `<app-modal>` web component
+- `Modal.astro` — Headless modal using native `<dialog>` and `<app-modal>` web component (`class` applies to the panel)
 - `ModalTrigger.astro` — Trigger that opens a modal by ID using `<modal-trigger>` web component
+- `Section.astro` — Page section with optional `narrow` and `contentOnly` (inner width wrapper without outer padding)
 - `ThemeToggle.astro` — Dark/light mode toggle using `<theme-toggle>` web component
 - `ClientRouterLoadingSpinner.astro` — Loading spinner for Astro view transitions
 

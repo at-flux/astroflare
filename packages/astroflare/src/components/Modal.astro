@@ -1,44 +1,59 @@
 ---
 /**
- * Headless modal component using native <dialog>.
- * Provides no visual styling beyond structure -- consumers apply their own theme.
+ * Headless modal using native `<dialog>`.
+ * `class` applies to the modal panel (card). Dialog element keeps backdrop/transparent shell.
  */
 interface Props {
   id: string;
+  /** Panel (card) classes — surface, border, radius, etc. */
   class?: string;
   backdropClass?: string;
+  /** Extra panel classes merged after `class`. */
   panelClass?: string;
+  closeButtonClass?: string;
+  /** Scrollable inner wrapper around the default slot. */
+  contentClass?: string;
 }
 
 const {
   id,
   class: className = '',
-  backdropClass = 'backdrop:bg-black/80',
+  backdropClass = 'backdrop:bg-black/80 bg-transparent p-0 w-full h-full max-w-none max-h-none',
   panelClass = '',
+  closeButtonClass = 'absolute top-3 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100',
+  contentClass = 'relative overflow-y-auto max-h-[calc(100dvh-2rem)]',
 } = Astro.props;
 ---
 
 <app-modal>
-  <dialog
-    id={id}
-    class:list={['bg-transparent p-0 w-full h-full max-w-none max-h-none', backdropClass, className]}
-  >
-    <div class='flex items-center justify-center min-h-full p-0 md:p-4'>
+  <dialog id={id} class:list={[backdropClass]}>
+    <div class='flex min-h-full items-center justify-center p-0 md:p-4'>
       <div
-        class:list={['relative overflow-hidden outline-none w-[100dvw] max-w-4xl max-h-[100dvh]', panelClass]}
+        class:list={[
+          'relative max-h-[100dvh] w-[100dvw] max-w-4xl overflow-hidden outline-none',
+          className,
+          panelClass,
+        ]}
         role='dialog'
       >
-        <button
-          id={`${id}-close`}
-          class='absolute top-3 right-6 w-10 h-10 rounded-full z-50 flex items-center justify-center'
-          aria-label='Close modal'
-        >
-          <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
-            <path d='M18 6L6 18' /><path d='M6 6L18 18' />
+        <button class:list={[closeButtonClass]} type='button' aria-label='Close modal'>
+          <svg
+            width='20'
+            height='20'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+            aria-hidden='true'
+          >
+            <path d='M18 6L6 18'></path>
+            <path d='M6 6L18 18'></path>
           </svg>
         </button>
 
-        <div class='relative overflow-y-auto max-h-[calc(100dvh-2rem)]'>
+        <div class:list={[contentClass]}>
           <slot />
         </div>
       </div>
@@ -52,7 +67,7 @@ const {
       const dialog = this.querySelector<HTMLDialogElement>('dialog');
       if (!dialog) return;
 
-      const closeBtn = this.querySelector<HTMLButtonElement>(`#${dialog.id}-close`);
+      const closeBtn = this.querySelector<HTMLButtonElement>('button[aria-label="Close modal"]');
       closeBtn?.addEventListener('click', () => dialog.close());
     }
   }

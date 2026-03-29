@@ -1,6 +1,6 @@
 {
   "name": "@at-flux/astroflare",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cloudflare projects",
   "author": "Taylor Siviter <taylor@siviter.xyz>",
