@@ -38,6 +38,12 @@ In that state, semantic-release behaves like there is **no previous release** (s
 
    After deletion, the **next** release must not try to publish the same version to npm again, or `npm publish` will fail.
 
+### Rerunning a failed **Release** workflow
+
+`Release` is triggered by **CI** via `workflow_run`. **Re-run** repeats the same triggering event’s checkout (an older SHA). If you already fixed `main` on GitHub, tags can match `origin/main` while the rerun still checks an old detached state and the verify step fails.
+
+Do **not** rely on rerun for that case: push a new commit to `main` (or trigger CI again) so a **new** `workflow_run` runs against current `head_sha`. The verify script fetches `origin/main` so it judges the real branch tip, not only the job checkout.
+
 ### Prevention
 
 - Create release tags only from commits that are on `main` (or merge the release commit into `main` before tagging).

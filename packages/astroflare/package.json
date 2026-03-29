@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "type": "module",
   "description": "Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cloudflare projects",
-  "author": "Taylor Siviter <taylor@siviter.xyz>",
+  "author": "atflux <dev@atflux.uk>",
   "license": "MIT",
   "keywords": [
     "astro",

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "description": "Type-safe DOM helpers for Astroflare projects",
-  "author": "Taylor Siviter <taylor@siviter.xyz>",
+  "author": "atflux <dev@atflux.uk>",
   "license": "MIT",
   "keywords": [
     "astro",

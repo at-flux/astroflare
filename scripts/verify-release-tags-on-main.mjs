@@ -12,9 +12,26 @@ function sh(cmd) {
   return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
 }
 
-function tagReachableFromBranch(tag) {
+/** Prefer origin/<branch> after fetch so we match GitHub's main, not a detached/stale local `main`. */
+function resolveVerifyRef() {
   try {
-    execSync(`git merge-base --is-ancestor "${tag}" "${branch}"`, { stdio: 'pipe' });
+    sh(`git fetch origin ${branch}`);
+  } catch {
+    // no `origin` (unlikely in CI)
+  }
+  try {
+    sh(`git rev-parse --verify "origin/${branch}"`);
+    return `origin/${branch}`;
+  } catch {
+    return branch;
+  }
+}
+
+const verifyRef = resolveVerifyRef();
+
+function tagReachableFromRef(tag) {
+  try {
+    execSync(`git merge-base --is-ancestor "${tag}" "${verifyRef}"`, { stdio: 'pipe' });
     return true;
   } catch {
     return false;
@@ -27,15 +44,17 @@ const tags = sh('git tag -l')
   .filter(Boolean)
   .filter((t) => /^@at-flux\/[^@]+@\d+\.\d+\.\d+/.test(t));
 
-const bad = tags.filter((t) => !tagReachableFromBranch(t));
+const bad = tags.filter((t) => !tagReachableFromRef(t));
 
 if (bad.length === 0) {
-  console.log(`verify-release-tags-on-main: all ${tags.length} scoped release tag(s) are ancestors of ${branch}.`);
+  console.log(
+    `verify-release-tags-on-main: all ${tags.length} scoped release tag(s) are ancestors of ${verifyRef}.`,
+  );
   process.exit(0);
 }
 
 console.error(
-  `verify-release-tags-on-main: ${bad.length} tag(s) exist but are not ancestors of "${branch}" (semantic-release uses git tag --merged):`,
+  `verify-release-tags-on-main: ${bad.length} tag(s) exist but are not ancestors of "${verifyRef}" (semantic-release uses git tag --merged):`,
 );
 for (const t of bad) {
   console.error(`  - ${t}`);
