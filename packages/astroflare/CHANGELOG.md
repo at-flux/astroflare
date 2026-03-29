@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.1](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.0...@at-flux/astroflare@1.0.1) (2026-03-29)
+
+
+### Features
+
+* **astroflare:** add astroflare-link-local node_modules overlay CLI ([5e175b0](https://github.com/at-flux/astroflare/commit/5e175b04d80c5f94927f8152270518f3ae8876c4))
+
 # @at-flux/astroflare 1.0.0 (2026-03-26)
 
 
