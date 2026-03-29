@@ -22,6 +22,15 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          fetch-tags: true
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Verify release tags are on main
+        env:
+          RELEASE_BRANCH: main
+        run: node scripts/verify-release-tags-on-main.mjs
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
