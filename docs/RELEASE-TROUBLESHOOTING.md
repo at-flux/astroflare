@@ -1,6 +1,12 @@
 # Release troubleshooting (multi-semantic-release)
 
-## `fatal: tag '@at-flux/astroflare@x.y.z' already exists`
+## CI: `Verify release tags are on main` fails (e.g. `@at-flux/dom@1.0.0`)
+
+The workflow runs `scripts/verify-release-tags-on-main.mjs`. It fails if any tag matching `@at-flux/<pkg>@x.y.z` **exists** but is **not an ancestor of `main`** — the same condition that breaks `semantic-release` (it uses `git tag --merged main`).
+
+**Fix:** For each tag listed in the log, use **re-point or delete** in the section below with that exact tag name (e.g. `@at-flux/dom@1.0.0`, `@at-flux/astroflare@1.0.0`).
+
+## `fatal: tag '@at-flux/<pkg>@x.y.z' already exists`
 
 **What happened:** `semantic-release` decided the next version was `x.y.z` and tried to create that git tag, but a tag with that name **already exists** in the repo.
 
@@ -18,16 +24,16 @@ In that state, semantic-release behaves like there is **no previous release** (s
 
    ```bash
    git fetch origin main
-   git tag -f '@at-flux/astroflare@1.0.0' origin/main
-   git push origin 'refs/tags/@at-flux/astroflare@1.0.0' --force
+   git tag -f '@at-flux/dom@1.0.0' origin/main
+   git push origin 'refs/tags/@at-flux/dom@1.0.0' --force
    ```
 
-   Replace the package name and version in the tag to match your case.
+   Replace the scope (`dom` / `astroflare`) and version in the tag to match your case.
 
 2. **Delete the orphan tag** (only if you are sure it should not exist and npm state matches your plan):
 
    ```bash
-   git push origin ':refs/tags/@at-flux/astroflare@1.0.0'
+   git push origin ':refs/tags/@at-flux/dom@1.0.0'
    ```
 
    After deletion, the **next** release must not try to publish the same version to npm again, or `npm publish` will fail.
