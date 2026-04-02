@@ -1,6 +1,6 @@
 {
   "name": "@at-flux/dom",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Type-safe DOM helpers for Astroflare projects",
   "author": "atflux <dev@atflux.uk>",
