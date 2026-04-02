@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.3](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.2...@at-flux/astroflare@1.0.3) (2026-04-02)
+
+
+### Bug Fixes
+
+* **ci:** verify release tags against origin/main for workflow_run reruns ([af65449](https://github.com/at-flux/astroflare/commit/af654490daf3b7a949ddbeb17288a5d90301da38))
+
 ## @at-flux/astroflare [1.0.2](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.1...@at-flux/astroflare@1.0.2) (2026-03-29)
 
 
