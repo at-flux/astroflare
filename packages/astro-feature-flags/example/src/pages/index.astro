@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { FeatureFlag, FeatureToken, shouldRenderFeature } from 'virtual:astro-feature-flags';
+---
+
+<Layout title='Home'>
+  <main style='padding: 1.5rem; max-width: 40rem'>
+    <h1 style='margin-top: 0'>Feature flags example</h1>
+
+    <p>
+      Config: <code>ff.json</code>, optional <code>ff.&lt;env&gt;.json</code> via <code>FF_ENV</code>. Toolbar: outlines,
+      badges, colours. Route pill: set <code>data-ff-route</code> from <code>routeFeatureTokenForPath</code> (see
+      <code>Layout.astro</code>).
+    </p>
+
+    <div data-ff={FeatureToken.Dev} class='ff-demo-box'>
+      <strong>Dev</strong> — <code>data-ff={FeatureToken.Dev}</code>. Toggle <strong>Outline</strong>: badge stays aligned
+      (host keeps <code>position: relative</code>).
+    </div>
+
+    <div data-ff={FeatureToken.HotFeature2} class='ff-demo-box'>
+      <strong>hotFeature2</strong> — second colour from <code>ff.json</code>; production can override in
+      <code>ff.prod.json</code>.
+    </div>
+
+    <p class='ff-note'>
+      <strong>SSR gating:</strong> <code>shouldRenderFeature</code> / <code>isFeatureEnabled</code> follow
+      <code>ff.json</code> in dev and prod. The dev toolbar only affects client-side outlines (not server output).
+    </p>
+
+    {
+      shouldRenderFeature(FeatureFlag.HotFeature2) && (
+        <p class='ff-conditional'>
+          This line is visible because <code>hotFeature2</code> is currently enabled in <code>ff.json</code>.
+          For a hidden example, open <code>/hot/</code> and compare with a production build where
+          <code>ff.prod.json</code> disables that flag.
+        </p>
+      )
+    }
+
+    <p style='margin-top: 1.5rem'>
+      <a href={`${import.meta.env.BASE_URL}hot/`}>Hot route →</a> (route pill uses the mapped flag on <code>/hot/</code>).
+    </p>
+  </main>
+</Layout>
+
+<style>
+  .ff-demo-box {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: color-mix(in oklab, Canvas 96%, CanvasText 4%);
+  }
+  .ff-note {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+  .ff-conditional {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px dashed color-mix(in oklab, CanvasText 40%, transparent);
+    font-size: 0.95rem;
+  }
+</style>
