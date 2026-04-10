@@ -10,25 +10,25 @@ For type-safe DOM helpers, use the separate package **`@at-flux/dom`**.
 
 ## Package entrypoints
 
-| Subpath | Contents |
-|---------|----------|
-| `@at-flux/astroflare` | **Core** — forms utilities (same as `./core`) |
-| `@at-flux/astroflare/core` | Forms; also exposes the `forms` namespace |
-| `@at-flux/astroflare/forms` | Resend email + form HTML helpers |
-| `@at-flux/astroflare/components/*` | Astro components (source) |
-| `@at-flux/astroflare/styles/*` | CSS (source) |
+| Subpath                            | Contents                                      |
+| ---------------------------------- | --------------------------------------------- |
+| `@at-flux/astroflare`              | **Core** — forms utilities (same as `./core`) |
+| `@at-flux/astroflare/core`         | Forms; also exposes the `forms` namespace     |
+| `@at-flux/astroflare/forms`        | Resend email + form HTML helpers              |
+| `@at-flux/astroflare/components/*` | Astro components (source)                     |
+| `@at-flux/astroflare/styles/*`     | CSS (source)                                  |
 
 ### Examples
 
 ```ts
 // Flat imports from core
-import { sendEmail } from '@at-flux/astroflare';
+import { sendEmail } from "@at-flux/astroflare";
 
 // Explicit subpaths
-import { renderEmailTemplate } from '@at-flux/astroflare/forms';
+import { renderEmailTemplate } from "@at-flux/astroflare/forms";
 
 // Namespaced (from core / root)
-import { forms } from '@at-flux/astroflare/core';
+import { forms } from "@at-flux/astroflare/core";
 ```
 
 ## Contents
@@ -95,8 +95,8 @@ import ModalTrigger from '@at-flux/astroflare/components/ModalTrigger.astro';
 ### Styles
 
 ```css
-@import '@at-flux/astroflare/styles/prose.css';
-@import '@at-flux/astroflare/styles/no-save.css';
+@import "@at-flux/astroflare/styles/prose.css";
+@import "@at-flux/astroflare/styles/no-save.css";
 ```
 
 ## Testing

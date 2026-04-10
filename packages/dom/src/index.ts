@@ -15,7 +15,9 @@ export const getElementByIdOrThrow = <T extends HTMLElement>(
 ): T => {
   const element = getElementById(id, ctor);
   if (!element) {
-    throw new Error(`Element with id "${id}" not found or not the expected type`);
+    throw new Error(
+      `Element with id "${id}" not found or not the expected type`,
+    );
   }
   return element;
 };
@@ -37,4 +39,3 @@ export const getElementByQueryOrThrow = <T extends Element>(
   }
   return element;
 };
-

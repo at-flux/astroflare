@@ -13,7 +13,7 @@
   background: color-mix(in oklab, var(--color-brand, #7c5cff) 25%, transparent);
 }
 
-:where([data-theme='dark']) ::selection {
+:where([data-theme="dark"]) ::selection {
   background: color-mix(in oklab, var(--color-brand, #7c5cff) 35%, transparent);
 }
 
