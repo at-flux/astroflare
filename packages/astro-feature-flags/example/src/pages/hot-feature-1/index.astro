@@ -1,0 +1,38 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { FeatureToken } from 'virtual:astro-feature-flags';
+---
+
+<Layout title='Hot Feature 1'>
+  <main class='ff-shell'>
+    <h1 class='ff-title'>Hot Feature 1</h1>
+    <p class='ff-sub'>This page is mapped to <span class='ff-code'>hotFeature1</span> route rules.</p>
+
+    <div data-ff={FeatureToken.HotFeature1} class='ff-card'>
+      Imported token usage: <span class='ff-code'>data-ff=&#123;FeatureToken.HotFeature1&#125;</span>.
+    </div>
+
+    <div data-ff-hot-feature-1 class='ff-card'>
+      Shorthand usage: <span class='ff-code'>data-ff-hot-feature-1</span>.
+    </div>
+
+    <div
+      data-ff-hot-feature-1
+      data-ff-align='center'
+      data-ff-horizontal='25'
+      data-ff-vertical='110'
+      data-ff-anchor='bottom'
+      class='ff-card'
+    >
+      Badge positioning overrides:
+      <span class='ff-code'>data-ff-align="center"</span>,
+      <span class='ff-code'>data-ff-horizontal="25"</span>,
+      <span class='ff-code'>data-ff-vertical="110"</span>,
+      <span class='ff-code'>data-ff-anchor="bottom"</span>.
+    </div>
+
+    <p class='mt-6'>
+      <a class='ff-link' href={`${import.meta.env.BASE_URL}`}>← Home</a>
+    </p>
+  </main>
+</Layout>

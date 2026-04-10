@@ -1,36 +1,23 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { FeatureFlag, FeatureToken, shouldRenderFeature } from 'virtual:astro-feature-flags';
+import { FeatureToken } from 'virtual:astro-feature-flags';
 ---
 
-<Layout title='Hot'>
-  <main style='padding: 1.5rem; max-width: 40rem'>
-    <h1 style='margin-top: 0'>Hot route</h1>
-    <p>Top-right badge uses the <strong>hotFeature2</strong> colour when this route matches <code>ff.json</code>.</p>
+<Layout title='Hot Feature 2'>
+  <main class='ff-shell'>
+    <h1 class='ff-title'>Hot Feature 2</h1>
+    <p class='ff-sub'>This route is mapped to <span class='ff-code'>hotFeature2</span>.</p>
 
-    <div data-ff={FeatureToken.HotFeature2} class='ff-demo-box'>
-      Outline and badge for <code>hotFeature2</code> via <code>data-ff</code>.
+    <div data-ff={FeatureToken.HotFeature2} class='ff-card'>
+      Imported token usage: <span class='ff-code'>data-ff=&#123;FeatureToken.HotFeature2&#125;</span>.
     </div>
 
-    {
-      shouldRenderFeature(FeatureFlag.Dev) && (
-        <div data-ff={FeatureToken.Dev} class='ff-demo-box'>
-          Dev block for comparison.
-        </div>
-      )
-    }
+    <div data-ff-hot-feature-2 class='ff-card'>
+      Shorthand usage: <span class='ff-code'>data-ff-hot-feature-2</span>.
+    </div>
 
-    <p style='margin-top: 1.5rem'>
-      <a href={`${import.meta.env.BASE_URL}`}>← Home</a>
+    <p class='mt-6'>
+      <a class='ff-link' href={`${import.meta.env.BASE_URL}`}>← Home</a>
     </p>
   </main>
 </Layout>
-
-<style>
-  .ff-demo-box {
-    margin-top: 1rem;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: color-mix(in oklab, Canvas 96%, CanvasText 4%);
-  }
-</style>

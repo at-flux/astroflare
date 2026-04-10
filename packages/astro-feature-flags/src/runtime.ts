@@ -1,57 +1,77 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 export type FeatureFlagMap = Record<string, boolean>;
-export type FeatureRouteMap = Record<string, string>;
-
+export type FeatureRouteMap = Record<string, string[]>;
 export type FeatureColorMap = Record<string, string>;
+export type FeatureBoolByTokenMap = Record<string, boolean>;
 
 export interface FeatureConfig {
   namespace: string;
   flags: FeatureFlagMap;
   routeFlags: FeatureRouteMap;
   colors: FeatureColorMap;
+  outlineDefaultsByToken: FeatureBoolByTokenMap;
+  badgeDefaultsByToken: FeatureBoolByTokenMap;
   mode: string;
 }
 
 export interface ResolveFeatureRuntimeOptions {
+  /** Absolute or relative path to a JSON config file (preferred over root/baseName). */
+  jsonConfigPath?: string;
   root?: string;
   /** `development` / `production` / aliases `dev` / `prod` */
   mode?: string;
   isDev?: boolean;
   env?: Record<string, string | undefined>;
-  /** Base filename without extension; loads `{baseName}.json`, optional `{baseName}.{ffEnv}.json`, then in prod `{baseName}.prod.json`. Default `ff`. */
+  /** Base filename without extension (default `ff`). */
   baseName?: string;
   /**
-   * Merge `ff.<ffEnv>.json` after `ff.json` when set (e.g. `preview`, `staging`).
-   * Defaults to `process.env.FF_ENV` so preview deployments can use branch/env-specific flags without editing the base file.
+   * Optional external override file suffix: `ff.<fileEnv>.json`.
+   * Useful for preview/branch deploy overrides.
    */
-  ffEnv?: string;
-  defaults?: {
-    namespace?: string;
-    flags?: FeatureFlagMap;
-    routeFlags?: FeatureRouteMap;
-    colors?: FeatureColorMap;
-  };
+  fileEnv?: string;
+  /**
+   * Inline base config from `astro.config`.
+   * If `ff.json` exists, it deep-merges over this object.
+   */
+  tokenNamespace?: string;
+  flags?: Record<
+    string,
+    {
+      color?: string;
+      colour?: string;
+      outline?: boolean;
+      badge?: boolean;
+      routes?: string[];
+    }
+  >;
+  environments?: Record<
+    string,
+    {
+      when?: boolean;
+      flags?: Record<string, boolean>;
+    }
+  >;
 }
 
 function toBoolean(value: unknown, fallback = false): boolean {
-  if (typeof value === 'boolean') return value;
-  if (typeof value !== 'string') return fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value !== "string") return fallback;
   const normalized = value.trim().toLowerCase();
-  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
-  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
   return fallback;
 }
 
 function readJsonIfExists(pathname: string): Record<string, unknown> {
   if (!existsSync(pathname)) return {};
-  return JSON.parse(readFileSync(pathname, 'utf8')) as Record<string, unknown>;
+  return JSON.parse(readFileSync(pathname, "utf8")) as Record<string, unknown>;
 }
 
 export function normalizePath(pathname: string): string {
-  if (!pathname) return '/';
-  return pathname.endsWith('/') ? pathname : `${pathname}/`;
+  if (!pathname) return "/";
+  return pathname.endsWith("/") ? pathname : `${pathname}/`;
 }
 
 /**
@@ -60,11 +80,11 @@ export function normalizePath(pathname: string): string {
  */
 export function routePatternToPrefix(pattern: string): string {
   let p = pattern.trim();
-  if (p.endsWith('/**')) {
+  if (p.endsWith("/**")) {
     p = p.slice(0, -3);
-  } else if (p.endsWith('/*')) {
+  } else if (p.endsWith("/*")) {
     p = p.slice(0, -2);
-  } else if (p.endsWith('*') && p.length > 1) {
+  } else if (p.endsWith("*") && p.length > 1) {
     p = p.slice(0, -1);
   }
   return normalizePath(p);
@@ -72,43 +92,33 @@ export function routePatternToPrefix(pattern: string): string {
 
 export function toEnumKey(flagName: string): string {
   return flagName
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .replace(/[^a-zA-Z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
+    .join("");
 }
 
 export function toToken(flagName: string): string {
   return flagName
-    .replace(/[^a-zA-Z0-9]+/g, '-')
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/([a-zA-Z])([0-9])/g, "$1-$2")
+    .replace(/([0-9])([a-zA-Z])/g, "$1-$2")
     .toLowerCase()
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function isProductionMode(mode: string): boolean {
   const m = mode.trim().toLowerCase();
-  return m === 'production' || m === 'prod';
+  return m === "production" || m === "prod";
 }
 
-/** Map loose JSON shape to our fields (`ns`, `routes`, `c` aliases). */
-export function pickFfFields(raw: Record<string, unknown>): {
-  namespace?: string;
-  flags?: FeatureFlagMap;
-  routeFlags?: FeatureRouteMap;
-  colors?: FeatureColorMap;
-} {
-  const namespace = typeof raw.ns === 'string' ? raw.ns : (raw.namespace as string | undefined);
-  const flags = raw.flags as FeatureFlagMap | undefined;
-  const routeCoalesce = raw.routes ?? raw.routeFlags;
-  const routeFlags = routeCoalesce as FeatureRouteMap | undefined;
-  const colors = (raw.colors ?? raw.c) as FeatureColorMap | undefined;
-  return { namespace, flags, routeFlags, colors };
-}
-
-function mergeRecords<T extends Record<string, unknown>>(base: T, ...layers: Partial<T>[]): T {
+function mergeRecords<T extends Record<string, unknown>>(
+  base: T,
+  ...layers: Partial<T>[]
+): T {
   const out = { ...base };
   for (const layer of layers) {
     for (const [k, v] of Object.entries(layer)) {
@@ -116,15 +126,15 @@ function mergeRecords<T extends Record<string, unknown>>(base: T, ...layers: Par
       const cur = out[k as keyof T];
       if (
         v &&
-        typeof v === 'object' &&
+        typeof v === "object" &&
         !Array.isArray(v) &&
         cur &&
-        typeof cur === 'object' &&
+        typeof cur === "object" &&
         !Array.isArray(cur)
       ) {
         (out as Record<string, unknown>)[k] = mergeRecords(
           cur as Record<string, unknown>,
-          v as Record<string, unknown>
+          v as Record<string, unknown>,
         );
       } else {
         (out as Record<string, unknown>)[k] = v;
@@ -134,73 +144,170 @@ function mergeRecords<T extends Record<string, unknown>>(base: T, ...layers: Par
   return out;
 }
 
-const defaultColors: FeatureColorMap = {
-  dev: 'rgb(220 38 38)',
+type NormalizedFlagDef = {
+  color?: string;
+  outline: boolean;
+  badge: boolean;
+  routes: string[];
 };
 
-export function loadFeatureConfig({
-  root = process.cwd(),
-  mode = process.env.NODE_ENV || 'development',
-  baseName = 'ff',
-  ffEnv: ffEnvOpt,
-  defaults = {
-    namespace: 'ff',
-    flags: { dev: true },
-    routeFlags: {},
-    colors: { ...defaultColors },
-  },
-}: ResolveFeatureRuntimeOptions = {}): FeatureConfig {
-  const basePath = join(root, `${baseName}.json`);
-  const prodPath = join(root, `${baseName}.prod.json`);
-  const envSuffix = (ffEnvOpt ?? process.env.FF_ENV)?.trim();
-  const envPath = envSuffix ? join(root, `${baseName}.${envSuffix}.json`) : '';
+type DeclarativeFeatureConfig = {
+  tokenNamespace: string;
+  flags: Record<string, NormalizedFlagDef>;
+  environments: Record<
+    string,
+    { when?: boolean; flags: Record<string, boolean> }
+  >;
+};
 
-  const baseRaw = readJsonIfExists(basePath);
-  const envRaw = envPath && existsSync(envPath) ? readJsonIfExists(envPath) : {};
-  const prodRaw = isProductionMode(mode) ? readJsonIfExists(prodPath) : {};
+function normalizeDeclarativeConfig(
+  raw: Record<string, unknown>,
+): DeclarativeFeatureConfig {
+  const tokenNamespaceRaw =
+    (typeof raw.tokenNamespace === "string" ? raw.tokenNamespace : undefined) ??
+    (typeof raw.namespace === "string" ? raw.namespace : undefined) ??
+    "ff";
 
-  const basePick = pickFfFields(baseRaw);
-  const envPick = pickFfFields(envRaw);
-  const prodPick = pickFfFields(prodRaw);
+  const flagsRaw =
+    raw.flags && typeof raw.flags === "object" && !Array.isArray(raw.flags)
+      ? (raw.flags as Record<string, unknown>)
+      : {};
+  const flags: Record<string, NormalizedFlagDef> = {};
+  for (const [flagName, maybeDef] of Object.entries(flagsRaw)) {
+    if (!maybeDef || typeof maybeDef !== "object" || Array.isArray(maybeDef))
+      continue;
+    const def = maybeDef as Record<string, unknown>;
+    const color =
+      (typeof def.colour === "string" ? def.colour : undefined) ??
+      (typeof def.color === "string" ? def.color : undefined);
+    const outline = typeof def.outline === "boolean" ? def.outline : true;
+    const badge = typeof def.badge === "boolean" ? def.badge : true;
+    const routes = Array.isArray(def.routes)
+      ? def.routes.filter((v): v is string => typeof v === "string")
+      : [];
+    flags[flagName] = { color, outline, badge, routes };
+  }
 
-  const merged = mergeRecords(
-    {
-      namespace: defaults.namespace ?? 'ff',
-      flags: { ...(defaults.flags || {}) },
-      routeFlags: { ...(defaults.routeFlags || {}) },
-      colors: { ...defaultColors, ...(defaults.colors || {}) },
-    },
-    {
-      ...(basePick.namespace != null ? { namespace: basePick.namespace } : {}),
-      ...(basePick.flags != null ? { flags: basePick.flags } : {}),
-      ...(basePick.routeFlags != null ? { routeFlags: basePick.routeFlags } : {}),
-      ...(basePick.colors != null ? { colors: basePick.colors } : {}),
-    },
-    {
-      ...(envPick.namespace != null ? { namespace: envPick.namespace } : {}),
-      ...(envPick.flags != null ? { flags: envPick.flags } : {}),
-      ...(envPick.routeFlags != null ? { routeFlags: envPick.routeFlags } : {}),
-      ...(envPick.colors != null ? { colors: envPick.colors } : {}),
-    },
-    {
-      ...(prodPick.namespace != null ? { namespace: prodPick.namespace } : {}),
-      ...(prodPick.flags != null ? { flags: prodPick.flags } : {}),
-      ...(prodPick.routeFlags != null ? { routeFlags: prodPick.routeFlags } : {}),
-      ...(prodPick.colors != null ? { colors: prodPick.colors } : {}),
+  const envRaw =
+    raw.environments &&
+    typeof raw.environments === "object" &&
+    !Array.isArray(raw.environments)
+      ? (raw.environments as Record<string, unknown>)
+      : {};
+  const environments: Record<
+    string,
+    { when?: boolean; flags: Record<string, boolean> }
+  > = {};
+  for (const [envName, maybeEnv] of Object.entries(envRaw)) {
+    if (!maybeEnv || typeof maybeEnv !== "object" || Array.isArray(maybeEnv))
+      continue;
+    const env = maybeEnv as Record<string, unknown>;
+    const envFlagsRaw =
+      env.flags && typeof env.flags === "object" && !Array.isArray(env.flags)
+        ? (env.flags as Record<string, unknown>)
+        : {};
+    const envFlags: Record<string, boolean> = {};
+    for (const [flagName, value] of Object.entries(envFlagsRaw)) {
+      envFlags[flagName] = Boolean(value);
     }
-  );
+    const when = typeof env.when === "boolean" ? env.when : undefined;
+    environments[envName] = {
+      ...(when !== undefined ? { when } : {}),
+      flags: envFlags,
+    };
+  }
 
   return {
-    namespace: merged.namespace as string,
-    flags: merged.flags as FeatureFlagMap,
-    routeFlags: merged.routeFlags as FeatureRouteMap,
-    colors: merged.colors as FeatureColorMap,
+    tokenNamespace: tokenNamespaceRaw,
+    flags,
+    environments,
+  };
+}
+
+function resolveActiveEnvironmentName({
+  environments,
+  mode,
+}: {
+  environments: Record<
+    string,
+    { when?: boolean; flags: Record<string, boolean> }
+  >;
+  mode: string;
+}): string | undefined {
+  const envOverride = process.env.AFF_ENVIRONMENT?.trim();
+  if (envOverride && environments[envOverride]) return envOverride;
+  for (const [name, cfg] of Object.entries(environments)) {
+    if (cfg.when === true) return name;
+  }
+  if (isProductionMode(mode) && environments.prod) return "prod";
+  if (!isProductionMode(mode) && environments.dev) return "dev";
+  return Object.keys(environments)[0];
+}
+
+export function loadFeatureConfig({
+  jsonConfigPath,
+  root = process.cwd(),
+  mode = process.env.NODE_ENV || "development",
+  baseName = "ff",
+  fileEnv,
+  tokenNamespace = "ff",
+  flags = {},
+  environments = {},
+}: ResolveFeatureRuntimeOptions = {}): FeatureConfig {
+  const basePath = jsonConfigPath ?? join(root, `${baseName}.json`);
+  const envSuffix = (fileEnv ?? process.env.FF_ENV)?.trim();
+  const envPath = envSuffix ? join(root, `${baseName}.${envSuffix}.json`) : "";
+
+  const inlineRaw: Record<string, unknown> = {
+    tokenNamespace,
+    flags,
+    environments,
+  };
+  const fileRaw = readJsonIfExists(basePath);
+  const envFileRaw =
+    envPath && existsSync(envPath) ? readJsonIfExists(envPath) : {};
+
+  const mergedRaw = mergeRecords(inlineRaw, fileRaw, envFileRaw);
+  const normalized = normalizeDeclarativeConfig(mergedRaw);
+  const envName = resolveActiveEnvironmentName({
+    environments: normalized.environments,
+    mode,
+  });
+  const envFlags = envName
+    ? (normalized.environments[envName]?.flags ?? {})
+    : {};
+
+  const routeFlags: FeatureRouteMap = {};
+  const colors: FeatureColorMap = {};
+  const outlineDefaultsByToken: FeatureBoolByTokenMap = {};
+  const badgeDefaultsByToken: FeatureBoolByTokenMap = {};
+  const resolvedFlags: FeatureFlagMap = {};
+  for (const [flagName, flagDef] of Object.entries(normalized.flags)) {
+    resolvedFlags[flagName] = envFlags[flagName] === true;
+    if (flagDef.color) colors[flagName] = flagDef.color;
+    const token = toToken(flagName);
+    outlineDefaultsByToken[token] = flagDef.outline;
+    badgeDefaultsByToken[token] = flagDef.badge;
+    for (const route of flagDef.routes) {
+      routeFlags[route] = [...(routeFlags[route] ?? []), flagName];
+    }
+  }
+
+  return {
+    namespace: normalized.tokenNamespace || "ff",
+    flags: resolvedFlags,
+    routeFlags,
+    colors,
+    outlineDefaultsByToken,
+    badgeDefaultsByToken,
     mode,
   };
 }
 
 /** Normalize colour map keys (flag names or tokens) to CSS tokens. */
-export function colorsToTokenMap(colors: FeatureColorMap): Record<string, string> {
+export function colorsToTokenMap(
+  colors: FeatureColorMap,
+): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(colors)) {
     out[toToken(key)] = value;
@@ -216,25 +323,51 @@ export interface ResolvedFeatureRuntime {
   routeFlags: FeatureRouteMap;
   /** Outline/badge/route-frame colour per flag token (CSS colour strings). */
   flagColorsByToken: Record<string, string>;
+  /** Default dev chrome state per flag token. */
+  flagOutlineDefaultsByToken: Record<string, boolean>;
+  flagBadgeDefaultsByToken: Record<string, boolean>;
 }
 
 export function resolveFeatureRuntime({
+  jsonConfigPath,
   root = process.cwd(),
-  mode = process.env.NODE_ENV || 'development',
+  mode = process.env.NODE_ENV || "development",
   isDev: isDevOverride,
   env = process.env as Record<string, string | undefined>,
-  baseName = 'ff',
-  ffEnv,
-  defaults,
+  baseName = "ff",
+  fileEnv,
+  tokenNamespace,
+  flags,
+  environments,
 }: ResolveFeatureRuntimeOptions = {}): ResolvedFeatureRuntime {
   const isDev = isDevOverride ?? !isProductionMode(mode);
-  const config = loadFeatureConfig({ root, mode, baseName, ffEnv, defaults });
+  const config = loadFeatureConfig({
+    root,
+    jsonConfigPath,
+    mode,
+    baseName,
+    fileEnv,
+    tokenNamespace,
+    flags,
+    environments,
+  });
   const resolvedFlags: FeatureFlagMap = {};
 
   for (const [key, value] of Object.entries(config.flags)) {
-    const slug = toToken(key).replace(/-/g, '_').toUpperCase();
+    const slug = toToken(key).replace(/-/g, "_").toUpperCase();
     const envKey = `AFF_FEATURE_${slug}`;
     resolvedFlags[key] = toBoolean(env[envKey], Boolean(value));
+  }
+  const envMapRaw = env.ASTRO_FEATURE_FLAGS;
+  if (envMapRaw) {
+    try {
+      const envMap = JSON.parse(envMapRaw) as Record<string, unknown>;
+      for (const [flag, value] of Object.entries(envMap)) {
+        resolvedFlags[flag] = Boolean(value);
+      }
+    } catch {
+      // ignore invalid JSON override
+    }
   }
 
   const colorByToken = colorsToTokenMap(config.colors);
@@ -246,6 +379,8 @@ export function resolveFeatureRuntime({
     flags: resolvedFlags,
     routeFlags: config.routeFlags,
     flagColorsByToken: colorByToken,
+    flagOutlineDefaultsByToken: config.outlineDefaultsByToken,
+    flagBadgeDefaultsByToken: config.badgeDefaultsByToken,
   };
 }
 
@@ -266,7 +401,10 @@ export function shouldRenderFeatureInMode({
   return isFlagEnabled(flags, flag);
 }
 
-export function isRouteFlagged(pathname: string, routeFlags: FeatureRouteMap): boolean {
+export function isRouteFlagged(
+  pathname: string,
+  routeFlags: FeatureRouteMap,
+): boolean {
   const normalized = normalizePath(pathname);
   return Object.keys(routeFlags || {}).some((routePrefix) => {
     const route = routePatternToPrefix(routePrefix);
@@ -287,10 +425,12 @@ export function shouldIncludeRoute({
 }): boolean {
   if (isDev) return true;
   const normalized = normalizePath(pathname);
-  for (const [routePrefix, flagName] of Object.entries(routeFlags || {})) {
+  for (const [routePrefix, flagNames] of Object.entries(routeFlags || {})) {
     const route = routePatternToPrefix(routePrefix);
     if (normalized === route || normalized.startsWith(route)) {
-      return isFlagEnabled(flags, flagName);
+      return (flagNames || []).every((flagName) =>
+        isFlagEnabled(flags, flagName),
+      );
     }
   }
   return true;
@@ -304,15 +444,22 @@ export function routePathsToPrune({
   flags: FeatureFlagMap;
 }): string[] {
   return Object.entries(routeFlags || {})
-    .filter(([, flagName]) => !isFlagEnabled(flags, flagName))
-    .map(([routePath]) => routePatternToPrefix(routePath).replace(/^\/+|\/+$/g, ''))
+    .filter(([, flagNames]) =>
+      (flagNames || []).some((flagName) => !isFlagEnabled(flags, flagName)),
+    )
+    .map(([routePath]) =>
+      routePatternToPrefix(routePath).replace(/^\/+|\/+$/g, ""),
+    )
     .filter(Boolean);
 }
 
 /**
  * Longest `routeFlags` key that matches `pathname` (prefix match, trailing slashes normalized).
  */
-export function longestMatchingRoutePrefix(pathname: string, routeFlags: FeatureRouteMap): string | null {
+export function longestMatchingRoutePrefix(
+  pathname: string,
+  routeFlags: FeatureRouteMap,
+): string | null {
   const normalized = normalizePath(pathname);
   let best: string | null = null;
   let bestLen = -1;

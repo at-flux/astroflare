@@ -1,8 +1,33 @@
 {
-  "flags": { "dev": true, "hotFeature2": true },
-  "routes": { "/": "dev", "/hot/": "hotFeature2" },
-  "colors": {
-    "dev": "rgb(220 38 38)",
-    "hotFeature2": "rgb(37 99 235)"
+  "tokenNamespace": "ff",
+  "flags": {
+    "dev": {
+      "colour": "rgb(220 38 38)",
+      "routes": ["/dev/*", "/hot-dev/*"]
+    },
+    "hotFeature1": {
+      "colour": "rgb(37 99 235)",
+      "routes": ["/hot-feature-1/*"]
+    },
+    "hotFeature2": {
+      "colour": "rgb(34 197 94)",
+      "routes": ["/hot/*", "/hot-dev"]
+    }
+  },
+  "environments": {
+    "dev": {
+      "flags": {
+        "dev": true,
+        "hotFeature1": true,
+        "hotFeature2": true
+      }
+    },
+    "prod": {
+      "flags": {
+        "dev": false,
+        "hotFeature1": true,
+        "hotFeature2": false
+      }
+    }
   }
 }

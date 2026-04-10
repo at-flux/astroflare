@@ -1,7 +1,7 @@
-export type ElementBadgeVerticalAnchor = 'top' | 'bottom';
+export type ElementBadgeVerticalAnchor = "top" | "bottom";
 
 /** Horizontal placement of the element pill: `end` = top-right (LTR), `start` = top-left, `center` = centred. */
-export type ElementBadgeHorizontalAlign = 'start' | 'center' | 'end';
+export type ElementBadgeHorizontalAlign = "start" | "center" | "end";
 
 /** Subset of dev CSS options used for element-badge geometry (also on `DevOutlineCssOptions`). */
 export interface ElementBadgeLayoutOptions {
@@ -26,59 +26,68 @@ export interface ElementBadgeLayoutOptions {
 
 export type NormalizedElementBadgeLayout =
   | {
-      mode: 'align';
+      mode: "align";
       horizontalAlign: ElementBadgeHorizontalAlign;
       verticalShiftPercent: number;
       verticalAnchor: ElementBadgeVerticalAnchor;
     }
   | {
-      mode: 'percent';
+      mode: "percent";
       horizontalPercent: number;
       verticalShiftPercent: number;
       verticalAnchor: ElementBadgeVerticalAnchor;
     };
 
 function clampPercent(n: number, fallback: number): number {
-  if (typeof n !== 'number' || Number.isNaN(n)) return fallback;
+  if (typeof n !== "number" || Number.isNaN(n)) return fallback;
   return Math.min(100, Math.max(0, n));
 }
 
-export function normalizeElementBadgeLayout(input: ElementBadgeLayoutOptions | undefined): NormalizedElementBadgeLayout {
+export function normalizeElementBadgeLayout(
+  input: ElementBadgeLayoutOptions | undefined,
+): NormalizedElementBadgeLayout {
   const v = clampPercent(input?.elementBadgeVerticalShiftPercent ?? 80, 80);
-  const anchor = input?.elementBadgeVerticalAnchor === 'bottom' ? 'bottom' : 'top';
+  const anchor =
+    input?.elementBadgeVerticalAnchor === "bottom" ? "bottom" : "top";
   const hp = input?.elementBadgeHorizontalPercent;
-  if (hp !== undefined && hp !== null && typeof hp === 'number') {
+  if (hp !== undefined && hp !== null && typeof hp === "number") {
     return {
-      mode: 'percent',
+      mode: "percent",
       horizontalPercent: clampPercent(hp, 50),
       verticalShiftPercent: v,
       verticalAnchor: anchor,
     };
   }
   const align: ElementBadgeHorizontalAlign =
-    input?.elementBadgeHorizontalAlign === 'start' || input?.elementBadgeHorizontalAlign === 'center'
+    input?.elementBadgeHorizontalAlign === "start" ||
+    input?.elementBadgeHorizontalAlign === "center"
       ? input.elementBadgeHorizontalAlign
-      : 'end';
+      : "end";
   return {
-    mode: 'align',
+    mode: "align",
     horizontalAlign: align,
     verticalShiftPercent: v,
     verticalAnchor: anchor,
   };
 }
 
-const INSET = '0.35rem';
+const INSET = "0.35rem";
 
 /**
  * `left` / `right` / `top` | `bottom` / `transform` for the element `::before` badge (no trailing newline).
  */
-export function elementBadgePositionBlock(layout: NormalizedElementBadgeLayout): string {
+export function elementBadgePositionBlock(
+  layout: NormalizedElementBadgeLayout,
+): string {
   const { verticalShiftPercent: v, verticalAnchor } = layout;
-  const y = verticalAnchor === 'top' ? `translateY(calc(-1 * ${v}%))` : `translateY(${v}%)`;
+  const y =
+    verticalAnchor === "top"
+      ? `translateY(calc(-1 * ${v}%))`
+      : `translateY(${v}%)`;
 
-  if (layout.mode === 'percent') {
+  if (layout.mode === "percent") {
     const h = layout.horizontalPercent;
-    if (verticalAnchor === 'top') {
+    if (verticalAnchor === "top") {
       return `  left: ${h}%;
   right: auto;
   top: 0;
@@ -93,8 +102,8 @@ export function elementBadgePositionBlock(layout: NormalizedElementBadgeLayout):
   }
 
   const { horizontalAlign } = layout;
-  if (horizontalAlign === 'center') {
-    if (verticalAnchor === 'top') {
+  if (horizontalAlign === "center") {
+    if (verticalAnchor === "top") {
       return `  left: 50%;
   right: auto;
   top: 0;
@@ -107,8 +116,8 @@ export function elementBadgePositionBlock(layout: NormalizedElementBadgeLayout):
   top: auto;
   transform: translateX(-50%) ${y};`;
   }
-  if (horizontalAlign === 'start') {
-    if (verticalAnchor === 'top') {
+  if (horizontalAlign === "start") {
+    if (verticalAnchor === "top") {
       return `  left: ${INSET};
   right: auto;
   top: 0;
@@ -122,7 +131,7 @@ export function elementBadgePositionBlock(layout: NormalizedElementBadgeLayout):
   transform: ${y};`;
   }
   /* end — top-right / bottom-right */
-  if (verticalAnchor === 'top') {
+  if (verticalAnchor === "top") {
     return `  left: auto;
   right: ${INSET};
   top: 0;

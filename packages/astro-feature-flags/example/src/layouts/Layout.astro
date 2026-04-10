@@ -2,37 +2,28 @@
 import {
   affDevBootstrap,
   featureFlagStyles,
-  routeFeatureTokenForPath,
-  shouldIncludePathInProduction,
+  routeFeatureTokensForPath,
 } from 'virtual:astro-feature-flags';
+import '../styles/global.css';
 
 interface Props {
   title?: string;
 }
 
 const { title = 'Feature flags example' } = Astro.props;
-const routeToken = import.meta.env.DEV ? routeFeatureTokenForPath(Astro.url.pathname) : undefined;
-const disabledInProd = import.meta.env.DEV ? !shouldIncludePathInProduction(Astro.url.pathname) : false;
+const routeTokens = routeFeatureTokensForPath(Astro.url.pathname);
 ---
 
 <!doctype html>
-<html lang='en' data-ff-route={routeToken}>
+<html lang='en' data-ff-route={routeTokens.join(' ')}>
   <head>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <title>{title}</title>
-    {import.meta.env.DEV && affDevBootstrap && <script is:inline set:html={affDevBootstrap} />}
+    {affDevBootstrap && <script is:inline set:html={affDevBootstrap} />}
     <style is:inline set:html={featureFlagStyles}></style>
   </head>
-  <body style='font-family: system-ui, sans-serif; margin: 0; line-height: 1.5;'>
-    {
-      disabledInProd && (
-        <dialog open style='position: fixed; top: 1rem; right: 1rem; z-index: 10060; max-width: 26rem; border-radius: 0.75rem; border: 1px solid rgba(220, 38, 38, 0.35); padding: 0.75rem 0.9rem; background: color-mix(in oklab, white 92%, rgb(220 38 38) 8%); color: #111827;'>
-          <strong style='display: block; margin-bottom: 0.35rem;'>Feature-flag warning</strong>
-          This page is currently disabled by flags and will not render in production output.
-        </dialog>
-      )
-    }
+  <body class='min-h-screen bg-slate-100 text-slate-900 antialiased'>
     <slot />
   </body>
 </html>

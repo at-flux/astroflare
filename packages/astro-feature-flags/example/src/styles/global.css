@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@layer components {
+  .ff-shell {
+    @apply mx-auto max-w-3xl px-6 py-8;
+  }
+  .ff-title {
+    @apply mt-0 mb-4 text-3xl font-semibold tracking-tight text-slate-900;
+  }
+  .ff-sub {
+    @apply text-sm leading-6 text-slate-600;
+  }
+  .ff-card {
+    @apply mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900 shadow-sm;
+  }
+  .ff-code {
+    @apply rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-800;
+  }
+  .ff-link {
+    @apply text-indigo-700 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-900;
+  }
+}
