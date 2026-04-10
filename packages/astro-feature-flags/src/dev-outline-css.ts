@@ -27,18 +27,6 @@ export interface DevOutlineCssOptions extends ElementBadgeLayoutOptions {
    * @deprecated Unused: badge does not use container queries.
    */
   badgeMinInlineSize?: string;
-
-  /**
-   * Dev-only full-page frame (`body::after`). `gradient` uses a multi-colour ring; `dotted` uses
-   * `outlineStyle` + `--ff-route-outline` (first route token), no gradient.
-   */
-  routeFrameStyle?: "gradient" | "dotted";
-
-  /**
-   * Multi-token element outline. `gradient` uses a gradient border; `dotted` uses `outlineStyle` +
-   * `--ff-combo-outline` (first combo token).
-   */
-  comboOutlineStyle?: "gradient" | "dotted";
 }
 type NormalizedDevOutlineCssOptions = {
   outlineWidth: string;
@@ -51,8 +39,6 @@ type NormalizedDevOutlineCssOptions = {
   badgeLabelByToken: Record<string, string>;
   hiddenStrategy: DevOutlineHiddenStrategy;
   badgeMinInlineSize: string;
-  routeFrameStyle: "gradient" | "dotted";
-  comboOutlineStyle: "gradient" | "dotted";
 };
 
 const defaultDevOutlineCssOptions: Omit<
@@ -68,8 +54,6 @@ const defaultDevOutlineCssOptions: Omit<
   badgeLabelByToken: {},
   hiddenStrategy: "visibility",
   badgeMinInlineSize: "8rem",
-  routeFrameStyle: "gradient",
-  comboOutlineStyle: "gradient",
 };
 
 function normalizeCssOptions(
@@ -88,10 +72,6 @@ function normalizeCssOptions(
       ...defaultDevOutlineCssOptions.badgeLabelByToken,
       ...(css?.badgeLabelByToken ?? {}),
     },
-    routeFrameStyle:
-      css?.routeFrameStyle ?? defaultDevOutlineCssOptions.routeFrameStyle,
-    comboOutlineStyle:
-      css?.comboOutlineStyle ?? defaultDevOutlineCssOptions.comboOutlineStyle,
   };
 }
 
@@ -230,18 +210,8 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
 `);
   }
 
-  // Multi-token value on a single element: combined badge + outline (gradient or dotted).
-  const comboRing =
-    opts.comboOutlineStyle === "dotted"
-      ? `
-[${nsAttr}*=" "] {
-  position: relative;
-  outline: ${opts.outlineWidth} ${opts.outlineStyle} var(--ff-combo-outline, #64748b);
-  outline-offset: ${opts.outlineOffset};
-  border-radius: ${opts.borderRadius};
-}
-`
-      : `
+  // Multi-token value on a single element: show combined badge text and a gradient outline.
+  chunks.push(`
 [${nsAttr}*=" "] {
   outline: none !important;
   outline-offset: 0 !important;
@@ -251,39 +221,6 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
     var(--ff-combo-gradient, linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0)) border-box;
   border-radius: ${opts.borderRadius};
 }
-`;
-  const routeFrame =
-    opts.routeFrameStyle === "dotted"
-      ? `
-html[data-ff-route]:not([data-ff-route=""]) body::after {
-  content: '';
-  position: fixed;
-  inset: 0.6rem;
-  pointer-events: none;
-  z-index: 10040;
-  border-radius: ${opts.borderRadius};
-  outline: ${opts.outlineWidth} ${opts.outlineStyle} var(--ff-route-outline, #64748b);
-  outline-offset: -2px;
-}
-`
-      : `
-html[data-ff-route]:not([data-ff-route=""]) body::after {
-  content: '';
-  position: fixed;
-  inset: 0.6rem;
-  pointer-events: none;
-  z-index: 10040;
-  padding: 2px;
-  background: var(--ff-route-outline-gradient, linear-gradient(90deg, #ef4444, #3b82f6, #22c55e));
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  border-radius: 0.5rem;
-}
-`;
-  chunks.push(`${comboRing}
 html [${nsAttr}*=" "]::before {
   content: attr(${nsAttr});
   background: var(--ff-combo-badge-gradient, var(--ff-combo-gradient-soft, linear-gradient(90deg, #fff1f2, #eff6ff, #f0fdf4))) !important;
@@ -299,7 +236,21 @@ html [${nsAttr}*=" "]:hover::before {
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
-${routeFrame}
+html[data-ff-route]:not([data-ff-route=""]) body::after {
+  content: '';
+  position: fixed;
+  inset: 0.6rem;
+  pointer-events: none;
+  z-index: 10040;
+  padding: 2px;
+  background: var(--ff-route-outline-gradient, linear-gradient(90deg, #ef4444, #3b82f6, #22c55e));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: 0.5rem;
+}
 html[data-ff-route]:not([data-ff-route=""])::before {
   content: attr(data-ff-route-label);
   position: fixed;
@@ -335,6 +286,10 @@ html[data-ff-route]:not([data-ff-route=""])::before:hover {
   return "\n" + chunks.join("\n") + "\n";
 }
 
+/**
+ * CSS-only hiding for disabled flags. The Astro integration no longer injects this into
+ * production builds — static HTML is culled instead. Kept for custom tooling or tests.
+ */
 export function createProductionGateStyles(
   runtime: ResolvedFeatureRuntime,
 ): string {

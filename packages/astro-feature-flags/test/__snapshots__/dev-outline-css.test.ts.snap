@@ -202,7 +202,6 @@ html[data-ff-enabled-beta="off"] :is([data-snap~="beta"], [data-snap-beta]) {
     var(--ff-combo-gradient, linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0)) border-box;
   border-radius: 0.5rem;
 }
-
 html [data-snap*=" "]::before {
   content: attr(data-snap);
   background: var(--ff-combo-badge-gradient, var(--ff-combo-gradient-soft, linear-gradient(90deg, #fff1f2, #eff6ff, #f0fdf4))) !important;
@@ -218,7 +217,6 @@ html [data-snap*=" "]:hover::before {
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
-
 html[data-ff-route]:not([data-ff-route=""]) body::after {
   content: '';
   position: fixed;
@@ -234,7 +232,6 @@ html[data-ff-route]:not([data-ff-route=""]) body::after {
   mask-composite: exclude;
   border-radius: 0.5rem;
 }
-
 html[data-ff-route]:not([data-ff-route=""])::before {
   content: attr(data-ff-route-label);
   position: fixed;
