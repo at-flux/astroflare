@@ -1,0 +1,270 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`dev-outline-css snapshots > matches stable output for a minimal two-flag runtime 1`] = `
+"
+
+html {
+  --aff-outline-c-dev: transparent;
+}
+html:not([data-ff-outline-dev="off"]) {
+  --aff-outline-c-dev: var(--snap-c-dev, #ff0000);
+}
+[data-snap~="dev"], [data-snap-dev] {
+  position: relative;
+  outline: 2px solid var(--aff-outline-c-dev);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])::before {
+  box-sizing: border-box;
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  width: max-content;
+  max-width: min(18rem, calc(100% - 0.75rem));
+  pointer-events: auto;
+  z-index: 20;
+  left: auto;
+  right: 0.35rem;
+  top: 0;
+  bottom: auto;
+  transform: translateY(calc(-1 * 80%));
+  display: block;
+  content: 'dev';
+  border: 1px solid color-mix(in oklab, var(--snap-c-dev, #ff0000) 60%, transparent);
+  border-radius: 9999px;
+  padding: 0.125rem 0.45rem;
+  font-size: 0.625rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--snap-c-dev, #ff0000);
+  background: color-mix(in oklab, white 85%, var(--snap-c-dev, #ff0000) 15%);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev]):hover::before {
+  opacity: 0.16;
+  background: color-mix(in oklab, white 94%, var(--snap-c-dev, #ff0000) 6%);
+  border-color: color-mix(in oklab, var(--snap-c-dev, #ff0000) 35%, transparent);
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-align="start"]::before {
+  left: 0.35rem;
+  right: auto;
+  transform: translateY(calc(-1 * 80%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-align="center"]::before {
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, calc(-1 * 80%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-align="end"]::before {
+  left: auto;
+  right: 0.35rem;
+  transform: translateY(calc(-1 * 80%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-horizontal]::before {
+  left: calc(attr(data-ff-horizontal number, 50) * 1%);
+  right: auto;
+  transform: translate(-50%, calc(-1 * 80%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-horizontal][data-ff-anchor="bottom"]::before {
+  transform: translate(-50%, 80%);
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"]::before {
+  top: auto;
+  bottom: 0;
+  transform: translateY(80%);
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"][data-ff-align="center"]::before {
+  transform: translate(-50%, 80%);
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-vertical]::before {
+  transform: translateY(calc(attr(data-ff-vertical number, 80) * -1%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-horizontal][data-ff-vertical]::before {
+  transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * -1%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"][data-ff-vertical]::before {
+  transform: translateY(calc(attr(data-ff-vertical number, 80) * 1%));
+}
+html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"][data-ff-horizontal][data-ff-vertical]::before {
+  transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * 1%));
+}
+html[data-ff-enabled-dev="off"] :is([data-snap~="dev"], [data-snap-dev]) {
+  display: none !important;
+}
+
+
+html {
+  --aff-outline-c-beta: transparent;
+}
+html:not([data-ff-outline-beta="off"]) {
+  --aff-outline-c-beta: var(--snap-c-beta, #0000ff);
+}
+[data-snap~="beta"], [data-snap-beta] {
+  position: relative;
+  outline: 2px solid var(--aff-outline-c-beta);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])::before {
+  box-sizing: border-box;
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  width: max-content;
+  max-width: min(18rem, calc(100% - 0.75rem));
+  pointer-events: auto;
+  z-index: 20;
+  left: auto;
+  right: 0.35rem;
+  top: 0;
+  bottom: auto;
+  transform: translateY(calc(-1 * 80%));
+  display: block;
+  content: 'beta';
+  border: 1px solid color-mix(in oklab, var(--snap-c-beta, #0000ff) 60%, transparent);
+  border-radius: 9999px;
+  padding: 0.125rem 0.45rem;
+  font-size: 0.625rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--snap-c-beta, #0000ff);
+  background: color-mix(in oklab, white 85%, var(--snap-c-beta, #0000ff) 15%);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta]):hover::before {
+  opacity: 0.16;
+  background: color-mix(in oklab, white 94%, var(--snap-c-beta, #0000ff) 6%);
+  border-color: color-mix(in oklab, var(--snap-c-beta, #0000ff) 35%, transparent);
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-align="start"]::before {
+  left: 0.35rem;
+  right: auto;
+  transform: translateY(calc(-1 * 80%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-align="center"]::before {
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, calc(-1 * 80%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-align="end"]::before {
+  left: auto;
+  right: 0.35rem;
+  transform: translateY(calc(-1 * 80%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-horizontal]::before {
+  left: calc(attr(data-ff-horizontal number, 50) * 1%);
+  right: auto;
+  transform: translate(-50%, calc(-1 * 80%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-horizontal][data-ff-anchor="bottom"]::before {
+  transform: translate(-50%, 80%);
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-anchor="bottom"]::before {
+  top: auto;
+  bottom: 0;
+  transform: translateY(80%);
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-anchor="bottom"][data-ff-align="center"]::before {
+  transform: translate(-50%, 80%);
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-vertical]::before {
+  transform: translateY(calc(attr(data-ff-vertical number, 80) * -1%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-horizontal][data-ff-vertical]::before {
+  transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * -1%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-anchor="bottom"][data-ff-vertical]::before {
+  transform: translateY(calc(attr(data-ff-vertical number, 80) * 1%));
+}
+html:not([data-ff-badge-beta="off"]) :is([data-snap~="beta"], [data-snap-beta])[data-ff-anchor="bottom"][data-ff-horizontal][data-ff-vertical]::before {
+  transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * 1%));
+}
+html[data-ff-enabled-beta="off"] :is([data-snap~="beta"], [data-snap-beta]) {
+  display: none !important;
+}
+
+
+[data-snap*=" "] {
+  outline: none !important;
+  outline-offset: 0 !important;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    var(--ff-combo-gradient, linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0)) border-box;
+  border-radius: 0.5rem;
+}
+
+html [data-snap*=" "]::before {
+  content: attr(data-snap);
+  background: var(--ff-combo-badge-gradient, var(--ff-combo-gradient-soft, linear-gradient(90deg, #fff1f2, #eff6ff, #f0fdf4))) !important;
+  color: var(--ff-combo-text, #111827) !important;
+  border: 1px solid var(--ff-combo-badge-border, color-mix(in oklab, #94a3b8 50%, transparent)) !important;
+  transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+}
+html [data-snap*=" "][data-ff-label]::before {
+  content: attr(data-ff-label) !important;
+}
+html [data-snap*=" "]:hover::before {
+  opacity: 0.2;
+  background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
+  border-color: color-mix(in oklab, #94a3b8 35%, transparent);
+}
+
+html[data-ff-route]:not([data-ff-route=""]) body::after {
+  content: '';
+  position: fixed;
+  inset: 0.6rem;
+  pointer-events: none;
+  z-index: 10040;
+  padding: 2px;
+  background: var(--ff-route-outline-gradient, linear-gradient(90deg, #ef4444, #3b82f6, #22c55e));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: 0.5rem;
+}
+
+html[data-ff-route]:not([data-ff-route=""])::before {
+  content: attr(data-ff-route-label);
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10060;
+  pointer-events: auto;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  max-width: min(34rem, calc(100vw - 1.5rem));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid var(--ff-route-badge-border, color-mix(in oklab, #94a3b8 55%, transparent));
+  border-radius: 9999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.625rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--ff-route-text, #111827);
+  background: var(--ff-route-badge-gradient, linear-gradient(90deg, #fff1f2));
+  opacity: 1;
+  transition: opacity 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+html[data-ff-route]:not([data-ff-route=""])::before:hover {
+  opacity: 0.2;
+  border-color: color-mix(in oklab, #94a3b8 35%, transparent);
+}
+
+"
+`;

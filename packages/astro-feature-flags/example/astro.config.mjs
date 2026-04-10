@@ -10,7 +10,9 @@ export default defineConfig({
     astroFeatureFlags({
       root: fileURLToPath(new URL('.', import.meta.url)),
       css: {
-        outlineStyle: 'solid',
+        outlineStyle: 'dotted',
+        routeFrameStyle: 'dotted',
+        comboOutlineStyle: 'dotted',
       },
       environments: {
         dev: {
