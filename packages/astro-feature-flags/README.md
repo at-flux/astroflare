@@ -224,12 +224,15 @@ Per-flag env override: `AFF_FEATURE_<TOKEN>` (`hotFeature2` -> `AFF_FEATURE_HOT_
 
 ### DevOutlineCssOptions
 
-| Field                              | Default   | Meaning                                                                                      |
-| ---------------------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| `elementBadgeHorizontalAlign`      | `'end'`   | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                             |
-| `elementBadgeHorizontalPercent`    | _(unset)_ | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.            |
-| `elementBadgeVerticalShiftPercent` | `80`      | Vertical shift as **% of the pill height** (default keeps most of the label above the host). |
-| `elementBadgeVerticalAnchor`       | `'top'`   | `'top'` or `'bottom'`.                                                                       |
+| Field                                             | Default                | Meaning                                                                                          |
+| ------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `elementBadgeHorizontalAlign`                     | `'end'`                | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                                 |
+| `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                |
+| `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the host).     |
+| `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                           |
+| `outlineWidth` / `outlineOffset` / `outlineStyle` | `2px`, `-2px`, `solid` | Single-token outlines and dotted-mode combo/page frames.                                         |
+| `routeFrameStyle`                                 | `'gradient'`           | `'gradient'` (multi-colour ring) or `'dotted'` (uses `outlineStyle` + first route token colour). |
+| `comboOutlineStyle`                               | `'gradient'`           | `'gradient'` border or `'dotted'` outline for multi-token elements.                              |
 
 Per-element badge overrides (markup):
 
