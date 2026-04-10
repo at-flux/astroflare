@@ -9,6 +9,14 @@
     "pnpm": ">=10"
   },
   "workspaces": ["packages/*"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/at-flux/astroflare.git"
+  },
+  "homepage": "https://github.com/at-flux/astroflare#readme",
+  "bugs": {
+    "url": "https://github.com/at-flux/astroflare/issues"
+  },
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
