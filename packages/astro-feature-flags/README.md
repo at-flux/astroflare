@@ -16,6 +16,7 @@ Feature flags for Astro with a declarative config:
 - per-flag declaration (`colour`/`color` for highlighting in Astro's dev mode, optional `routes` for matching pages)
 - named environments (`dev`, `prod`, etc.)
 - element gating via namespaced attributes (`data-ff` or `data-ff-<token>` by default)
+- production static HTML: gated `data-ff` nodes culled, dev-only CSS not shipped (`featureFlagStyles` is empty); `data-ff-route*` stripped from `<html>`
 - route badge + production route pruning
 - dev toolbar for enabled/outline/badge/colour preview
 
@@ -91,6 +92,7 @@ Feature flags for Astro with a declarative config:
 > [!NOTE]
 > Flags are combinatory. If an element has `data-ff="dev hot-feature-2"`, both flags must be enabled.
 > The same applies in dev toolbar preview: turning either one off hides the element.
+> In **production** static builds, nodes that fail that check are **removed from the HTML** (not merely hidden). Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
 
 ## Common Use Cases
 
@@ -224,15 +226,13 @@ Per-flag env override: `AFF_FEATURE_<TOKEN>` (`hotFeature2` -> `AFF_FEATURE_HOT_
 
 ### DevOutlineCssOptions
 
-| Field                                             | Default                | Meaning                                                                                          |
-| ------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| `elementBadgeHorizontalAlign`                     | `'end'`                | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                                 |
-| `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                |
-| `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the host).     |
-| `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                           |
-| `outlineWidth` / `outlineOffset` / `outlineStyle` | `2px`, `-2px`, `solid` | Single-token outlines and dotted-mode combo/page frames.                                         |
-| `routeFrameStyle`                                 | `'gradient'`           | `'gradient'` (multi-colour ring) or `'dotted'` (uses `outlineStyle` + first route token colour). |
-| `comboOutlineStyle`                               | `'gradient'`           | `'gradient'` border or `'dotted'` outline for multi-token elements.                              |
+| Field                                             | Default                | Meaning                                                                                                                                                                                                  |
+| ------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `elementBadgeHorizontalAlign`                     | `'end'`                | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                                                                                                                                         |
+| `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                                                                                                                        |
+| `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the host).                                                                                                             |
+| `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                                                                                                                                   |
+| `outlineWidth` / `outlineOffset` / `outlineStyle` | `2px`, `-2px`, `solid` | **Single-token** dev outlines only (`outline` / `dotted` / `dashed`). Combo (multi-token) element rings and the page route frame always use **solid** gradient rings — these options do not change them. |
 
 Per-element badge overrides (markup):
 
@@ -261,6 +261,8 @@ If your editor misses virtual module types, add one reference in `src/env.d.ts`.
 
 Exports include **`FeatureFlag`**, **`FeatureToken`**, **`affDevBootstrap`**, **`routeFeatureTokenForPath`**, **`routeFeatureTokensForPath`**, **`shouldRenderFeature`**, **`matchedFeatureRoutePrefix`**, **`featureFlagStyles`**, etc.
 
+**`featureFlagStyles`**: dev-only (outlines, badges, route frame). In production it is always an **empty string** — static HTML is cleaned up after build instead (see note above). You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
+
 ## How-to
 
 - `docs/how-to/hide-from-sitemaps.md`
@@ -281,4 +283,4 @@ pnpm test
 pnpm typecheck
 ```
 
-Slow checks that run a real `example` production build (route pruning + SSR `shouldRenderFeature` gating) are documented in [docs/testing.md](./docs/testing.md). Enable them with `ENABLE_SLOW=1`.
+Slow checks that run a real `example` production build plus a small fixture (route pruning, `shouldRenderFeature`, and `data-ff` HTML culling) are documented in [docs/testing.md](./docs/testing.md). Enable them with `ENABLE_SLOW=1`.

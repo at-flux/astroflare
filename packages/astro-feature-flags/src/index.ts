@@ -41,8 +41,13 @@ import {
   createFeatureFlagStyles,
   createProductionGateStyles,
 } from "./dev-outline-css";
+import { applyProductionHtmlCullToDist } from "./production-html-cull";
 
 export { createFeatureFlagStyles, createProductionGateStyles };
+export {
+  cullProductionHtml,
+  applyProductionHtmlCullToDist,
+} from "./production-html-cull";
 
 export interface AstroFeatureFlagsOptions extends ResolveFeatureRuntimeOptions {
   css?: DevOutlineCssOptions;
@@ -61,7 +66,6 @@ export function createVirtualModuleSource(
     .map((name) => `  ${toEnumKey(name)}: ${JSON.stringify(toToken(name))}`)
     .join(",\n");
   const styles = createFeatureFlagStyles(runtime, css);
-  const productionGateStyles = createProductionGateStyles(runtime);
   const colorsJson = JSON.stringify(runtime.flagColorsByToken, null, 2);
   const flagNameToToken = JSON.stringify(
     Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
@@ -205,7 +209,7 @@ export function routeFeatureMatchesForPath(pathname) {
   return Object.values(byFlag);
 }
 
-export const featureFlagStyles = import.meta.env.DEV ? ${JSON.stringify(styles)} : ${JSON.stringify(productionGateStyles)};
+export const featureFlagStyles = import.meta.env.DEV ? ${JSON.stringify(styles)} : "";
 `;
 }
 
@@ -294,7 +298,7 @@ export default function astroFeatureFlags(
       },
       "astro:build:done": ({ dir }: { dir: URL }) => {
         if (runtime.isDev) return;
-        const outDir = new URL(dir).pathname;
+        const outDir = fileURLToPath(dir);
         const prunePaths = routePathsToPrune({
           routeFlags: runtime.routeFlags,
           flags: runtime.flags,
@@ -302,6 +306,7 @@ export default function astroFeatureFlags(
         for (const routePath of prunePaths) {
           rmSync(join(outDir, routePath), { recursive: true, force: true });
         }
+        applyProductionHtmlCullToDist(outDir, runtime);
       },
     },
   };

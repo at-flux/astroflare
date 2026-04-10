@@ -1,0 +1,16 @@
+{
+  "name": "aff-ssr-gate-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prebuild": "pnpm --dir ../../.. build",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@at-flux/astro-feature-flags": "link:../../..",
+    "astro": "^5.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

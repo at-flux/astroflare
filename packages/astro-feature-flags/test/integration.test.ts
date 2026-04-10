@@ -145,7 +145,7 @@ describe("integration exports", () => {
     );
     expect(moduleSource).toContain("export const affDevBootstrap");
     expect(moduleSource).toMatch(
-      /export const featureFlagStyles = import\.meta\.env\.DEV \? [\s\S]+ : [\s\S]+;/,
+      /export const featureFlagStyles = import\.meta\.env\.DEV \? [\s\S]+ : "";/,
     );
     expect(moduleSource).not.toContain("export function featureClass");
   });

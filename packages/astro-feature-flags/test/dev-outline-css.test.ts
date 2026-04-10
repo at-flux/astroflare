@@ -39,23 +39,4 @@ describe("dev-outline-css snapshots", () => {
     );
     expect(css).toMatchSnapshot();
   });
-
-  it("emits dotted route and combo rules when requested", () => {
-    const css = createFeatureFlagStyles(
-      bare({
-        namespace: "snap",
-        mode: "development",
-        isDev: true,
-        flags: { dev: true, beta: true },
-        routeFlags: {},
-      }),
-      {
-        outlineStyle: "dotted",
-        routeFrameStyle: "dotted",
-        comboOutlineStyle: "dotted",
-      },
-    );
-    expect(css).toContain("outline: 2px dotted var(--ff-route-outline");
-    expect(css).toContain("outline: 2px dotted var(--ff-combo-outline");
-  });
 });

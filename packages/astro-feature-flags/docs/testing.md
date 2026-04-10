@@ -16,12 +16,12 @@ pnpm --filter @at-flux/astro-feature-flags test
 pnpm --filter @at-flux/astro-feature-flags exec tsc --noEmit
 ```
 
-## Slow tests (production example build)
+## Slow tests (production builds)
 
-`test/build-output.test.ts` runs `pnpm --dir example build` and asserts:
+`test/build-output.test.ts` runs real Astro production builds and asserts:
 
-- Routes gated by **disabled** flags are **not** present under `example/dist/` after `astro build` (pruning).
-- Markup wrapped in `shouldRenderFeature(...)` for a flag that is off in production **does not** appear in emitted HTML (SSR/build-time gating).
+- **Route pruning:** `pnpm --dir example build` — routes gated by disabled flags are absent under `example/dist/`.
+- **SSR / build-time + declarative gating:** fixture `test/fixtures/ssr-gate-site/` imports `featureFlagStyles` (empty in production). With `hotFeature2` off in prod: **`shouldRenderFeature('hotFeature2')` markup is absent** (compile-time). **`data-ff-*` gated nodes are removed** from emitted static HTML by the integration’s post-build pass (no production gate CSS).
 
 These checks are **off by default** in CI because they shell out to a full Astro production build.
 

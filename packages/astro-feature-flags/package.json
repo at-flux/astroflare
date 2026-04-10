@@ -62,5 +62,8 @@
   "homepage": "https://github.com/at-flux/astroflare/tree/main/packages/astro-feature-flags",
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "node-html-parser": "^7.1.0"
   }
 }

@@ -1,0 +1,26 @@
+---
+import {
+  featureFlagStyles,
+  shouldRenderFeature,
+} from "virtual:astro-feature-flags";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SSR gate fixture</title>
+    <style is:inline set:html={featureFlagStyles}></style>
+  </head>
+  <body>
+    <p>fixture</p>
+    {
+      shouldRenderFeature("hotFeature2") && (
+        <p id="aff-ssr-gate-marker">AFF_SSR_GATE_HOT_FEATURE_2</p>
+      )
+    }
+    <p data-ff-hot-feature-2 id="aff-data-ff-gate">
+      AFF_DATA_FF_GATE_HOT_FEATURE_2
+    </p>
+  </body>
+</html>

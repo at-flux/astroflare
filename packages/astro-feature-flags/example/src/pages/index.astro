@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { FeatureToken, shouldRenderFeature } from "virtual:astro-feature-flags";
+import { FeatureToken } from "virtual:astro-feature-flags";
 import { Code } from "astro:components";
 ---
 
@@ -100,13 +100,5 @@ export default defineConfig({
         >Reset all</strong
       >.
     </p>
-
-    {
-      shouldRenderFeature("hotFeature2") && (
-        <p class="text-xs text-slate-500" data-testid="aff-prod-hot2-marker">
-          AFF_SLOW_BUILD_ASSERT_HOT_FEATURE_2_IN_HTML
-        </p>
-      )
-    }
   </main>
 </Layout>

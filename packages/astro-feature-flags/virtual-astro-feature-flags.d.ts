@@ -9,6 +9,7 @@ declare module "virtual:astro-feature-flags" {
   export const featureNamespace: string;
   export const featureMode: string;
   export const isDev: boolean;
+  /** Dev-only outline/badge CSS; empty string in production (static HTML is culled instead). */
   export const featureFlagStyles: string;
   /** Inline script for dev toolbar + `data-ff-*` on `<html>` (empty string in production). */
   export const affDevBootstrap: string;
