@@ -8,7 +8,9 @@
     "node": "24.x",
     "pnpm": ">=10"
   },
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/at-flux/astroflare.git"
@@ -26,7 +28,8 @@
     "publish:dom": "pnpm --filter @at-flux/dom publish",
     "publish:packages": "pnpm publish -r --access public --filter './packages/*'",
     "format": "prettier --write '**/*.{ts,js,json,md,astro,css}' --ignore-unknown",
-    "format:check": "prettier --check '**/*.{ts,js,json,md,astro,css}' --ignore-unknown"
+    "format:check": "prettier --check '**/*.{ts,js,json,md,astro,css}' --ignore-unknown",
+    "publish:astro-feature-flags": "pnpm --filter @at-flux/astro-feature-flags publish"
   },
   "devDependencies": {
     "@qiwi/multi-semantic-release": "^7.1.2",

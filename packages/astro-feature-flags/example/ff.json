@@ -1,0 +1,8 @@
+{
+  "flags": { "dev": true, "hotFeature2": true },
+  "routes": { "/": "dev", "/hot/": "hotFeature2" },
+  "colors": {
+    "dev": "rgb(220 38 38)",
+    "hotFeature2": "rgb(37 99 235)"
+  }
+}

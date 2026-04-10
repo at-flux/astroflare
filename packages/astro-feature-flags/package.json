@@ -1,0 +1,66 @@
+{
+  "name": "@at-flux/astro-feature-flags",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Typed Astro feature flags from JSON config. Includes environment specific rendering and pruning from elements to entire routes",
+  "author": "atflux <dev@atflux.uk>",
+  "license": "MIT",
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "feature-flags",
+    "typescript",
+    "devtools",
+    "tooling"
+  ],
+  "main": "./dist/index.mjs",
+  "files": [
+    "dist",
+    "src",
+    "docs",
+    "example",
+    "virtual-astro-feature-flags.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.mts",
+      "default": "./dist/runtime.mjs"
+    },
+    "./virtual-astro-feature-flags": {
+      "types": "./virtual-astro-feature-flags.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "astro": "^4.7.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "astro": "^5.18.0",
+    "tsdown": "^0.21.7",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/at-flux/astroflare.git",
+    "directory": "packages/astro-feature-flags"
+  },
+  "bugs": {
+    "url": "https://github.com/at-flux/astroflare/issues"
+  },
+  "homepage": "https://github.com/at-flux/astroflare/tree/main/packages/astro-feature-flags",
+  "publishConfig": {
+    "access": "public"
+  }
+}

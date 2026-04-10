@@ -1,0 +1,20 @@
+{
+  "name": "astro-feature-flags-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --dir .. build",
+    "prebuild": "pnpm --dir .. build",
+    "dev": "astro dev --port 4339",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.18.0",
+    "@at-flux/astro-feature-flags": "link:.."
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "typescript": "^5.9.3"
+  }
+}
