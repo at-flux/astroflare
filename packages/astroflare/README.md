@@ -1,10 +1,12 @@
 # @at-flux/astroflare
 
+[![npm version](https://img.shields.io/npm/v/@at-flux/astroflare.svg)](https://www.npmjs.com/package/@at-flux/astroflare)
+[![CI](https://github.com/at-flux/astroflare/actions/workflows/ci.yml/badge.svg)](https://github.com/at-flux/astroflare/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cloudflare projects.
 
 For type-safe DOM helpers, use the separate package **`@at-flux/dom`**.
-
-**There is no `@at-flux/astroflare/dom` subpath** (it is not published and must not be used). Add `@at-flux/dom` as its own dependency.
 
 ## Package entrypoints
 
