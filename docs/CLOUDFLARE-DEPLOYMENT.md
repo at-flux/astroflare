@@ -13,16 +13,16 @@ _worker.js
 _routes.json
 ```
 
-Without this, deploys can fail with: *Uploading a Pages `_worker.js` directory as an asset*.
+Without this, deploys can fail with: _Uploading a Pages `_worker.js` directory as an asset_.
 
 ## 2. Where each kind of configuration lives
 
-| Kind | Purpose | Typical files / UI |
-|------|-----------|---------------------|
-| **Client / build-time** | Public strings inlined into the browser bundle (no secrets) | Astro `env.schema` + `.env` (optional; can be committed for non-secrets only) |
-| **Local Worker secrets** | Same bindings as production, on your machine | **`.dev.vars`** at project root (gitignored) — used by `wrangler dev` and `astro dev` with `platformProxy` |
-| **Non-secret server config** | Routing, feature flags, email local parts/domains | **`wrangler.jsonc` → `vars`** (often committed; no API keys) |
-| **Secrets** | API keys | **`wrangler secret put <NAME>`** or **Cloudflare dashboard → Workers/Pages → Settings → Variables** (encrypt / secret type) |
+| Kind                         | Purpose                                                     | Typical files / UI                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Client / build-time**      | Public strings inlined into the browser bundle (no secrets) | Astro `env.schema` + `.env` (optional; can be committed for non-secrets only)                                               |
+| **Local Worker secrets**     | Same bindings as production, on your machine                | **`.dev.vars`** at project root (gitignored) — used by `wrangler dev` and `astro dev` with `platformProxy`                  |
+| **Non-secret server config** | Routing, feature flags, email local parts/domains           | **`wrangler.jsonc` → `vars`** (often committed; no API keys)                                                                |
+| **Secrets**                  | API keys                                                    | **`wrangler secret put <NAME>`** or **Cloudflare dashboard → Workers/Pages → Settings → Variables** (encrypt / secret type) |
 
 Do **not** put `RESEND_API_KEY` in `wrangler.jsonc` `vars` if the file is committed.
 
@@ -39,19 +39,19 @@ Do **not** put `RESEND_API_KEY` in `wrangler.jsonc` `vars` if the file is commit
 
 Example shape (as in consuming apps’ action handlers):
 
-| Variable | Role |
-|----------|------|
-| **`RESEND_API_KEY`** | Secret — Resend API key |
-| **`MOCK_EMAIL_INTEGRATION`** | Optional — if `"true"`, the library logs instead of sending (use locally; set **`false`** or omit in production) |
-| **`FORMS_FROM_EMAIL_LOCAL`** | Local part of the sender (e.g. `forms`) |
-| **`FORMS_FROM_EMAIL_DOMAIN`** | Domain (must match Resend-verified domain) |
-| **`FORMS_TO_EMAIL_LOCAL`** | Local part of the recipient inbox |
-| **`FORMS_TO_EMAIL_DOMAIN`** | Recipient domain |
+| Variable                      | Role                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **`RESEND_API_KEY`**          | Secret — Resend API key                                                                                          |
+| **`MOCK_EMAIL_INTEGRATION`**  | Optional — if `"true"`, the library logs instead of sending (use locally; set **`false`** or omit in production) |
+| **`FORMS_FROM_EMAIL_LOCAL`**  | Local part of the sender (e.g. `forms`)                                                                          |
+| **`FORMS_FROM_EMAIL_DOMAIN`** | Domain (must match Resend-verified domain)                                                                       |
+| **`FORMS_TO_EMAIL_LOCAL`**    | Local part of the recipient inbox                                                                                |
+| **`FORMS_TO_EMAIL_DOMAIN`**   | Recipient domain                                                                                                 |
 
 Optional extra (only if you implement a **mailing list** action, not the minimal contact form):
 
-| Variable | Role |
-|----------|------|
+| Variable                              | Role                |
+| ------------------------------------- | ------------------- |
 | **`RESEND_MAILING_LIST_AUDIENCE_ID`** | Resend Audiences ID |
 
 **Local development:** put secrets and `MOCK_EMAIL_INTEGRATION=true` in **`.dev.vars`**. Mirror **`wrangler.jsonc` `vars`** for `FORMS_*` or rely on Wrangler merging vars + `.dev.vars`.
@@ -85,15 +85,15 @@ Inconsistent names can cause confusing overrides in automated deploys.
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
-    "directory": "./dist"
+    "directory": "./dist",
   },
   "vars": {
     "FORMS_FROM_EMAIL_LOCAL": "forms",
     "FORMS_FROM_EMAIL_DOMAIN": "example.com",
     "FORMS_TO_EMAIL_LOCAL": "hello",
     "FORMS_TO_EMAIL_DOMAIN": "example.com",
-    "MOCK_EMAIL_INTEGRATION": "false"
-  }
+    "MOCK_EMAIL_INTEGRATION": "false",
+  },
 }
 ```
 
@@ -153,8 +153,8 @@ Non-secret text variables can be set under **Pages → Settings → Environment 
 
 ### Summary
 
-| Variable | Local | Production (Worker / Pages) |
-|----------|--------|-----------------------------|
+| Variable                            | Local                                            | Production (Worker / Pages)                             |
+| ----------------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
 | `FORMS_*`, `MOCK_EMAIL_INTEGRATION` | `wrangler.jsonc` + optional `.dev.vars` override | `wrangler.jsonc` `vars` and/or dashboard **plain** vars |
-| `RESEND_API_KEY` | `.dev.vars` | `wrangler secret put` or dashboard **Secret** |
-| `RESEND_MAILING_LIST_AUDIENCE_ID` | `.dev.vars` | `wrangler secret put` or dashboard (if used) |
+| `RESEND_API_KEY`                    | `.dev.vars`                                      | `wrangler secret put` or dashboard **Secret**           |
+| `RESEND_MAILING_LIST_AUDIENCE_ID`   | `.dev.vars`                                      | `wrangler secret put` or dashboard (if used)            |

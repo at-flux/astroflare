@@ -20,14 +20,14 @@
 }
 
 .no-save-container::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
 }
 
 a:has(.no-save)::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 2;

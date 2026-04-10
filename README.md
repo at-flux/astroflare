@@ -4,10 +4,10 @@ Monorepo for reusable Astro + Tailwind v4 + Cloudflare Workers libraries.
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [@at-flux/astroflare](packages/astroflare/) | Headless components, styles, and utilities |
-| [@at-flux/dom](packages/dom/) | Type-safe DOM helpers (standalone package; import from `@at-flux/dom`) |
+| Package                                                       | Description                                                                      |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [@at-flux/astroflare](packages/astroflare/)                   | Headless components, styles, and utilities                                       |
+| [@at-flux/dom](packages/dom/)                                 | Type-safe DOM helpers (standalone package; import from `@at-flux/dom`)           |
 | [@at-flux/astro-feature-flags](packages/astro-feature-flags/) | Astro integration for JSON feature flags, route gating, and dev-toolbar previews |
 
 ## Requirements

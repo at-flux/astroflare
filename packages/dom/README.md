@@ -15,5 +15,5 @@ pnpm add @at-flux/dom
 ## Usage
 
 ```ts
-import { getElementById, getElementByQueryOrThrow } from '@at-flux/dom';
+import { getElementById, getElementByQueryOrThrow } from "@at-flux/dom";
 ```
