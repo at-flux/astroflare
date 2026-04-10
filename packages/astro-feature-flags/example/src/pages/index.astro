@@ -1,66 +1,112 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { FeatureFlag, FeatureToken, shouldRenderFeature } from 'virtual:astro-feature-flags';
+import Layout from "../layouts/Layout.astro";
+import { FeatureToken, shouldRenderFeature } from "virtual:astro-feature-flags";
+import { Code } from "astro:components";
 ---
 
-<Layout title='Home'>
-  <main style='padding: 1.5rem; max-width: 40rem'>
-    <h1 style='margin-top: 0'>Feature flags example</h1>
-
-    <p>
-      Config: <code>ff.json</code>, optional <code>ff.&lt;env&gt;.json</code> via <code>FF_ENV</code>. Toolbar: outlines,
-      badges, colours. Route pill: set <code>data-ff-route</code> from <code>routeFeatureTokenForPath</code> (see
-      <code>Layout.astro</code>).
+<Layout title="Home">
+  <main class="ff-shell">
+    <h1 class="ff-title">Astro Feature Flags Integration Example</h1>
+    <p class="ff-sub">
+      The integration is configured in <span class="ff-code"
+        >astro.config.mjs</span
+      >. Flags declare colors and route patterns; environments decide what is
+      enabled.
     </p>
 
-    <div data-ff={FeatureToken.Dev} class='ff-demo-box'>
-      <strong>Dev</strong> — <code>data-ff={FeatureToken.Dev}</code>. Toggle <strong>Outline</strong>: badge stays aligned
-      (host keeps <code>position: relative</code>).
+    <div class="ff-card overflow-x-auto text-xs leading-5">
+      <Code
+        code={`// astro.config.mjs
+import astroFeatureFlags from '@at-flux/astro-feature-flags';
+
+export default defineConfig({
+  integrations: [
+    astroFeatureFlags({
+      root: process.cwd(),
+      flags: {
+        dev: { colour: 'rgb(220 38 38)', routes: ['/dev/*'] },
+        hotFeature1: { colour: 'rgb(37 99 235)', routes: ['/hot-feature-1/*'] },
+        hotFeature2: { colour: 'rgb(34 197 94)', routes: ['/hot/*', '/hot-dev/*'] }
+      },
+      environments: {
+        dev:  { when: process.env.NODE_ENV !== 'production', flags: { dev: true, hotFeature1: true, hotFeature2: true } },
+        prod: { when: process.env.NODE_ENV === 'production', flags: { dev: false, hotFeature1: true, hotFeature2: false } }
+      }
+    })
+  ]
+});`}
+        lang="js"
+      />
     </div>
 
-    <div data-ff={FeatureToken.HotFeature2} class='ff-demo-box'>
-      <strong>hotFeature2</strong> — second colour from <code>ff.json</code>; production can override in
-      <code>ff.prod.json</code>.
+    <h2 class="mt-6 text-lg font-semibold text-slate-900">Element tagging</h2>
+
+    <h3 class="text-base font-semibold text-slate-900 mt-2">Dev</h3>
+    <div data-ff={FeatureToken.Dev} class="ff-card">
+      Imported token: <span class="ff-code"
+        >data-ff=&#123;FeatureToken.Dev&#125;</span>
+    </div>
+    <div data-ff-dev class="ff-card">
+      Shorthand: <span class="ff-code">data-ff-dev</span> <strong>(no import)</strong>
     </div>
 
-    <p class='ff-note'>
-      <strong>SSR gating:</strong> <code>shouldRenderFeature</code> / <code>isFeatureEnabled</code> follow
-      <code>ff.json</code> in dev and prod. The dev toolbar only affects client-side outlines (not server output).
+    <h3 class="text-base font-semibold text-slate-900 mt-4">Hot Feature 1</h3>
+    <div data-ff={FeatureToken.HotFeature1} class="ff-card">
+      Imported token: <span class="ff-code"
+        >data-ff=&#123;FeatureToken.HotFeature1&#125;</span>
+    </div>
+    <div data-ff-hot-feature-1 class="ff-card">
+      Shorthand: <span class="ff-code">data-ff-hot-feature-1</span>
+    </div>
+
+    <h3 class="text-base font-semibold text-slate-900 mt-4">Hot Feature 2</h3>
+    <div data-ff-hot-feature-2 class="ff-card">
+      Shorthand: <span class="ff-code">data-ff-hot-feature-2</span>
+    </div>
+
+    <h3 class="text-base font-semibold text-slate-900 mt-4">Combinations</h3>
+    <div data-ff="hot-feature-1 hot-feature-2" class="ff-card">
+      Shorthand v1: <span class="ff-code"
+        >data-ff="hot-feature-1 hot-feature-2"</span>
+    </div>
+    <div data-ff-hot-feature-1 data-ff-hot-feature-2 class="ff-card">
+      Shorthand v2: <span class="ff-code"
+        >data-ff-hot-feature-1 data-ff-hot-feature-2</span>
+    </div>
+    <div data-ff={[FeatureToken.Dev, FeatureToken.HotFeature1, FeatureToken.HotFeature2].join(' ')} class="ff-card">
+      A combination of all 3: <span class="ff-code"
+        >data-ff={[FeatureToken.Dev, FeatureToken.HotFeature1, FeatureToken.HotFeature2].join(' ')}</span>
+    </div>
+
+    <h2 class="mt-6 text-lg font-semibold text-slate-900">Route examples</h2>
+    <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+      <li>
+        <a class="ff-link" href={`${import.meta.env.BASE_URL}hot-feature-1/`}
+          >Hot Feature 1 route</a>
+      </li>
+      <li>
+        <a class="ff-link" href={`${import.meta.env.BASE_URL}hot/`}
+          >Hot Feature 2 route</a>
+      </li>
+      <li>
+        <a class="ff-link" href={`${import.meta.env.BASE_URL}hot-dev/sub/`}
+          >Hot Dev nested route (dev + hotFeature2)</a>
+      </li>
+    </ul>
+    <p
+      class="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+    >
+      If route badges disappear, open the toolbar and click <strong
+        >Reset all</strong
+      >.
     </p>
 
     {
-      shouldRenderFeature(FeatureFlag.HotFeature2) && (
-        <p class='ff-conditional'>
-          This line is visible because <code>hotFeature2</code> is currently enabled in <code>ff.json</code>.
-          For a hidden example, open <code>/hot/</code> and compare with a production build where
-          <code>ff.prod.json</code> disables that flag.
+      shouldRenderFeature("hotFeature2") && (
+        <p class="text-xs text-slate-500" data-testid="aff-prod-hot2-marker">
+          AFF_SLOW_BUILD_ASSERT_HOT_FEATURE_2_IN_HTML
         </p>
       )
     }
-
-    <p style='margin-top: 1.5rem'>
-      <a href={`${import.meta.env.BASE_URL}hot/`}>Hot route →</a> (route pill uses the mapped flag on <code>/hot/</code>).
-    </p>
   </main>
 </Layout>
-
-<style>
-  .ff-demo-box {
-    margin-top: 1rem;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: color-mix(in oklab, Canvas 96%, CanvasText 4%);
-  }
-  .ff-note {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-  .ff-conditional {
-    margin-top: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px dashed color-mix(in oklab, CanvasText 40%, transparent);
-    font-size: 0.95rem;
-  }
-</style>

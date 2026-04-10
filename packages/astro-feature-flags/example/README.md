@@ -1,11 +1,18 @@
-# Example: static site + GitHub Pages
+# Example
 
-Two flags (`dev`, `hotFeature2`): **`data-ff`**, route pill (`data-ff-route` + `routeFeatureTokenForPath`), toolbar. See parent [`docs/assets/`](../docs/assets/).
+Run locally:
 
-1. Set `base` / `site` in `astro.config.mjs` for GitHub Pages.
-2. `pnpm install` → `pnpm dev`.
-3. `pnpm build` → deploy `dist/`.
+1. `pnpm install`
+2. `pnpm dev`
+3. open `http://localhost:4321/`
 
-**Config:** `ff.json`; `ff.prod.json` (prod); `ff.<FF_ENV>.json` when `FF_ENV` is set (`ffEnv` in config).
+Build:
 
-**Layout:** `Layout.astro` — `featureFlagStyles`, `affDevBootstrap`, `data-ff-route`.
+- `pnpm build`
+
+Pages:
+
+- `/` integration overview
+- `/hot-feature-1/` `hotFeature1` route + shorthand
+- `/hot/` `hotFeature2` route + shorthand
+- `/hot-dev/sub/` wildcard nested route + combined `dev` + `hotFeature2` gating

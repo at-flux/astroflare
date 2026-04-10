@@ -10,11 +10,13 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^5.18.0",
-    "@at-flux/astro-feature-flags": "link:.."
+    "@at-flux/astro-feature-flags": "link:..",
+    "astro": "^5.18.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
+    "@tailwindcss/vite": "^4.2.2",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"
   }
 }

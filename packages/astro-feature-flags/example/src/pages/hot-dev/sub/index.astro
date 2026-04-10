@@ -1,0 +1,21 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title='Hot Dev Sub Page'>
+  <main class='ff-shell'>
+    <h1 class='ff-title'>Hot Dev Nested Page</h1>
+    <p class='ff-sub'>
+      This is a nested route under <code>/hot-dev/*</code>. The route badge is injected automatically via wildcard matching.
+    </p>
+
+    <div data-ff='dev hot-feature-2' class='ff-card'>
+      Combined flags (space-separated): <span class='ff-code'>data-ff="dev hot-feature-2"</span>.
+      This block is visible only when <strong>both</strong> <code>dev</code> and <code>hotFeature2</code> are enabled.
+    </div>
+
+    <p class='mt-6'>
+      <a class='ff-link' href={`${import.meta.env.BASE_URL}hot-dev/`}>← Hot Dev</a>
+    </p>
+  </main>
+</Layout>

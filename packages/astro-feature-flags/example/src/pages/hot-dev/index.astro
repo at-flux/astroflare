@@ -1,0 +1,18 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title='Hot Dev'>
+  <main class='ff-shell'>
+    <h1 class='ff-title'>Hot Dev Route</h1>
+    <p class='ff-sub'>
+      This route matches <code>/hot-dev/*</code>. Use it to verify wildcard route badges and nested pages.
+    </p>
+    <p class='mt-4'>
+      <a class='ff-link' href={`${import.meta.env.BASE_URL}hot-dev/sub/`}>Open nested sub page →</a>
+    </p>
+    <p class='mt-6'>
+      <a class='ff-link' href={`${import.meta.env.BASE_URL}`}>← Home</a>
+    </p>
+  </main>
+</Layout>

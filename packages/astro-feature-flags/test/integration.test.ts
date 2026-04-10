@@ -1,149 +1,188 @@
-import type { ResolvedFeatureRuntime } from '../src/runtime';
-import { describe, expect, it } from 'vitest';
-import astroFeatureFlags, { createFeatureFlagStyles, createVirtualModuleSource, featureRouteIncluded, getResolvedFeatures } from '../src/index';
+import type { ResolvedFeatureRuntime } from "../src/runtime";
+import { describe, expect, it } from "vitest";
+import astroFeatureFlags, {
+  createFeatureFlagStyles,
+  createVirtualModuleSource,
+  featureRouteIncluded,
+  getResolvedFeatures,
+} from "../src/index";
 
-const bare = (r: Omit<ResolvedFeatureRuntime, 'flagColorsByToken'> & Partial<Pick<ResolvedFeatureRuntime, 'flagColorsByToken'>>): ResolvedFeatureRuntime => ({
+const bare = (
+  r: Omit<
+    ResolvedFeatureRuntime,
+    | "flagColorsByToken"
+    | "flagOutlineDefaultsByToken"
+    | "flagBadgeDefaultsByToken"
+  > &
+    Partial<
+      Pick<
+        ResolvedFeatureRuntime,
+        | "flagColorsByToken"
+        | "flagOutlineDefaultsByToken"
+        | "flagBadgeDefaultsByToken"
+      >
+    >,
+): ResolvedFeatureRuntime => ({
   flagColorsByToken: {},
+  flagOutlineDefaultsByToken: {},
+  flagBadgeDefaultsByToken: {},
   ...r,
 });
 
-describe('integration exports', () => {
-  it('resolves runtime and route helper', () => {
+describe("integration exports", () => {
+  it("resolves runtime and route helper", () => {
     const runtime = getResolvedFeatures({
-      mode: 'production',
+      mode: "production",
       isDev: false,
-      defaults: {
-        flags: { dev: false },
-        routeFlags: { '/blog/': 'dev' },
+      flags: {
+        dev: { routes: ["/blog/*"] },
+      },
+      environments: {
+        prod: { flags: { dev: false } },
       },
     });
-    expect(featureRouteIncluded('/blog/post-1/', runtime)).toBe(false);
-    expect(featureRouteIncluded('/about/', runtime)).toBe(true);
+    expect(featureRouteIncluded("/blog/post-1/", runtime)).toBe(false);
+    expect(featureRouteIncluded("/about/", runtime)).toBe(true);
   });
 
-  it('returns an astro integration shape', () => {
+  it("returns an astro integration shape", () => {
     const integration = astroFeatureFlags();
-    expect(integration.name).toBe('astro-feature-flags');
-    expect(typeof integration.hooks['astro:config:setup']).toBe('function');
-    expect(typeof integration.hooks['astro:build:done']).toBe('function');
+    expect(integration.name).toBe("astro-feature-flags");
+    expect(typeof integration.hooks["astro:config:setup"]).toBe("function");
+    expect(typeof integration.hooks["astro:build:done"]).toBe("function");
   });
 
-  it('generates data-ff selectors and css variables per token', () => {
+  it("generates namespaced data selectors and css variables per token", () => {
     const css = createFeatureFlagStyles(
       bare({
-        namespace: 'demo-feat',
-        mode: 'development',
+        namespace: "demo-feat",
+        mode: "development",
         isDev: true,
         flags: { dev: false, shinyNewFeature: true, anotherFlag: false },
         routeFlags: {},
       }),
       {
-        outlineColor: '#00ff00',
-        badgeLabelDev: 'DEV!',
-        badgeLabelByToken: { 'shiny-new-feature': 'Shiny' },
-        hiddenStrategy: 'display',
-      }
+        outlineColor: "#00ff00",
+        badgeLabelDev: "DEV!",
+        badgeLabelByToken: { "shiny-new-feature": "Shiny" },
+        hiddenStrategy: "display",
+      },
     );
 
-    expect(css).toContain('[data-ff~="dev"]');
-    expect(css).toContain('[data-ff~="shiny-new-feature"]');
-    expect(css).toContain('[data-ff~="another-flag"]');
+    expect(css).toContain('[data-demo-feat~="dev"]');
+    expect(css).toContain('[data-demo-feat~="shinyNewFeature"]');
+    expect(css).toContain('[data-demo-feat~="shiny-new-feature"]');
+    expect(css).toContain('[data-demo-feat~="another-flag"]');
     expect(css).toContain("content: 'DEV!'");
     expect(css).toContain("content: 'Shiny'");
-    expect(css).toContain('--aff-c-dev');
-    expect(css).toContain('--aff-outline-c-dev: transparent');
-    expect(css).toContain('outline: 2px dashed var(--aff-outline-c-dev)');
-    expect(css).toContain('outline-offset: -2px');
-    expect(css).toContain('position: absolute');
-    expect(css).toContain('right: 0.35rem');
-    expect(css).toContain('translateY(calc(-1 * 80%))');
-    expect(css).toContain('html[data-ff-route=');
-    expect(css).toContain('position: fixed');
-    expect(css).toContain('data-ff-enabled-');
-    expect(css).toContain('[data-ff~="dev"]:hover::before');
-    expect(css).toContain('::before:hover');
-    expect(css).toContain('pointer-events: auto');
-    expect(css).toContain('[data-ff~="dev"]');
-    expect(css).toContain('position: relative');
+    expect(css).toContain("--demo-feat-c-dev");
+    expect(css).toContain("--aff-outline-c-dev: transparent");
+    expect(css).toContain("outline: 2px solid var(--aff-outline-c-dev)");
+    expect(css).toContain("outline-offset: -2px");
+    expect(css).toContain("position: absolute");
+    expect(css).toContain("right: 0.35rem");
+    expect(css).toContain("translateY(calc(-1 * 80%))");
+    expect(css).toContain(
+      'html[data-ff-route]:not([data-ff-route=""])::before',
+    );
+    expect(css).toContain("position: fixed");
+    expect(css).toContain("data-ff-enabled-");
+    expect(css).toContain(
+      ':is([data-demo-feat~="dev"], [data-demo-feat-dev]):hover::before',
+    );
+    expect(css).toContain(
+      'html[data-ff-route]:not([data-ff-route=""])::before:hover',
+    );
+    expect(css).toContain("pointer-events: auto");
+    expect(css).toContain('[data-demo-feat~="dev"]');
+    expect(css).toContain("position: relative");
   });
 
-  it('uses per-token colours from runtime for outlines when set', () => {
+  it("uses per-token colours from runtime for outlines when set", () => {
     const css = createFeatureFlagStyles(
       bare({
-        namespace: 'x',
-        mode: 'development',
+        namespace: "x",
+        mode: "development",
         isDev: true,
         flags: { dev: true, beta: true },
         routeFlags: {},
-        flagColorsByToken: { dev: '#ff0000', beta: '#0000ff' },
-      })
+        flagColorsByToken: { dev: "#ff0000", beta: "#0000ff" },
+      }),
     );
-    expect(css).toContain('var(--aff-c-dev, #ff0000)');
-    expect(css).toContain('var(--aff-c-beta, #0000ff)');
+    expect(css).toContain("var(--x-c-dev, #ff0000)");
+    expect(css).toContain("var(--x-c-beta, #0000ff)");
   });
 
-  it('includes customized CSS in virtual module source', () => {
+  it("includes customized CSS in virtual module source", () => {
     const runtime = bare({
-      namespace: 'demo-feat',
-      mode: 'development',
+      namespace: "demo-feat",
+      mode: "development",
       isDev: true,
       flags: { dev: false, shinyNewFeature: true },
       routeFlags: {},
     });
 
     const moduleSource = createVirtualModuleSource(runtime, {
-      outlineColor: '#00ff00',
-      badgeLabelDev: 'DEV!',
-      badgeLabelByToken: { 'shiny-new-feature': 'Shiny' },
-      hiddenStrategy: 'display',
+      outlineColor: "#00ff00",
+      badgeLabelDev: "DEV!",
+      badgeLabelByToken: { "shiny-new-feature": "Shiny" },
+      hiddenStrategy: "display",
     });
 
     expect(moduleSource).toContain("content: 'DEV!'");
     expect(moduleSource).toContain("content: 'Shiny'");
-    expect(moduleSource).toContain('[data-ff~=');
-    expect(moduleSource).toContain('export const featureFlagTokens');
-    expect(moduleSource).toContain('export const featureFlagColors');
-    expect(moduleSource).toContain('export function matchedFeatureRoutePrefix(pathname)');
-    expect(moduleSource).toContain('export function routeFeatureTokenForPath(pathname)');
-    expect(moduleSource).toContain('export function shouldIncludePathInProduction(pathname)');
-    expect(moduleSource).toContain('export const affDevBootstrap');
-    expect(moduleSource).toMatch(/export const featureFlagStyles = import\.meta\.env\.DEV \? [\s\S]+ : '';/);
-    expect(moduleSource).not.toContain('export function featureClass');
-  });
-
-  it('defaults outline-offset inside the box', () => {
-    const css = createFeatureFlagStyles(
-      bare({
-        namespace: 't',
-        mode: 'development',
-        isDev: true,
-        flags: { dev: true },
-        routeFlags: {},
-      })
+    expect(moduleSource).toContain("[data-demo-feat~=");
+    expect(moduleSource).toContain("export const featureFlagTokens");
+    expect(moduleSource).toContain("export const featureFlagColors");
+    expect(moduleSource).toContain(
+      "export function matchedFeatureRoutePrefix(pathname)",
     );
-    expect(css).toContain('outline-offset: -2px');
+    expect(moduleSource).toContain(
+      "export function routeFeatureTokenForPath(pathname)",
+    );
+    expect(moduleSource).toContain(
+      "export function shouldIncludePathInProduction(pathname)",
+    );
+    expect(moduleSource).toContain("export const affDevBootstrap");
+    expect(moduleSource).toMatch(
+      /export const featureFlagStyles = import\.meta\.env\.DEV \? [\s\S]+ : [\s\S]+;/,
+    );
+    expect(moduleSource).not.toContain("export function featureClass");
   });
 
-  it('allows positive outlineOffset override', () => {
+  it("defaults outline-offset inside the box", () => {
     const css = createFeatureFlagStyles(
       bare({
-        namespace: 't',
-        mode: 'development',
+        namespace: "t",
+        mode: "development",
         isDev: true,
         flags: { dev: true },
         routeFlags: {},
       }),
-      { outlineOffset: '4px' }
     );
-    expect(css).toContain('outline-offset: 4px');
-    expect(css).not.toContain('outline-offset: -2px');
+    expect(css).toContain("outline-offset: -2px");
   });
 
-  it('applies custom element badge layout from css options', () => {
+  it("allows positive outlineOffset override", () => {
     const css = createFeatureFlagStyles(
       bare({
-        namespace: 'ns',
-        mode: 'development',
+        namespace: "t",
+        mode: "development",
+        isDev: true,
+        flags: { dev: true },
+        routeFlags: {},
+      }),
+      { outlineOffset: "4px" },
+    );
+    expect(css).toContain("outline-offset: 4px");
+    expect(css).not.toContain("outline-offset: -2px");
+  });
+
+  it("applies custom element badge layout from css options", () => {
+    const css = createFeatureFlagStyles(
+      bare({
+        namespace: "ns",
+        mode: "development",
         isDev: true,
         flags: { dev: true },
         routeFlags: {},
@@ -151,27 +190,31 @@ describe('integration exports', () => {
       {
         elementBadgeHorizontalPercent: 10,
         elementBadgeVerticalShiftPercent: 50,
-        elementBadgeVerticalAnchor: 'bottom',
-      }
+        elementBadgeVerticalAnchor: "bottom",
+      },
     );
-    expect(css).toContain('left: 10%');
-    expect(css).toContain('translateY(50%)');
-    expect(css).toContain('bottom: 0');
+    expect(css).toContain("left: 10%");
+    expect(css).toContain("translateY(50%)");
+    expect(css).toContain("bottom: 0");
   });
 
-  it('includes route badge and enabled-off rules for each flag token', () => {
+  it("includes route badge and enabled-off rules for each flag token", () => {
     const css = createFeatureFlagStyles(
       bare({
-        namespace: 'ns',
-        mode: 'development',
+        namespace: "ns",
+        mode: "development",
         isDev: true,
         flags: { dev: true, beta: true },
         routeFlags: {},
-      })
+      }),
     );
-    expect(css).toContain('html[data-ff-route="dev"]:not([data-ff-badge-dev="off"])::before');
-    expect(css).toContain('[data-ff~="dev"]');
-    expect(css).toContain('[data-ff~="beta"]');
-    expect(css).toContain('html[data-ff-enabled-dev="off"] [data-ff~="dev"]');
+    expect(css).toContain(
+      'html[data-ff-route]:not([data-ff-route=""])::before',
+    );
+    expect(css).toContain('[data-ns~="dev"]');
+    expect(css).toContain('[data-ns~="beta"]');
+    expect(css).toContain(
+      'html[data-ff-enabled-dev="off"] :is([data-ns~="dev"], [data-ns-dev])',
+    );
   });
 });
