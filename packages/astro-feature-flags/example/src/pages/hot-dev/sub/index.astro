@@ -9,9 +9,9 @@ import Layout from '../../../layouts/Layout.astro';
       This is a nested route under <code>/hot-dev/*</code>. The route badge is injected automatically via wildcard matching.
     </p>
 
-    <div data-ff='dev hot-feature-2' class='ff-card'>
-      Combined flags (space-separated): <span class='ff-code'>data-ff="dev hot-feature-2"</span>.
-      This block is visible only when <strong>both</strong> <code>dev</code> and <code>hotFeature2</code> are enabled.
+    <div data-ff='wip hot-feature-2' class='ff-card'>
+      Combined flags (space-separated): <span class='ff-code'>data-ff="wip hot-feature-2"</span>.
+      This block is visible only when <strong>both</strong> <code>wip</code> and <code>hotFeature2</code> are enabled (outside the reserved <code>dev</code> environment layer, both must be on in config).
     </div>
 
     <p class='mt-6'>

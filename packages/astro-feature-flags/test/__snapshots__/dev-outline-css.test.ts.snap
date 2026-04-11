@@ -4,18 +4,18 @@ exports[`dev-outline-css snapshots > matches stable output for a minimal two-fla
 "
 
 html {
-  --aff-outline-c-dev: transparent;
+  --aff-outline-c-wip: transparent;
 }
-html:not([data-ff-outline-dev="off"]) {
-  --aff-outline-c-dev: var(--snap-c-dev, #ff0000);
+html:not([data-ff-outline-wip="off"]) {
+  --aff-outline-c-wip: var(--snap-c-wip, #ff0000);
 }
-[data-snap~="dev"], [data-snap-dev] {
+[data-snap~="wip"], [data-snap-wip] {
   position: relative;
-  outline: 2px solid var(--aff-outline-c-dev);
+  outline: 2px solid var(--aff-outline-c-wip);
   outline-offset: -2px;
   border-radius: 0.5rem;
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])::before {
   box-sizing: border-box;
   position: absolute;
   inset: auto;
@@ -30,70 +30,70 @@ html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])::be
   bottom: auto;
   transform: translateY(calc(-1 * 80%));
   display: block;
-  content: 'dev';
-  border: 1px solid color-mix(in oklab, var(--snap-c-dev, #ff0000) 60%, transparent);
+  content: 'wip';
+  border: 1px solid color-mix(in oklab, var(--snap-c-wip, #ff0000) 60%, transparent);
   border-radius: 9999px;
   padding: 0.125rem 0.45rem;
   font-size: 0.625rem;
   line-height: 1.2;
   letter-spacing: 0.02em;
   font-weight: 600;
-  color: var(--snap-c-dev, #ff0000);
-  background: color-mix(in oklab, white 85%, var(--snap-c-dev, #ff0000) 15%);
+  color: var(--snap-c-wip, #ff0000);
+  background: color-mix(in oklab, white 85%, var(--snap-c-wip, #ff0000) 15%);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev]):hover::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip]):hover::before {
   opacity: 0.16;
-  background: color-mix(in oklab, white 94%, var(--snap-c-dev, #ff0000) 6%);
-  border-color: color-mix(in oklab, var(--snap-c-dev, #ff0000) 35%, transparent);
+  background: color-mix(in oklab, white 94%, var(--snap-c-wip, #ff0000) 6%);
+  border-color: color-mix(in oklab, var(--snap-c-wip, #ff0000) 35%, transparent);
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-align="start"]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-align="start"]::before {
   left: 0.35rem;
   right: auto;
   transform: translateY(calc(-1 * 80%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-align="center"]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-align="center"]::before {
   left: 50%;
   right: auto;
   transform: translate(-50%, calc(-1 * 80%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-align="end"]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-align="end"]::before {
   left: auto;
   right: 0.35rem;
   transform: translateY(calc(-1 * 80%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-horizontal]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-horizontal]::before {
   left: calc(attr(data-ff-horizontal number, 50) * 1%);
   right: auto;
   transform: translate(-50%, calc(-1 * 80%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-horizontal][data-ff-anchor="bottom"]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-horizontal][data-ff-anchor="bottom"]::before {
   transform: translate(-50%, 80%);
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-anchor="bottom"]::before {
   top: auto;
   bottom: 0;
   transform: translateY(80%);
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"][data-ff-align="center"]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-anchor="bottom"][data-ff-align="center"]::before {
   transform: translate(-50%, 80%);
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-vertical]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-vertical]::before {
   transform: translateY(calc(attr(data-ff-vertical number, 80) * -1%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-horizontal][data-ff-vertical]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-horizontal][data-ff-vertical]::before {
   transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * -1%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"][data-ff-vertical]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-anchor="bottom"][data-ff-vertical]::before {
   transform: translateY(calc(attr(data-ff-vertical number, 80) * 1%));
 }
-html:not([data-ff-badge-dev="off"]) :is([data-snap~="dev"], [data-snap-dev])[data-ff-anchor="bottom"][data-ff-horizontal][data-ff-vertical]::before {
+html:not([data-ff-badge-wip="off"]) :is([data-snap~="wip"], [data-snap-wip])[data-ff-anchor="bottom"][data-ff-horizontal][data-ff-vertical]::before {
   transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * 1%));
 }
-html[data-ff-enabled-dev="off"] :is([data-snap~="dev"], [data-snap-dev]) {
+html[data-ff-enabled-wip="off"] :is([data-snap~="wip"], [data-snap-wip]) {
   display: none !important;
 }
 
@@ -264,10 +264,10 @@ html[data-ff-route]:not([data-ff-route=""])::before:hover {
 }
 
 
-[data-ff-route~="dev"][data-ff-outline-dev="off"] body::after {
+[data-ff-route~="wip"][data-ff-outline-wip="off"] body::after {
   display: none !important;
 }
-[data-ff-route~="dev"][data-ff-badge-dev="off"]::before {
+[data-ff-route~="wip"][data-ff-badge-wip="off"]::before {
   display: none !important;
 }
 

@@ -8,6 +8,7 @@ const bare = (
     | "flagColorsByToken"
     | "flagOutlineDefaultsByToken"
     | "flagBadgeDefaultsByToken"
+    | "activeEnvironment"
   > &
     Partial<
       Pick<
@@ -17,12 +18,19 @@ const bare = (
         | "flagBadgeDefaultsByToken"
       >
     >,
-): ResolvedFeatureRuntime => ({
-  flagColorsByToken: {},
-  flagOutlineDefaultsByToken: {},
-  flagBadgeDefaultsByToken: {},
-  ...r,
-});
+): ResolvedFeatureRuntime => {
+  const activeEnvironment =
+    (r as { activeEnvironment?: string }).activeEnvironment ??
+    (r.isDev ? "dev" : "prod");
+  return {
+    flagColorsByToken: {},
+    flagOutlineDefaultsByToken: {},
+    flagBadgeDefaultsByToken: {},
+    ...r,
+    activeEnvironment,
+    isDev: r.isDev ?? activeEnvironment === "dev",
+  };
+};
 
 describe("dev-outline-css snapshots", () => {
   it("matches stable output for a minimal two-flag runtime", () => {
@@ -31,11 +39,11 @@ describe("dev-outline-css snapshots", () => {
         namespace: "snap",
         mode: "development",
         isDev: true,
-        flags: { dev: true, beta: false },
+        flags: { wip: true, beta: false },
         routeFlags: {},
-        flagColorsByToken: { dev: "#ff0000", beta: "#0000ff" },
+        flagColorsByToken: { wip: "#ff0000", beta: "#0000ff" },
       }),
-      { outlineOffset: "-2px", badgeLabelDev: "dev" },
+      { outlineOffset: "-2px", badgeLabelWip: "wip" },
     );
     expect(css).toMatchSnapshot();
   });

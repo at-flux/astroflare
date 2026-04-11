@@ -9,6 +9,7 @@ const bare = (
     | "flagColorsByToken"
     | "flagOutlineDefaultsByToken"
     | "flagBadgeDefaultsByToken"
+    | "activeEnvironment"
   > &
     Partial<
       Pick<
@@ -18,12 +19,19 @@ const bare = (
         | "flagBadgeDefaultsByToken"
       >
     >,
-): ResolvedFeatureRuntime => ({
-  flagColorsByToken: {},
-  flagOutlineDefaultsByToken: {},
-  flagBadgeDefaultsByToken: {},
-  ...r,
-});
+): ResolvedFeatureRuntime => {
+  const activeEnvironment =
+    (r as { activeEnvironment?: string }).activeEnvironment ??
+    (r.isDev ? "dev" : "prod");
+  return {
+    flagColorsByToken: {},
+    flagOutlineDefaultsByToken: {},
+    flagBadgeDefaultsByToken: {},
+    ...r,
+    activeEnvironment,
+    isDev: r.isDev ?? activeEnvironment === "dev",
+  };
+};
 
 describe("cullProductionHtml", () => {
   it("removes elements gated by a disabled flag (shorthand attribute)", () => {
@@ -48,7 +56,7 @@ describe("cullProductionHtml", () => {
 
   it("removes elements when any token in data-ff value is disabled (combinatory)", () => {
     const html = `<!DOCTYPE html><html><body>
-      <p data-ff="dev hot-feature-2">combo</p>
+      <p data-ff="wip hot-feature-2">combo</p>
     </body></html>`;
     const out = cullProductionHtml(
       html,
@@ -56,7 +64,7 @@ describe("cullProductionHtml", () => {
         namespace: "ff",
         mode: "production",
         isDev: false,
-        flags: { dev: true, hotFeature2: false },
+        flags: { wip: true, hotFeature2: false },
         routeFlags: {},
       }),
     );
@@ -90,11 +98,11 @@ describe("cullProductionHtml", () => {
         namespace: "ff",
         mode: "production",
         isDev: false,
-        flags: { dev: false },
+        flags: { wip: false },
         routeFlags: {},
       }),
       undefined,
-      { dev: false },
+      { prod: { wip: false } },
     );
     expect(src).toContain(
       "export const featureFlagStyles = import.meta.env.DEV ? ",

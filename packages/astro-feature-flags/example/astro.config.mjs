@@ -8,14 +8,14 @@ export default defineConfig({
   trailingSlash: "always",
   integrations: [
     astroFeatureFlags({
-      root: fileURLToPath(new URL(".", import.meta.url)),
+      configRoot: fileURLToPath(new URL(".", import.meta.url)),
+      jsonConfigPath: "ff.json",
       css: {
         outlineStyle: "solid",
       },
+      // Reserved `dev` is injected. Optional per-layer JSON: `environments.<name>.jsonConfigPath`.
+      // Exactly one `when: true` for this `mode` unless you pin with forceEnvironment / AFF_ENVIRONMENT.
       environments: {
-        dev: {
-          when: process.env.NODE_ENV !== "production",
-        },
         prod: {
           when: process.env.NODE_ENV === "production",
         },
