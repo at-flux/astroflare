@@ -46,4 +46,4 @@ export default defineConfig({
 
 You can still place `astroFeatureFlags(featureFlagOptions)` anywhere in `integrations`; the key is that `featureRouteIncluded(pathname, featureRuntime)` has access to the resolved runtime object.
 
-If the sitemap plugin runs with a `mode` where the active layer is not the one you want for URL filtering, pass **`forceEnvironment`** (same as anywhere else you pin a layer), for example `getResolvedFeatures({ ...featureFlagOptions, mode: "development", forceEnvironment: "prod" })`. Behaviour is covered by **`test/sitemap-route-filter.test.ts`** in this package.
+If the sitemap plugin runs with a `mode` where the active layer is not the one you want for URL filtering, pass **`forceEnvironment`** (it wins over **`AFF_ENVIRONMENT`** when both are set), for example `getResolvedFeatures({ ...featureFlagOptions, mode: "development", forceEnvironment: "prod" })`. Behaviour is covered by **`test/sitemap-route-filter.test.ts`** in this package.
