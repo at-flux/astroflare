@@ -93,6 +93,8 @@ describe("cullProductionHtml", () => {
         flags: { dev: false },
         routeFlags: {},
       }),
+      undefined,
+      { dev: false },
     );
     expect(src).toContain(
       "export const featureFlagStyles = import.meta.env.DEV ? ",

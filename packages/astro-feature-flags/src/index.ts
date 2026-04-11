@@ -13,6 +13,7 @@ import type {
   NormalizedElementBadgeLayout,
 } from "./badge-layout";
 import {
+  type FeatureFlagMap,
   type ResolveFeatureRuntimeOptions,
   type ResolvedFeatureRuntime,
   resolveFeatureRuntime,
@@ -56,6 +57,7 @@ export interface AstroFeatureFlagsOptions extends ResolveFeatureRuntimeOptions {
 export function createVirtualModuleSource(
   runtime: ResolvedFeatureRuntime,
   css?: DevOutlineCssOptions,
+  productionFlags: FeatureFlagMap = runtime.flags,
 ): string {
   const flagNames = Object.keys(runtime.flags);
   const flagTokens = flagNames.map((name) => toToken(name));
@@ -80,6 +82,7 @@ export function createVirtualModuleSource(
     { ...runtime.routeFlags },
     Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
     runtime.namespace,
+    productionFlags,
   );
 
   return `function affRoutePatternToPrefix(pattern) {
@@ -101,6 +104,7 @@ ${tokenEntries}
 export const featureFlagTokens = Object.freeze(${JSON.stringify(flagTokens)});
 export const featureFlagColors = Object.freeze(${colorsJson});
 export const featureFlags = Object.freeze(${JSON.stringify(runtime.flags, null, 2)});
+export const featureFlagsProduction = Object.freeze(${JSON.stringify(productionFlags, null, 2)});
 export const featureRouteFlags = Object.freeze(${JSON.stringify(runtime.routeFlags, null, 2)});
 export const featureNamespace = ${JSON.stringify(runtime.namespace)};
 export const featureMode = ${JSON.stringify(runtime.mode)};
@@ -136,12 +140,16 @@ export function shouldIncludePath(pathname) {
   return true;
 }
 
+export function isFeatureEnabledProduction(flag) {
+  return Boolean(featureFlagsProduction[flag]);
+}
+
 export function shouldIncludePathInProduction(pathname) {
   const normalized = pathname.endsWith('/') ? pathname : pathname + '/';
   for (const [route, flags] of Object.entries(featureRouteFlags)) {
     const candidate = affRoutePatternToPrefix(route);
     if (normalized === candidate || normalized.startsWith(candidate)) {
-      return flags.every((flag) => isFeatureEnabled(flag));
+      return flags.every((flag) => isFeatureEnabledProduction(flag));
     }
   }
   return true;
@@ -231,6 +239,7 @@ export function featureRouteIncluded(
   });
 }
 
+export type { FeatureFlagMap } from "./runtime";
 export { longestMatchingRoutePrefix, routePatternToPrefix } from "./runtime";
 
 export default function astroFeatureFlags(
@@ -287,7 +296,18 @@ export default function astroFeatureFlags(
                 },
                 load(id: string) {
                   if (id === "\0virtual:astro-feature-flags") {
-                    return createVirtualModuleSource(runtime, css);
+                    const prodRuntime = resolveFeatureRuntime({
+                      ...options,
+                      root,
+                      mode: "production",
+                      isDev: false,
+                      baseName,
+                    });
+                    return createVirtualModuleSource(
+                      runtime,
+                      css,
+                      prodRuntime.flags,
+                    );
                   }
                   return null;
                 },

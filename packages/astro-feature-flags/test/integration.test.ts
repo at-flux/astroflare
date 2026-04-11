@@ -113,6 +113,23 @@ describe("integration exports", () => {
     expect(css).toContain("var(--x-c-beta, #0000ff)");
   });
 
+  it("embeds production flags for shouldIncludePathInProduction and bootstrap overlay", () => {
+    const runtime = bare({
+      namespace: "ff",
+      mode: "development",
+      isDev: true,
+      flags: { dev: true, hotFeature2: true },
+      routeFlags: { "/hot/*": ["hotFeature2"] },
+    });
+    const prodFlags = { dev: true, hotFeature2: false };
+    const src = createVirtualModuleSource(runtime, undefined, prodFlags);
+    expect(src).toContain("export const featureFlagsProduction");
+    expect(src).toContain('"hotFeature2": false');
+    expect(src).toMatch(
+      /shouldIncludePathInProduction\([\s\S]+isFeatureEnabledProduction/,
+    );
+  });
+
   it("includes customized CSS in virtual module source", () => {
     const runtime = bare({
       namespace: "demo-feat",
@@ -133,6 +150,10 @@ describe("integration exports", () => {
     expect(moduleSource).toContain("content: 'Shiny'");
     expect(moduleSource).toContain("[data-demo-feat~=");
     expect(moduleSource).toContain("export const featureFlagTokens");
+    expect(moduleSource).toContain("export const featureFlagsProduction");
+    expect(moduleSource).toContain(
+      "export function isFeatureEnabledProduction",
+    );
     expect(moduleSource).toContain("export const featureFlagColors");
     expect(moduleSource).toContain(
       "export function matchedFeatureRoutePrefix(pathname)",
