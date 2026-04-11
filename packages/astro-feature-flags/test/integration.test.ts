@@ -60,7 +60,7 @@ describe("integration exports", () => {
     expect(typeof integration.hooks["astro:build:done"]).toBe("function");
   });
 
-  it("registers head-inline dev chrome via injectScript when command is dev", () => {
+  it("registers head-inline dev toolbar bundle via injectScript when command is dev", () => {
     const integration = astroFeatureFlags({
       mode: "development",
       flags: { only: {} },

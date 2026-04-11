@@ -18,7 +18,7 @@ export interface DevOutlineCssOptions extends ElementBadgeLayoutOptions {
   outlineOffset?: string;
   borderRadius?: string;
 
-  /** Default pill text for the `wip` flag token in dev chrome. */
+  /** Default pill text for the `wip` flag token in the dev toolbar. */
   badgeLabelWip?: string;
   /** @deprecated Use {@link badgeLabelWip}. */
   badgeLabelDev?: string;

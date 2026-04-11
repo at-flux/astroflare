@@ -466,7 +466,7 @@ export interface ResolvedFeatureRuntime {
   routeFlags: FeatureRouteMap;
   /** Outline/badge/route-frame colour per flag token (CSS colour strings). */
   flagColorsByToken: Record<string, string>;
-  /** Default dev chrome state per flag token. */
+  /** Default dev-toolbar outline/badge state per flag token. */
   flagOutlineDefaultsByToken: Record<string, boolean>;
   flagBadgeDefaultsByToken: Record<string, boolean>;
 }
