@@ -217,7 +217,7 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
 
   // Multi-token value on a single element: show combined badge text and a gradient outline.
   chunks.push(`
-[data-ff-combo] {
+[${nsAttr}*=" "] {
   outline: none !important;
   outline-offset: 0 !important;
   border: ${opts.outlineWidth} solid transparent;
@@ -226,17 +226,17 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
     var(--ff-combo-gradient, linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0)) border-box;
   border-radius: ${opts.borderRadius};
 }
-html [data-ff-combo]::before {
+html [${nsAttr}*=" "]::before {
   content: attr(${nsAttr});
   background: var(--ff-combo-badge-gradient, var(--ff-combo-gradient-soft, linear-gradient(90deg, #fff1f2, #eff6ff, #f0fdf4))) !important;
   color: var(--ff-combo-text, #111827) !important;
   border: 1px solid var(--ff-combo-badge-border, color-mix(in oklab, #94a3b8 50%, transparent)) !important;
   transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
 }
-html [data-ff-combo][data-ff-label]::before {
+html [${nsAttr}*=" "][data-ff-label]::before {
   content: attr(data-ff-label) !important;
 }
-html [data-ff-combo]:hover::before {
+html [${nsAttr}*=" "]:hover::before {
   opacity: 0.2;
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
