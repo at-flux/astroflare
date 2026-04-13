@@ -11,7 +11,7 @@
     },
     "hotFeature2": {
       "colour": "rgb(34 197 94)",
-      "routes": ["/hot/*", "/hot-dev"]
+      "routes": ["/hot/*", "/hot-dev/*"]
     }
   },
   "environments": {

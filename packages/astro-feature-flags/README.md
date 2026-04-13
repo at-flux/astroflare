@@ -14,11 +14,11 @@
 Feature flags for Astro with a declarative config:
 
 - per-flag declaration (`colour`/`color` for the dev toolbar, optional `routes` for matching pages)
-- **Two modes:** **Astro dev** (`astro dev`) vs **non-dev builds** (production deploys, `astro build` in CI, staging, …). Locally, the integration uses a built-in **dev** configuration layer (injected for you; all flags on at resolve time; process-env overrides off). For shipped output you declare layers such as **`prod`** / **`staging`** with `when` + `flags`. Exactly one `when: true` for the active `mode` unless you pin with **`forceEnvironment`** / **`AFF_ENVIRONMENT`**.
+- **Two environments:** **Astro dev** (`astro dev`) vs **non-dev builds** (production deploys, `astro build` in CI, staging, …). Locally, the integration uses a built-in **dev** environment layer (injected for you; all flags on at resolve time). For shipped output you declare layers such as **`prod`** / **`staging`** with `when` + `flags`. Exactly one `when: true` for the selected environment unless you override with **`forceEnvironment`** / **`AFF_ENVIRONMENT`**.
 - **Route gating (non-dev):** If a pathname matches a flag’s `routes` and that flag is **off** for the active layer, **static** `dist/` output under that prefix is **removed after build** (and you should filter those URLs from sitemaps—see how-to). Server/hybrid apps still need their own runtime routing if URLs can be requested without a matching static file. If the flag is **on**, routes emit like any other page.
 - **Route overlap:** `shouldIncludePath`, `shouldIncludeRoute`, and `shouldIncludePathForEnvironment` use the **first** matching `routes` entry from `Object.entries` order, not longest-prefix. `matchedFeatureRoutePrefix` / `routeFeatureTokensForPath` use **longest** match — avoid overlapping patterns unless order is intentional.
 - element gating via namespaced attributes (`data-ff` or `data-ff-<token>` by default)
-- production static HTML: gated `data-ff` nodes culled, dev-only CSS not shipped (`featureFlagStyles` is empty); `data-ff-route*` stripped from `<html>`
+- production static HTML: gated `data-ff` nodes culled, dev-only CSS not shipped (`featureFlagStyles` is empty); dev route attributes (`data-ff-route*`) are stripped from `<html>`
 - route badge + production route pruning
 - dev toolbar for enabled/outline/badge/colour preview (when a URL would be pruned for a configured layer, the overlay names **environment keys**, not `NODE_ENV` text)
 
@@ -182,18 +182,19 @@ The dev toolbar changes client-side preview state only.
 | `configRoot`       | `string`                            | `process.cwd()` | Resolves relative `jsonConfigPath` values (root + per-environment).   |
 | `jsonConfigPath`   | `string`                            | unset           | Optional **root** JSON file merged after inline config (see merge order for per-environment files). |
 | `forceEnvironment` | `string`                          | unset           | Pin the active layer (skips `when` / `AFF_ENVIRONMENT` validation).   |
-| `mode`             | `string`                            | `NODE_ENV`      | Stored on the resolved runtime for diagnostics.                     |
+| `mode`             | `string`                            | `NODE_ENV`      | Input used to decide default injected `dev`/`prod` environment predicates. |
 | `env`              | `Record<string, string \| undefined>` | `process.env` | `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` (not applied in `dev` layer). |
 | `tokenNamespace`   | `string`                            | `'ff'`          | CSS var namespace (`--ff-c-*`).                                       |
 | `flags`            | `Record<string, FlagConfig>`        | `{}`            | Flag declarations.                                                    |
 | `environments`     | `Record<string, EnvironmentConfig>`  | _(see below)_   | Declare non-`dev` layers only; reserved `dev` is injected. At least one other key; exactly one `when: true` unless forced. |
 | `css`              | `DevOutlineCssOptions`              | defaults        | Global badge/outline layout and styling.                              |
+| `staticMinify`     | `boolean`                           | `true`          | For static builds: route-prune disabled prefixes + cull gated HTML in `dist/`. Set `false` to keep emitted files untouched. |
 
 If you omit `environments`, the integration injects a minimal reserved `dev` plus **`prod`** tied to `mode` / `NODE_ENV` so `astroFeatureFlags()` still runs in small demos.
 
 ### Reserved name `dev`
 
-The key **`dev`** is reserved: do not list it under `environments`. The integration injects it with `when: mode !== "production"` (same `mode` as the integration, defaulting to `NODE_ENV`) so local **`astro dev`** uses the all-flags-on layer. Configure only shipped layers (`prod`, `staging`, …) yourself.
+The key **`dev`** is reserved: do not list it under `environments`. The integration injects it with `when: mode !== "production"` (mode defaults to `NODE_ENV`) so local **`astro dev`** uses the all-flags-on layer. Configure only shipped layers (`prod`, `staging`, …) yourself.
 
 ### `FlagConfig`
 
@@ -219,7 +220,7 @@ Merge order:
 3. `environments.<active>.jsonConfigPath` (if set; skipped for `dev`)
 4. Process overrides on non-`dev` layers: `AFF_FEATURE_*`, then `ASTRO_FEATURE_FLAGS`
 
-Layer select override: `AFF_ENVIRONMENT=prod`. **`forceEnvironment`** on the integration options wins over **`AFF_ENVIRONMENT`** when both are set, and skips the “exactly one `when: true`” check by pinning the layer directly.
+Layer select override: `AFF_ENVIRONMENT=prod`. **`forceEnvironment`** on the integration options wins over **`AFF_ENVIRONMENT`** when both are set, and skips the “exactly one `when: true`” check by pinning the layer directly. In static builds, changing `AFF_ENVIRONMENT` after build does nothing unless you rebuild (or disable `staticMinify` and use a server runtime that evaluates flags at request time).
 
 ### DevOutlineCssOptions
 

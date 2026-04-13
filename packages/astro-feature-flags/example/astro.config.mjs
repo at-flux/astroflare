@@ -14,7 +14,7 @@ export default defineConfig({
         outlineStyle: "solid",
       },
       // Reserved `dev` is injected. Optional per-layer JSON: `environments.<name>.jsonConfigPath`.
-      // Exactly one `when: true` for this `mode` unless you pin with forceEnvironment / AFF_ENVIRONMENT.
+      // Exactly one `when: true` for the selected environment unless you pin with forceEnvironment / AFF_ENVIRONMENT.
       environments: {
         prod: {
           when: process.env.NODE_ENV === "production",

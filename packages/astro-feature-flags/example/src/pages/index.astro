@@ -11,14 +11,11 @@ import { Code } from "astro:components";
       The integration is configured in <span class="ff-code"
         >astro.config.mjs</span
       >. Flags declare colours and route patterns; you declare <strong>non-dev</strong>
-      environments only — the reserved <span class="ff-code">dev</span> layer is merged
-      automatically (default <span class="ff-code">when: mode !== 'production'</span>,
-      aligned with local <span class="ff-code">astro dev</span>). The dev toolbar is
-      injected via Astro <span class="ff-code">injectScript</span>; no root-layout wiring
-      required for <span class="ff-code">data-ff-route</span> / styles / bootstrap.
+      environments only.
+      Disabled flags will either be omitted or hidden in production builds.
     </p>
 
-    <div class="ff-card overflow-x-auto text-xs leading-5">
+    <div class="ff-card overflow-x-auto text-xs leading-5 mt-4 mb-2">
       <Code
         code={`// astro.config.mjs
 import astroFeatureFlags from '@at-flux/astro-feature-flags';
