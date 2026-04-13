@@ -217,8 +217,29 @@ html [data-snap*=" "]:hover::before {
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
-html[data-ff-route]:not([data-ff-route=""])::before {
-  content: attr(data-ff-route-label);
+.aff-route-frame {
+  position: fixed;
+  inset: 0.6rem;
+  pointer-events: none;
+  z-index: 10040;
+  box-sizing: border-box;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.aff-route-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: var(--ff-route-outline-gradient, linear-gradient(90deg, #ef4444, #3b82f6, #22c55e));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.aff-route-badge {
   position: fixed;
   top: 0.75rem;
   right: 0.75rem;
@@ -243,26 +264,14 @@ html[data-ff-route]:not([data-ff-route=""])::before {
   opacity: 1;
   transition: opacity 0.14s ease, border-color 0.14s ease, background 0.14s ease;
 }
-html[data-ff-route]:not([data-ff-route=""])::before:hover {
+.aff-route-badge:hover {
   opacity: 0.2;
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
-
-
-[data-ff-route~="wip"][data-ff-badge-wip="off"]::before {
-  display: none !important;
-}
-
-
-[data-ff-route~="beta"][data-ff-badge-beta="off"]::before {
-  display: none !important;
-}
-
-
-.aff-route-pruned-overlay {
+.aff-route-disabled-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2147483000;
+  z-index: 10050;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -271,9 +280,30 @@ html[data-ff-route]:not([data-ff-route=""])::before:hover {
   text-align: center;
   font: 600 0.95rem/1.45 system-ui, -apple-system, Segoe UI, sans-serif;
   color: #f8fafc;
-  background: rgba(15, 23, 42, 0.58);
+  background: rgba(15, 23, 42, 0.52);
   backdrop-filter: blur(2px);
   pointer-events: auto;
+}
+.aff-route-disabled-overlay > p {
+  margin: 0;
+  max-width: min(44rem, calc(100vw - 2rem));
+  white-space: pre-line;
+}
+
+
+[data-ff-route~="wip"][data-ff-outline-wip="off"] #aff-route-frame {
+  display: none !important;
+}
+[data-ff-route~="wip"][data-ff-badge-wip="off"] #aff-route-badge {
+  display: none !important;
+}
+
+
+[data-ff-route~="beta"][data-ff-outline-beta="off"] #aff-route-frame {
+  display: none !important;
+}
+[data-ff-route~="beta"][data-ff-badge-beta="off"] #aff-route-badge {
+  display: none !important;
 }
 
 "

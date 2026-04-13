@@ -123,15 +123,12 @@ describe("integration exports", () => {
     expect(css).toContain("right: 0.35rem");
     expect(css).toContain("translateY(calc(-1 * 80%))");
     expect(css).toContain(
-      'html[data-ff-route]:not([data-ff-route=""])::before',
+      ".aff-route-frame",
     );
     expect(css).toContain("position: fixed");
     expect(css).toContain("data-ff-enabled-");
     expect(css).toContain(
       ':is([data-demo-feat~="wip"], [data-demo-feat-wip]):hover::before',
-    );
-    expect(css).toContain(
-      'html[data-ff-route]:not([data-ff-route=""])::before:hover',
     );
     expect(css).toContain("pointer-events: auto");
     expect(css).toContain('[data-demo-feat~="wip"]');
@@ -172,7 +169,6 @@ describe("integration exports", () => {
     expect(src).toContain("export function flagsForEnvironment");
     expect(src).toContain("export const activeEnvironmentKey");
     expect(src).toContain("export const isAstroDev");
-    expect(src).toContain("This URL is not emitted for configured environment");
   });
 
   it("includes customized CSS in virtual module source", () => {
@@ -265,7 +261,7 @@ describe("integration exports", () => {
     expect(css).toContain("bottom: 0");
   });
 
-  it("includes route badge and enabled-off rules for each flag token", () => {
+  it("includes route chrome and enabled-off rules for each flag token", () => {
     const css = createFeatureFlagStyles(
       bare({
         namespace: "ns",
@@ -276,7 +272,7 @@ describe("integration exports", () => {
       }),
     );
     expect(css).toContain(
-      'html[data-ff-route]:not([data-ff-route=""])::before',
+      ".aff-route-frame",
     );
     expect(css).toContain('[data-ns~="wip"]');
     expect(css).toContain('[data-ns~="beta"]');
