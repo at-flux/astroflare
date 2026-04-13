@@ -11,7 +11,6 @@ import {
   routePatternToPrefix,
   routePathsToPrune,
   shouldIncludeRoute,
-  shouldRenderFeatureInMode,
   toEnumKey,
   toToken,
 } from "../src/runtime";
@@ -222,35 +221,6 @@ describe("route behavior", () => {
         routeFlags,
         flags,
         isDev: false,
-      }),
-    ).toBe(true);
-  });
-});
-
-describe("render behavior", () => {
-  it("always renders in dev environment", () => {
-    expect(
-      shouldRenderFeatureInMode({
-        activeEnvironment: "dev",
-        flags: { dev: false },
-        flag: "dev",
-      }),
-    ).toBe(true);
-  });
-
-  it("obeys feature flags outside dev", () => {
-    expect(
-      shouldRenderFeatureInMode({
-        activeEnvironment: "prod",
-        flags: { dev: false },
-        flag: "dev",
-      }),
-    ).toBe(false);
-    expect(
-      shouldRenderFeatureInMode({
-        activeEnvironment: "prod",
-        flags: { dev: true },
-        flag: "dev",
       }),
     ).toBe(true);
   });

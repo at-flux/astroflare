@@ -500,19 +500,6 @@ export function isFlagEnabled(flags: FeatureFlagMap, flag: string): boolean {
   return Boolean(flags?.[flag]);
 }
 
-export function shouldRenderFeatureInMode({
-  activeEnvironment,
-  flags,
-  flag,
-}: {
-  activeEnvironment: string;
-  flags: FeatureFlagMap;
-  flag: string;
-}): boolean {
-  if (activeEnvironment === "dev") return true;
-  return isFlagEnabled(flags, flag);
-}
-
 export function isRouteFlagged(
   pathname: string,
   routeFlags: FeatureRouteMap,
