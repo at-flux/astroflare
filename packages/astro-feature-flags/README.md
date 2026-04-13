@@ -230,7 +230,7 @@ Layer select override: `AFF_ENVIRONMENT=prod`. **`forceEnvironment`** on the int
 | `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                                                                                                                        |
 | `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the host).                                                                                                             |
 | `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                                                                                                                                   |
-| `outlineWidth` / `outlineOffset` / `outlineStyle` | `2px`, `-2px`, `solid` | **Single-token** dev outlines only (`outline` / `dotted` / `dashed`). Combo (multi-token) element rings and the page route frame always use **solid** gradient rings — these options do not change them. |
+| `outlineWidth` / `outlineOffset` | `2px`, `-2px` | Applies to single-token dev outlines. Multi-token element rings remain solid multi-colour gradients. |
 
 Per-element badge overrides (markup):
 
@@ -261,7 +261,7 @@ Exports include **`FeatureFlag`**, **`FeatureToken`**, **`isAstroDev`**, **`acti
 
 **Programmatic resolution**: `getResolvedFeatures(config)` / `resolveFeatureRuntime(config)` use the same rules as the integration. Set **`forceEnvironment: "prod"`** (or any other key) to pin a layer (e.g. sitemaps generated while `astro` is in dev but routes should match a shipped layer).
 
-**`featureFlagStyles`**: dev-only (outlines, badges, route frame, route-prune overlay). In production it is always an **empty string** — static HTML is cleaned up after build instead. You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
+**`featureFlagStyles`**: dev-only (outlines, badges, route badges, route-prune overlay). In production it is always an **empty string** — static HTML is cleaned up after build instead. You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
 
 **`featureFlagsByEnvironment`**: frozen map of resolved booleans per `environments` key. The dev bootstrap compares the current URL against each layer and lists which keys would omit that route.
 

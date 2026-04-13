@@ -11,10 +11,9 @@ export type DevOutlineHiddenStrategy = "visibility" | "display";
 
 export interface DevOutlineCssOptions extends ElementBadgeLayoutOptions {
   outlineWidth?: string;
-  outlineStyle?: "dashed" | "solid" | "dotted";
   /** Fallback when no per-token colour is set. */
   outlineColor?: string;
-  /** Per-flag-token outline / badge / route-frame colour (overrides JSON `colors`). */
+  /** Per-flag-token outline / badge / route-badge colour (overrides JSON `colors`). */
   outlineColorByToken?: Record<string, string>;
   outlineOffset?: string;
   borderRadius?: string;
@@ -34,7 +33,6 @@ export interface DevOutlineCssOptions extends ElementBadgeLayoutOptions {
 }
 type NormalizedDevOutlineCssOptions = {
   outlineWidth: string;
-  outlineStyle: "dashed" | "solid" | "dotted";
   outlineColor: string;
   outlineColorByToken: Record<string, string>;
   outlineOffset: string;
@@ -50,7 +48,6 @@ const defaultDevOutlineCssOptions: Omit<
   "outlineColorByToken"
 > = {
   outlineWidth: "2px",
-  outlineStyle: "solid",
   outlineColor: "rgb(220 38 38)",
   outlineOffset: "-2px",
   borderRadius: "0.5rem",
@@ -133,7 +130,7 @@ html:not([data-ff-outline-${token}="off"]) {
 }
 ${sel} {
   position: relative;
-  outline: ${opts.outlineWidth} ${opts.outlineStyle} var(--aff-outline-c-${token});
+  outline: ${opts.outlineWidth} solid var(--aff-outline-c-${token});
   outline-offset: ${opts.outlineOffset};
   border-radius: ${opts.borderRadius};
 }
@@ -243,21 +240,6 @@ html [${nsAttr}*=" "]:hover::before {
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
-html[data-ff-route]:not([data-ff-route=""]) body::after {
-  content: '';
-  position: fixed;
-  inset: 0.6rem;
-  pointer-events: none;
-  z-index: 10040;
-  padding: 2px;
-  background: var(--ff-route-outline-gradient, linear-gradient(90deg, #ef4444, #3b82f6, #22c55e));
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  border-radius: 0.5rem;
-}
 html[data-ff-route]:not([data-ff-route=""])::before {
   content: attr(data-ff-route-label);
   position: fixed;
@@ -296,9 +278,6 @@ html[data-ff-route]:not([data-ff-route=""])::before:hover {
     if (flag !== token) routeTok.push(`[data-ff-route~="${flag}"]`);
     const rs = routeTok.join(", ");
     chunks.push(`
-${rs}[data-ff-outline-${token}="off"] body::after {
-  display: none !important;
-}
 ${rs}[data-ff-badge-${token}="off"]::before {
   display: none !important;
 }

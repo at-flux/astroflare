@@ -217,21 +217,6 @@ html [data-snap*=" "]:hover::before {
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
-html[data-ff-route]:not([data-ff-route=""]) body::after {
-  content: '';
-  position: fixed;
-  inset: 0.6rem;
-  pointer-events: none;
-  z-index: 10040;
-  padding: 2px;
-  background: var(--ff-route-outline-gradient, linear-gradient(90deg, #ef4444, #3b82f6, #22c55e));
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  border-radius: 0.5rem;
-}
 html[data-ff-route]:not([data-ff-route=""])::before {
   content: attr(data-ff-route-label);
   position: fixed;
@@ -264,17 +249,11 @@ html[data-ff-route]:not([data-ff-route=""])::before:hover {
 }
 
 
-[data-ff-route~="wip"][data-ff-outline-wip="off"] body::after {
-  display: none !important;
-}
 [data-ff-route~="wip"][data-ff-badge-wip="off"]::before {
   display: none !important;
 }
 
 
-[data-ff-route~="beta"][data-ff-outline-beta="off"] body::after {
-  display: none !important;
-}
 [data-ff-route~="beta"][data-ff-badge-beta="off"]::before {
   display: none !important;
 }
