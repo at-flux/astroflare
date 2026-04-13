@@ -129,7 +129,6 @@ export function createVirtualModuleSource(
       { ...runtime.routeFlags },
       Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
       runtime.namespace,
-      flagsByEnvironment,
     );
   const affRoutePatternToPrefix = routePrefixJsHelper("affRoutePatternToPrefix");
 
@@ -344,7 +343,6 @@ export default function astroFeatureFlags(
           { ...runtime.routeFlags },
           flagNameToToken,
           runtime.namespace,
-          flagsByEnvironment,
         );
 
         if (
