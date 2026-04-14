@@ -45,6 +45,7 @@ import {
 } from "./dev-outline-css";
 import { applyProductionHtmlCullToDist } from "./production-html-cull";
 import { buildAffDevHeadInline } from "./dev-head-inject";
+import { routePrefixJsHelper } from "./route-prefix-js";
 
 export { createFeatureFlagStyles, createProductionGateStyles };
 export {
@@ -54,6 +55,8 @@ export {
 
 export interface AstroFeatureFlagsOptions extends ResolveFeatureRuntimeOptions {
   css?: DevOutlineCssOptions;
+  /** When false, keeps static build output untouched (no route pruning / HTML cull). */
+  staticMinify?: boolean;
 }
 
 /** Prefer `prod` if present; else first non-`dev` key (sorted); else `"prod"`. */
@@ -97,6 +100,7 @@ export function createVirtualModuleSource(
   runtime: ResolvedFeatureRuntime,
   css?: DevOutlineCssOptions,
   flagsByEnvironment: Record<string, FeatureFlagMap> = {},
+  devBootstrap?: string,
 ): string {
   const flagNames = Object.keys(runtime.flags);
   const flagTokens = flagNames.map((name) => toToken(name));
@@ -113,25 +117,23 @@ export function createVirtualModuleSource(
     null,
     2,
   );
-  const defaultNonDevEnvironment = primaryNonDevEnvironmentKey(flagsByEnvironment);
-  const bootstrap = buildAffDevBootstrapScript(
-    flagTokens,
-    { ...runtime.flagColorsByToken },
-    { ...runtime.flagOutlineDefaultsByToken },
-    { ...runtime.flagBadgeDefaultsByToken },
-    { ...runtime.routeFlags },
-    Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
-    runtime.namespace,
-    flagsByEnvironment,
-  );
+  const defaultNonDevEnvironment =
+    primaryNonDevEnvironmentKey(flagsByEnvironment);
+  const bootstrap =
+    devBootstrap ??
+    buildAffDevBootstrapScript(
+      flagTokens,
+      { ...runtime.flagColorsByToken },
+      { ...runtime.flagOutlineDefaultsByToken },
+      { ...runtime.flagBadgeDefaultsByToken },
+      { ...runtime.routeFlags },
+      Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
+      runtime.namespace,
+      flagsByEnvironment,
+    );
+  const affRoutePatternToPrefix = routePrefixJsHelper("affRoutePatternToPrefix");
 
-  return `function affRoutePatternToPrefix(pattern) {
-  var p = String(pattern).trim();
-  if (p.endsWith('/**')) p = p.slice(0, -3);
-  else if (p.endsWith('/*')) p = p.slice(0, -2);
-  else if (p.length > 1 && p.endsWith('*')) p = p.slice(0, -1);
-  return p.endsWith('/') ? p : p + '/';
-}
+  return `${affRoutePatternToPrefix}
 
 export const FeatureFlag = Object.freeze({
 ${enumEntries}
@@ -148,7 +150,6 @@ export const featureFlagsByEnvironment = Object.freeze(${JSON.stringify(flagsByE
 export const defaultNonDevEnvironment = ${JSON.stringify(defaultNonDevEnvironment)};
 export const featureRouteFlags = Object.freeze(${JSON.stringify(runtime.routeFlags, null, 2)});
 export const featureNamespace = ${JSON.stringify(runtime.namespace)};
-export const featureMode = ${JSON.stringify(runtime.mode)};
 /** True when Astro is running the dev server or dev build (import.meta.env.DEV). Not the same as the reserved \`dev\` environment layer — see \`activeEnvironmentKey\`. */
 export const isAstroDev = import.meta.env.DEV;
 export const activeEnvironmentKey = ${JSON.stringify(runtime.activeEnvironment)};
@@ -301,7 +302,7 @@ export {
 export default function astroFeatureFlags(
   options: AstroFeatureFlagsOptions = {},
 ): any {
-  const { css, ...flagOpts } = options;
+  const { css, staticMinify = true, ...flagOpts } = options;
   const opts = withDefaultEnvironments(flagOpts);
   const mode = opts.mode ?? process.env.NODE_ENV ?? "development";
 
@@ -329,6 +330,23 @@ export default function astroFeatureFlags(
         command?: string;
         injectScript?: (stage: string, content: string) => void;
       }) => {
+        const flagNames = Object.keys(runtime.flags);
+        const flagTokens = flagNames.map((name) => toToken(name));
+        const flagsByEnvironment = resolveFeatureFlagsByEnvironment(opts);
+        const flagNameToToken = Object.fromEntries(
+          flagNames.map((name) => [name, toToken(name)]),
+        );
+        const bootstrap = buildAffDevBootstrapScript(
+          flagTokens,
+          { ...runtime.flagColorsByToken },
+          { ...runtime.flagOutlineDefaultsByToken },
+          { ...runtime.flagBadgeDefaultsByToken },
+          { ...runtime.routeFlags },
+          flagNameToToken,
+          runtime.namespace,
+          flagsByEnvironment,
+        );
+
         if (
           command === "dev" &&
           runtime.isDev &&
@@ -348,22 +366,6 @@ export default function astroFeatureFlags(
           runtime.isDev &&
           typeof injectScript === "function"
         ) {
-          const flagNames = Object.keys(runtime.flags);
-          const flagTokens = flagNames.map((name) => toToken(name));
-          const flagsByEnvironment = resolveFeatureFlagsByEnvironment(opts);
-          const flagNameToToken = Object.fromEntries(
-            flagNames.map((name) => [name, toToken(name)]),
-          );
-          const bootstrap = buildAffDevBootstrapScript(
-            flagTokens,
-            { ...runtime.flagColorsByToken },
-            { ...runtime.flagOutlineDefaultsByToken },
-            { ...runtime.flagBadgeDefaultsByToken },
-            { ...runtime.routeFlags },
-            flagNameToToken,
-            runtime.namespace,
-            flagsByEnvironment,
-          );
           const styles = createFeatureFlagStyles(runtime, css);
           injectScript(
             "head-inline",
@@ -386,11 +388,11 @@ export default function astroFeatureFlags(
                 },
                 load(id: string) {
                   if (id === "\0virtual:astro-feature-flags") {
-                    const flagsByEnvironment = resolveFeatureFlagsByEnvironment(opts);
                     return createVirtualModuleSource(
                       runtime,
                       css,
                       flagsByEnvironment,
+                      bootstrap,
                     );
                   }
                   return null;
@@ -401,7 +403,7 @@ export default function astroFeatureFlags(
         });
       },
       "astro:build:done": ({ dir }: { dir: URL }) => {
-        if (runtime.isDev) return;
+        if (runtime.isDev || !staticMinify) return;
         const outDir = fileURLToPath(dir);
         const prunePaths = routePathsToPrune({
           routeFlags: runtime.routeFlags,

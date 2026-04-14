@@ -21,7 +21,6 @@ declare module "virtual:astro-feature-flags" {
   export const defaultNonDevEnvironment: string;
   export const featureRouteFlags: Readonly<Record<string, string[]>>;
   export const featureNamespace: string;
-  export const featureMode: string;
   /** Which environment layer this build resolved to (`dev` = built-in local dev layer when active). */
   export const activeEnvironmentKey: string;
   /**
