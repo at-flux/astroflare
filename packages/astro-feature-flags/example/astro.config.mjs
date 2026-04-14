@@ -10,9 +10,6 @@ export default defineConfig({
     astroFeatureFlags({
       configRoot: fileURLToPath(new URL(".", import.meta.url)),
       jsonConfigPath: "ff.json",
-      css: {
-        outlineStyle: "solid",
-      },
       // Reserved `dev` is injected. Optional per-layer JSON: `environments.<name>.jsonConfigPath`.
       // Exactly one `when: true` for the selected environment unless you pin with forceEnvironment / AFF_ENVIRONMENT.
       environments: {
