@@ -167,6 +167,15 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
       el.removeAttribute(`data-${N}-${T[i]}`);
     }
   };
+  const clearComboVisualState = (el: Element) => {
+    el.removeAttribute("data-ff-label");
+    el.style.removeProperty("--ff-combo-gradient");
+    el.style.removeProperty("--ff-combo-gradient-soft");
+    el.style.removeProperty("--ff-combo-outline");
+    el.style.removeProperty("--ff-combo-text");
+    el.style.removeProperty("--ff-combo-badge-border");
+    el.style.removeProperty("--ff-combo-badge-gradient");
+  };
 
   const applyCombo = (el: Element, cols: Record<string, string>) => {
     const allTokens = comboTokens(el);
@@ -178,23 +187,11 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
       // Keep all combo tokens mirrored in data-<ns> so enabled-off CSS selectors can hide it.
       stripBooleanFlagAttrs(el);
       el.setAttribute(`data-${N}`, allTokens.join(" "));
-      el.removeAttribute("data-ff-label");
-      el.style.removeProperty("--ff-combo-gradient");
-      el.style.removeProperty("--ff-combo-gradient-soft");
-      el.style.removeProperty("--ff-combo-outline");
-      el.style.removeProperty("--ff-combo-text");
-      el.style.removeProperty("--ff-combo-badge-border");
-      el.style.removeProperty("--ff-combo-badge-gradient");
+      clearComboVisualState(el);
       return;
     }
     if (visual.length < 2) {
-      el.removeAttribute("data-ff-label");
-      el.style.removeProperty("--ff-combo-gradient");
-      el.style.removeProperty("--ff-combo-gradient-soft");
-      el.style.removeProperty("--ff-combo-outline");
-      el.style.removeProperty("--ff-combo-text");
-      el.style.removeProperty("--ff-combo-badge-border");
-      el.style.removeProperty("--ff-combo-badge-gradient");
+      clearComboVisualState(el);
       if (hasCombo) {
         // Only normalize attrs for true combos. Single-flag shorthand markers
         // (e.g. data-ff-wip) must stay intact so re-enabling can recover styling.
