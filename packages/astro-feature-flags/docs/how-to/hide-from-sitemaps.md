@@ -12,15 +12,13 @@ import astroFeatureFlags, {
 } from "@at-flux/astro-feature-flags";
 
 const featureFlagOptions = {
-  root: process.cwd(),
   flags: {
-    dev: { colour: "rgb(220 38 38)", routes: ["/blog/*"] },
+    wip: { colour: "rgb(220 38 38)", routes: ["/blog/*"] },
   },
   environments: {
-    dev: { when: process.env.NODE_ENV !== "production", flags: { dev: true } },
     prod: {
       when: process.env.NODE_ENV === "production",
-      flags: { dev: false },
+      flags: { wip: false },
     },
   },
 };
@@ -47,3 +45,5 @@ export default defineConfig({
 `featureRuntime` only needs to be declared before the `sitemap` filter uses it.
 
 You can still place `astroFeatureFlags(featureFlagOptions)` anywhere in `integrations`; the key is that `featureRouteIncluded(pathname, featureRuntime)` has access to the resolved runtime object.
+
+If the sitemap plugin runs with a `mode` where the active layer is not the one you want for URL filtering, pass **`forceEnvironment`** (same as anywhere else you pin a layer), for example `getResolvedFeatures({ ...featureFlagOptions, mode: "development", forceEnvironment: "prod" })`. Behaviour is covered by **`test/sitemap-route-filter.test.ts`** in this package.

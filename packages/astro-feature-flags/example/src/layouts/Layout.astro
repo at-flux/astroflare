@@ -1,9 +1,4 @@
 ---
-import {
-  affDevBootstrap,
-  featureFlagStyles,
-  routeFeatureTokensForPath,
-} from 'virtual:astro-feature-flags';
 import '../styles/global.css';
 
 interface Props {
@@ -11,17 +6,14 @@ interface Props {
 }
 
 const { title = 'Feature flags example' } = Astro.props;
-const routeTokens = routeFeatureTokensForPath(Astro.url.pathname);
 ---
 
 <!doctype html>
-<html lang='en' data-ff-route={routeTokens.join(' ')}>
+<html lang='en'>
   <head>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <title>{title}</title>
-    {affDevBootstrap && <script is:inline set:html={affDevBootstrap} />}
-    <style is:inline set:html={featureFlagStyles}></style>
   </head>
   <body class='min-h-screen bg-slate-100 text-slate-900 antialiased'>
     <slot />

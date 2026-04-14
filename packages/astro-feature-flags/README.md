@@ -13,12 +13,21 @@
 
 Feature flags for Astro with a declarative config:
 
-- per-flag declaration (`colour`/`color` for highlighting in Astro's dev mode, optional `routes` for matching pages)
-- named environments (`dev`, `prod`, etc.)
+- per-flag declaration (`colour`/`color` for dev-toolbar chrome, optional `routes` for matching pages)
+- **Astro dev vs `dev` layer (default):** **`isAstroDev`** is `import.meta.env.DEV` from Astro/Vite. The reserved **`dev` environment** is injected for you with `when: mode !== "production"` (same `mode` as the integration, defaulting to `NODE_ENV`). When that layer is active, all declared flags resolve **on** at build/SSR and process-env overrides are skipped; the dev toolbar only changes client preview. **`runtime.isDev`** is `activeEnvironment === "dev"` — it matches **`isAstroDev`** in the usual setup (`astro dev` + non-production `mode`). They differ only if you pin another layer with **`forceEnvironment`** / **`AFF_ENVIRONMENT`** while still running the dev server.
+- **At least one non-`dev` layer** in your config (`prod`, `staging`, …); you do **not** declare the reserved `dev` key — it is merged automatically. Exactly one `when: true` among layers (for that `mode`) unless you pin a layer.
 - element gating via namespaced attributes (`data-ff` or `data-ff-<token>` by default)
 - production static HTML: gated `data-ff` nodes culled, dev-only CSS not shipped (`featureFlagStyles` is empty); `data-ff-route*` stripped from `<html>`
 - route badge + production route pruning
-- dev toolbar for enabled/outline/badge/colour preview (toolbar also hides **route** frame/pill per flag; routes omitted in **production** show a dim overlay in dev)
+- dev toolbar for enabled/outline/badge/colour preview (when a URL would be pruned for a configured layer, the overlay names **environment keys**, not `NODE_ENV` text)
+
+## Terminology (short)
+
+| Term | Meaning |
+| ---- | ------- |
+| **Astro dev** | `astro dev` or `import.meta.env.DEV` → `isAstroDev`. |
+| **`dev` environment** | Reserved layer (auto-injected): all declared flags resolve **on**; no `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` overrides. Default `when` follows `mode !== "production"` (same idea as local `astro dev`). |
+| **Non-`dev` layer** | Any key you declare (`prod`, `staging`, …): uses `environments.<key>.flags` booleans. |
 
 ## Quickstart
 
@@ -30,9 +39,10 @@ Feature flags for Astro with a declarative config:
    export default defineConfig({
      integrations: [
        astroFeatureFlags({
-         root: process.cwd(),
+         // optional: jsonConfigPath: "./ff.json",
+         // optional: configRoot: fileURLToPath(new URL(".", import.meta.url)),
          flags: {
-           dev: {
+           wip: {
              colour: "rgb(220 38 38)",
              routes: ["/blog/*"],
            },
@@ -48,18 +58,12 @@ Feature flags for Astro with a declarative config:
            },
          },
          environments: {
-           dev: {
-             when: process.env.NODE_ENV !== "production",
-             flags: {
-               dev: true,
-               hotFeature1: true,
-               hotFeature2: true,
-             },
-           },
+           // Reserved `dev` is injected for you. Declare non-dev layers only.
+           // Exactly one `when: true` for this `mode` unless you use forceEnvironment / AFF_ENVIRONMENT.
            prod: {
              when: process.env.NODE_ENV === "production",
              flags: {
-               dev: false,
+               wip: false,
                hotFeature1: true,
                hotFeature2: false,
              },
@@ -70,7 +74,7 @@ Feature flags for Astro with a declarative config:
    });
    ```
 
-2. Optional `ff.json` deep override:
+2. Optional JSON: **`jsonConfigPath`** on the integration root (merged after inline config). Optional **`jsonConfigPath`** on each **non-`dev`** environment merges when that layer is active (after the root file). Paths resolve relative to `configRoot` (`process.cwd()` by default).
 
    ```json
    {
@@ -84,15 +88,14 @@ Feature flags for Astro with a declarative config:
 
 3. Gate elements in markup:
    - `data-ff={FeatureToken.HotFeature2}`
-   - `data-ff={[FeatureToken.Dev, FeatureToken.HotFeature2].join(' ')}`
-   - `data-ff="dev hot-feature-2"` **(no import!)**
-   - `data-ff-dev` **(no import!)**
+   - `data-ff={[FeatureToken.Wip, FeatureToken.HotFeature2].join(' ')}`
+   - `data-ff="wip hot-feature-2"` **(no import!)**
+   - `data-ff-wip` **(no import!)**
    - `data-ff-hot-feature-2` **(no import!)**
 
 > [!NOTE]
-> Flags are combinatory. If an element has `data-ff="dev hot-feature-2"`, both flags must be enabled.
-> The same applies in dev toolbar preview: turning either one off hides the element.
-> In **production** static builds, nodes that fail that check are **removed from the HTML** (not merely hidden). Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
+> Flags are combinatory. If an element has `data-ff="wip hot-feature-2"`, both flags must be enabled for SSR outside the reserved `dev` layer.
+> In **`dev`**, all declared flags are on at resolve time; the dev toolbar only changes client preview. In **non-dev** builds, nodes that fail the check are **removed from the HTML**. Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
 
 ## Common Use Cases
 
@@ -103,7 +106,7 @@ Feature flags for Astro with a declarative config:
 import { FeatureToken } from 'virtual:astro-feature-flags';
 ---
 
-<section data-ff={FeatureToken.Dev}>Dev section</section>
+<section data-ff={FeatureToken.Wip}>WIP section</section>
 <aside data-ff={FeatureToken.HotFeature2}>Hot section</aside>
 ```
 
@@ -120,11 +123,11 @@ import { FeatureFlag } from 'virtual:astro-feature-flags';
 ### 2) Shorthand attribute (no import)
 
 ```tsx
-<section data-ff-dev>Dev section</section>
+<section data-ff-wip>WIP section</section>
 <aside data-ff-hot-feature-2>Hot section</aside>
 ```
 
-`data-ff-dev` is equivalent to `data-ff={FeatureToken.Dev}` or `data-ff="dev"`.
+`data-ff-wip` is equivalent to `data-ff={FeatureToken.Wip}` or `data-ff="wip"`.
 
 If `tokenNamespace` is `aff`, use `data-aff` / `data-aff-<token>` instead.
 
@@ -133,7 +136,7 @@ If `tokenNamespace` is `aff`, use `data-aff` / `data-aff-<token>` instead.
 Both flags must be enabled:
 
 ```tsx
-<div data-ff-dev data-ff-hot-feature-2>
+<div data-ff-wip data-ff-hot-feature-2>
   ...
 </div>
 ```
@@ -145,33 +148,18 @@ Or using `data-ff` with values:
 import { FeatureFlag } from 'virtual:astro-feature-flags';
 ---
 
-<div data-ff={[FeatureFlag.Dev, FeatureFlag.HotFeature2].join(' ')}>...</div>
+<div data-ff={[FeatureFlag.Wip, FeatureFlag.HotFeature2].join(' ')}>...</div>
 // OR
-<div data-ff="dev hot-feature-2">...</div>
+<div data-ff="wip hot-feature-2">...</div>
 ```
 
 `data-ff` expects a space-separated list of feature flags.
 
-### 3) Per-layout route pill + toolbar bootstrap (dev)
+### 3) Dev toolbar chrome (automatic)
 
-```tsx
----
-import {
-  affDevBootstrap,
-  featureFlagStyles,
-  routeFeatureTokensForPath,
-} from 'virtual:astro-feature-flags';
+On **`astro dev`**, when the active layer is the reserved **`dev`** environment, the integration uses Astro’s **`injectScript('head-inline', …)`** to append dev-only CSS, set **`data-ff-route`** on `<html>` from the current URL (including after **`astro:page-load`** / **`astro:after-swap`**), and run the toolbar bootstrap script. You do **not** need to wire `affDevBootstrap`, `featureFlagStyles`, or `data-ff-route` in a root layout unless you intentionally want a second copy.
 
-const routeTokens = routeFeatureTokensForPath(Astro.url.pathname);
----
-
-<html data-ff-route={routeTokens.join(' ')}>
-  <head>
-    {affDevBootstrap && <script is:inline set:html={affDevBootstrap} />}
-    <style is:inline set:html={featureFlagStyles}></style>
-  </head>
-</html>
-```
+The virtual module still exports **`affDevBootstrap`**, **`featureFlagStyles`**, and **`routeFeatureTokensForPath`** for advanced layouts.
 
 ### 4) Logic usage (`FeatureFlag`)
 
@@ -188,15 +176,19 @@ The dev toolbar changes client-side preview state only.
 
 ### Top-level options
 
-| Option           | Type                                | Default         | Notes                                                   |
-| ---------------- | ----------------------------------- | --------------- | ------------------------------------------------------- |
-| `jsonConfigPath` | `string`                            | unset           | Direct path to JSON config file.                        |
-| `root`           | `string`                            | `process.cwd()` | Base directory for `<baseName>.json` lookup.            |
-| `baseName`       | `string`                            | `'ff'`          | Reads `<baseName>.json` when `jsonConfigPath` is unset. |
-| `tokenNamespace` | `string`                            | `'ff'`          | CSS var namespace (`--ff-c-*`).                         |
-| `flags`          | `Record<string, FlagConfig>`        | `{}`            | Flag declarations.                                      |
-| `environments`   | `Record<string, EnvironmentConfig>` | `{}`            | Environment flag values + optional `when`.              |
-| `css`            | `DevOutlineCssOptions`              | defaults        | Global badge/outline layout and styling.                |
+| Option             | Type                                | Default         | Notes                                                                 |
+| ------------------ | ----------------------------------- | --------------- | --------------------------------------------------------------------- |
+| `configRoot`       | `string`                            | `process.cwd()` | Resolves relative `jsonConfigPath` values (root + per-environment).   |
+| `jsonConfigPath`   | `string`                            | unset           | Root JSON only; merged after inline config (not per-environment).   |
+| `forceEnvironment` | `string`                          | unset           | Pin the active layer (skips `when` / `AFF_ENVIRONMENT` validation).   |
+| `mode`             | `string`                            | `NODE_ENV`      | Stored on the resolved runtime for diagnostics.                     |
+| `env`              | `Record<string, string \| undefined>` | `process.env` | `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` (not applied in `dev` layer). |
+| `tokenNamespace`   | `string`                            | `'ff'`          | CSS var namespace (`--ff-c-*`).                                       |
+| `flags`            | `Record<string, FlagConfig>`        | `{}`            | Flag declarations.                                                    |
+| `environments`     | `Record<string, EnvironmentConfig>`  | _(see below)_   | Declare non-`dev` layers only; reserved `dev` is injected. At least one other key; exactly one `when: true` unless forced. |
+| `css`              | `DevOutlineCssOptions`              | defaults        | Global badge/outline layout and styling.                              |
+
+If you omit `environments`, the integration injects a minimal reserved `dev` plus **`prod`** tied to `mode` / `NODE_ENV` so `astroFeatureFlags()` still runs in small demos.
 
 ### `FlagConfig`
 
@@ -209,20 +201,21 @@ The dev toolbar changes client-side preview state only.
 
 ### `EnvironmentConfig`
 
-| Field   | Type                      | Default | Notes                                  |
-| ------- | ------------------------- | ------- | -------------------------------------- |
-| `when`  | `boolean`                 | unset   | If true, this environment is selected. |
-| `flags` | `Record<string, boolean>` | `{}`    | Enabled/disabled per flag.             |
+| Field            | Type                      | Default | Notes                                                                 |
+| ---------------- | ------------------------- | ------- | --------------------------------------------------------------------- |
+| `when`           | `boolean`                 | unset   | Exactly one environment must have `when: true` (unless forced).       |
+| `flags`          | `Record<string, boolean>` | `{}`    | For non-`dev` layers: booleans per flag. Ignored for reserved `dev`. |
+| `jsonConfigPath` | `string`                  | unset   | Optional JSON merged when this environment is the active layer (not used on reserved `dev`). |
 
 Merge order:
 
-1. inline config in `astro.config.mjs`
-2. `ff.json` (deep-merge over inline)
-3. Environment variable map via `ASTRO_FEATURE_FLAGS`
+1. Inline config in `astro.config.mjs`
+2. Root `jsonConfigPath` (if set)
+3. `environments.<active>.jsonConfigPath` (if set; skipped for `dev`)
+4. Process overrides on non-`dev` layers: `AFF_FEATURE_*`, then `ASTRO_FEATURE_FLAGS`
 
-Environment select override: `AFF_ENVIRONMENT=prod`  
-Flag map override (highest precedence): `ASTRO_FEATURE_FLAGS='{"dev":true,"hotFeature2":false}'`  
-Per-flag env override: `AFF_FEATURE_<TOKEN>` (`hotFeature2` -> `AFF_FEATURE_HOT_FEATURE_2`).
+Layer select override: `AFF_ENVIRONMENT=prod`  
+`forceEnvironment` on the integration options pins the layer for the whole run.
 
 ### DevOutlineCssOptions
 
@@ -259,11 +252,19 @@ If your editor misses virtual module types, add one reference in `src/env.d.ts`.
 
 ## Virtual module
 
-Exports include **`FeatureFlag`**, **`FeatureToken`**, **`affDevBootstrap`**, **`routeFeatureTokenForPath`**, **`routeFeatureTokensForPath`**, **`shouldRenderFeature`**, **`matchedFeatureRoutePrefix`**, **`featureFlagStyles`**, etc.
+Exports include **`FeatureFlag`**, **`FeatureToken`**, **`isAstroDev`**, **`activeEnvironmentKey`**, **`defaultNonDevEnvironment`**, **`flagsForEnvironment`**, **`isFeatureEnabledForEnvironment`**, **`shouldIncludePathForEnvironment`**, **`affDevBootstrap`**, **`routeFeatureTokenForPath`**, **`routeFeatureTokensForPath`**, **`shouldRenderFeature`**, **`matchedFeatureRoutePrefix`**, **`featureFlagStyles`**, etc.
 
-**`featureFlagStyles`**: dev-only (outlines, badges, route frame, route-prune overlay). In production it is always an **empty string** — static HTML is cleaned up after build instead (see note above). You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
+**Programmatic resolution**: `getResolvedFeatures(config)` / `resolveFeatureRuntime(config)` use the same rules as the integration. Set **`forceEnvironment: "prod"`** (or any other key) to pin a layer (e.g. sitemaps generated while `astro` is in dev but routes should match a shipped layer).
 
-**`featureFlagsProduction`**: frozen map used by **`shouldIncludePathInProduction`**, **`isFeatureEnabledProduction`**, and the dev bootstrap route preview (dim overlay when the current URL would be pruned in production).
+**`featureFlagStyles`**: dev-only (outlines, badges, route frame, route-prune overlay). In production it is always an **empty string** — static HTML is cleaned up after build instead. You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
+
+**`featureFlagsByEnvironment`**: frozen map of resolved booleans per `environments` key. The dev bootstrap compares the current URL against each layer and lists which keys would omit that route.
+
+**`defaultNonDevEnvironment`**: prefers `prod` if defined, otherwise the first non-`dev` key (sorted). Use with **`shouldIncludePathForEnvironment(path, defaultNonDevEnvironment)`** (or any explicit key) when you want “primary shipped layer” without hard-coding a name — your non-dev keys can be `staging`, `preview-123`, etc.
+
+## What this package is not
+
+Remote percentage rollouts, per-user experiment assignment, analytics, or a hosted flag service. This is **declarative Astro config** + build-time HTML cleanup + a **local dev toolbar**.
 
 ## How-to
 
@@ -276,7 +277,7 @@ Exports include **`FeatureFlag`**, **`FeatureToken`**, **`affDevBootstrap`**, **
 - `/` integration overview + tagging options
 - `/hot-feature-1/` route mapped to `hotFeature1`
 - `/hot/` route mapped to `hotFeature2`
-- `/hot-dev/sub/` wildcard nested route + combined `dev` + `hotFeature2` element gating
+- `/hot-dev/sub/` wildcard nested route + combined `wip` + `hotFeature2` element gating
 
 ## Tests
 

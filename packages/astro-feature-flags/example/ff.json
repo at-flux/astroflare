@@ -1,7 +1,7 @@
 {
   "tokenNamespace": "ff",
   "flags": {
-    "dev": {
+    "wip": {
       "colour": "rgb(220 38 38)",
       "routes": ["/dev/*", "/hot-dev/*"]
     },
@@ -15,16 +15,9 @@
     }
   },
   "environments": {
-    "dev": {
-      "flags": {
-        "dev": true,
-        "hotFeature1": true,
-        "hotFeature2": true
-      }
-    },
     "prod": {
       "flags": {
-        "dev": false,
+        "wip": false,
         "hotFeature1": true,
         "hotFeature2": false
       }

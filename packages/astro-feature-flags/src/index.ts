@@ -16,6 +16,7 @@ import {
   type FeatureFlagMap,
   type ResolveFeatureRuntimeOptions,
   type ResolvedFeatureRuntime,
+  resolveFeatureFlagsByEnvironment,
   resolveFeatureRuntime,
   routePathsToPrune,
   shouldIncludeRoute,
@@ -43,6 +44,7 @@ import {
   createProductionGateStyles,
 } from "./dev-outline-css";
 import { applyProductionHtmlCullToDist } from "./production-html-cull";
+import { buildAffDevHeadInline } from "./dev-head-inject";
 
 export { createFeatureFlagStyles, createProductionGateStyles };
 export {
@@ -54,10 +56,47 @@ export interface AstroFeatureFlagsOptions extends ResolveFeatureRuntimeOptions {
   css?: DevOutlineCssOptions;
 }
 
+/** Prefer `prod` if present; else first non-`dev` key (sorted); else `"prod"`. */
+export function primaryNonDevEnvironmentKey(
+  flagsByEnvironment: Record<string, FeatureFlagMap>,
+): string {
+  const keys = Object.keys(flagsByEnvironment);
+  if (keys.includes("prod")) return "prod";
+  const nonDev = keys.filter((k) => k !== "dev").sort();
+  return nonDev[0] ?? "prod";
+}
+
+function withDefaultEnvironments(
+  options: ResolveFeatureRuntimeOptions = {},
+): ResolveFeatureRuntimeOptions {
+  const mode = options.mode ?? process.env.NODE_ENV ?? "development";
+  const raw =
+    options.environments &&
+    typeof options.environments === "object" &&
+    !Array.isArray(options.environments)
+      ? { ...options.environments }
+      : {};
+  delete raw.dev;
+  const environments: NonNullable<ResolveFeatureRuntimeOptions["environments"]> =
+    {
+      dev: {
+        when: mode !== "production",
+      },
+      ...raw,
+    };
+  if (Object.keys(environments).length < 2) {
+    environments.prod = environments.prod ?? {
+      when: mode === "production",
+      flags: {},
+    };
+  }
+  return { ...options, environments };
+}
+
 export function createVirtualModuleSource(
   runtime: ResolvedFeatureRuntime,
   css?: DevOutlineCssOptions,
-  productionFlags: FeatureFlagMap = runtime.flags,
+  flagsByEnvironment: Record<string, FeatureFlagMap> = {},
 ): string {
   const flagNames = Object.keys(runtime.flags);
   const flagTokens = flagNames.map((name) => toToken(name));
@@ -74,6 +113,7 @@ export function createVirtualModuleSource(
     null,
     2,
   );
+  const defaultNonDevEnvironment = primaryNonDevEnvironmentKey(flagsByEnvironment);
   const bootstrap = buildAffDevBootstrapScript(
     flagTokens,
     { ...runtime.flagColorsByToken },
@@ -82,7 +122,7 @@ export function createVirtualModuleSource(
     { ...runtime.routeFlags },
     Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
     runtime.namespace,
-    productionFlags,
+    flagsByEnvironment,
   );
 
   return `function affRoutePatternToPrefix(pattern) {
@@ -104,11 +144,14 @@ ${tokenEntries}
 export const featureFlagTokens = Object.freeze(${JSON.stringify(flagTokens)});
 export const featureFlagColors = Object.freeze(${colorsJson});
 export const featureFlags = Object.freeze(${JSON.stringify(runtime.flags, null, 2)});
-export const featureFlagsProduction = Object.freeze(${JSON.stringify(productionFlags, null, 2)});
+export const featureFlagsByEnvironment = Object.freeze(${JSON.stringify(flagsByEnvironment, null, 2)});
+export const defaultNonDevEnvironment = ${JSON.stringify(defaultNonDevEnvironment)};
 export const featureRouteFlags = Object.freeze(${JSON.stringify(runtime.routeFlags, null, 2)});
 export const featureNamespace = ${JSON.stringify(runtime.namespace)};
 export const featureMode = ${JSON.stringify(runtime.mode)};
-export const isDev = import.meta.env.DEV;
+/** True when Astro is running the dev server or dev build (import.meta.env.DEV). Not the same as the reserved \`dev\` environment layer — see \`activeEnvironmentKey\`. */
+export const isAstroDev = import.meta.env.DEV;
+export const activeEnvironmentKey = ${JSON.stringify(runtime.activeEnvironment)};
 
 export const affDevBootstrap = import.meta.env.DEV ? ${JSON.stringify(bootstrap)} : '';
 
@@ -140,16 +183,24 @@ export function shouldIncludePath(pathname) {
   return true;
 }
 
-export function isFeatureEnabledProduction(flag) {
-  return Boolean(featureFlagsProduction[flag]);
+export function flagsForEnvironment(envName) {
+  var F = featureFlagsByEnvironment[envName];
+  return F != null ? F : null;
 }
 
-export function shouldIncludePathInProduction(pathname) {
+export function isFeatureEnabledForEnvironment(flag, envName) {
+  var F = featureFlagsByEnvironment[envName];
+  return !!(F && F[flag]);
+}
+
+export function shouldIncludePathForEnvironment(pathname, envName) {
+  var F = featureFlagsByEnvironment[envName];
+  if (!F) return true;
   const normalized = pathname.endsWith('/') ? pathname : pathname + '/';
-  for (const [route, flags] of Object.entries(featureRouteFlags)) {
+  for (const [route, flagList] of Object.entries(featureRouteFlags)) {
     const candidate = affRoutePatternToPrefix(route);
     if (normalized === candidate || normalized.startsWith(candidate)) {
-      return flags.every((flag) => isFeatureEnabledProduction(flag));
+      return flagList.every((flag) => Boolean(F[flag]));
     }
   }
   return true;
@@ -224,7 +275,7 @@ export const featureFlagStyles = import.meta.env.DEV ? ${JSON.stringify(styles)}
 export function getResolvedFeatures(
   options: ResolveFeatureRuntimeOptions = {},
 ): ResolvedFeatureRuntime {
-  return resolveFeatureRuntime(options);
+  return resolveFeatureRuntime(withDefaultEnvironments(options));
 }
 
 export function featureRouteIncluded(
@@ -240,23 +291,23 @@ export function featureRouteIncluded(
 }
 
 export type { FeatureFlagMap } from "./runtime";
-export { longestMatchingRoutePrefix, routePatternToPrefix } from "./runtime";
+export {
+  longestMatchingRoutePrefix,
+  mergeFlagsWithProcessEnvOverrides,
+  resolveFeatureFlagsByEnvironment,
+  routePatternToPrefix,
+} from "./runtime";
 
 export default function astroFeatureFlags(
   options: AstroFeatureFlagsOptions = {},
 ): any {
-  const {
-    root = process.cwd(),
-    mode = process.env.NODE_ENV || "development",
-    baseName = "ff",
-    css,
-  } = options;
+  const { css, ...flagOpts } = options;
+  const opts = withDefaultEnvironments(flagOpts);
+  const mode = opts.mode ?? process.env.NODE_ENV ?? "development";
 
   const runtime = resolveFeatureRuntime({
-    ...options,
-    root,
+    ...opts,
     mode,
-    baseName,
   });
 
   return {
@@ -265,6 +316,8 @@ export default function astroFeatureFlags(
       "astro:config:setup": ({
         updateConfig,
         addDevToolbarApp,
+        command,
+        injectScript,
       }: {
         updateConfig: (config: unknown) => void;
         addDevToolbarApp?: (opts: {
@@ -273,8 +326,14 @@ export default function astroFeatureFlags(
           icon: string;
           entrypoint: string;
         }) => void;
+        command?: string;
+        injectScript?: (stage: string, content: string) => void;
       }) => {
-        if (runtime.isDev && typeof addDevToolbarApp === "function") {
+        if (
+          command === "dev" &&
+          runtime.isDev &&
+          typeof addDevToolbarApp === "function"
+        ) {
           addDevToolbarApp({
             id: "astro-feature-flags",
             name: "Feature flags",
@@ -283,6 +342,37 @@ export default function astroFeatureFlags(
               new URL("./dev-toolbar-app.mjs", import.meta.url),
             ),
           });
+        }
+        if (
+          command === "dev" &&
+          runtime.isDev &&
+          typeof injectScript === "function"
+        ) {
+          const flagNames = Object.keys(runtime.flags);
+          const flagTokens = flagNames.map((name) => toToken(name));
+          const flagsByEnvironment = resolveFeatureFlagsByEnvironment(opts);
+          const flagNameToToken = Object.fromEntries(
+            flagNames.map((name) => [name, toToken(name)]),
+          );
+          const bootstrap = buildAffDevBootstrapScript(
+            flagTokens,
+            { ...runtime.flagColorsByToken },
+            { ...runtime.flagOutlineDefaultsByToken },
+            { ...runtime.flagBadgeDefaultsByToken },
+            { ...runtime.routeFlags },
+            flagNameToToken,
+            runtime.namespace,
+            flagsByEnvironment,
+          );
+          const styles = createFeatureFlagStyles(runtime, css);
+          injectScript(
+            "head-inline",
+            buildAffDevHeadInline({
+              runtime,
+              featureFlagStyles: styles,
+              affDevBootstrap: bootstrap,
+            }),
+          );
         }
         updateConfig({
           vite: {
@@ -296,17 +386,11 @@ export default function astroFeatureFlags(
                 },
                 load(id: string) {
                   if (id === "\0virtual:astro-feature-flags") {
-                    const prodRuntime = resolveFeatureRuntime({
-                      ...options,
-                      root,
-                      mode: "production",
-                      isDev: false,
-                      baseName,
-                    });
+                    const flagsByEnvironment = resolveFeatureFlagsByEnvironment(opts);
                     return createVirtualModuleSource(
                       runtime,
                       css,
-                      prodRuntime.flags,
+                      flagsByEnvironment,
                     );
                   }
                   return null;

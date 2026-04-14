@@ -6,6 +6,7 @@ import {
   isRouteFlagged,
   loadFeatureConfig,
   longestMatchingRoutePrefix,
+  resolveFeatureFlagsByEnvironment,
   resolveFeatureRuntime,
   routePatternToPrefix,
   routePathsToPrune,
@@ -84,15 +85,17 @@ describe("longestMatchingRoutePrefix", () => {
 });
 
 describe("config loading", () => {
-  it("loads empty config when no inline or file config exists", () => {
+  it("loads empty flags when only dev+prod with one active when", () => {
     const config = loadFeatureConfig({
-      root: "/tmp/aff-does-not-exist-9f3a2",
       mode: "production",
-      baseName: "missing-ff",
+      environments: {
+        prod: { when: true, flags: {} },
+      },
     });
     expect(config.namespace).toBe("ff");
     expect(config.flags).toEqual({});
     expect(config.colors).toEqual({});
+    expect(config.activeEnvironment).toBe("prod");
   });
 
   it("deep-merges ff.json over inline astro config", () => {
@@ -103,72 +106,77 @@ describe("config loading", () => {
         JSON.stringify({
           tokenNamespace: "demo",
           flags: {
-            dev: { colour: "red", routes: ["/blog/*"] },
+            wip: { colour: "red", routes: ["/blog/*"] },
             hotFeature2: { colour: "blue", routes: ["/labs/*"] },
           },
           environments: {
             prod: {
-              flags: { dev: false, hotFeature2: true },
+              flags: { wip: false, hotFeature2: true },
             },
           },
         }),
       );
       const cfg = loadFeatureConfig({
-        root: dir,
+        configRoot: dir,
+        jsonConfigPath: join(dir, "ff.json"),
         mode: "production",
-        baseName: "ff",
         tokenNamespace: "inline-ns",
         flags: {
-          dev: { colour: "pink" },
+          wip: { colour: "pink" },
         },
         environments: {
-          prod: { when: true, flags: { dev: true } },
+          prod: { when: true, flags: { wip: true } },
         },
       });
       expect(cfg.namespace).toBe("demo");
-      expect(cfg.flags.dev).toBe(false);
+      expect(cfg.flags.wip).toBe(false);
       expect(cfg.flags.hotFeature2).toBe(true);
       expect(cfg.routeFlags["/labs/*"]).toEqual(["hotFeature2"]);
-      expect(cfg.colors.dev).toBe("red");
+      expect(cfg.colors.wip).toBe("red");
       expect(cfg.colors.hotFeature2).toBe("blue");
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it("merges ff.{env}.json after ff.json when fileEnv is set", () => {
+  it("merges per-environment jsonConfigPath when that layer is active", () => {
     const dir = mkdtempSync(join(tmpdir(), "aff-ff-env-"));
     try {
       writeFileSync(
         join(dir, "ff.json"),
         JSON.stringify({
           flags: {
-            dev: { routes: ["/"] },
+            wip: { routes: ["/"] },
             beta: {},
           },
           environments: {
-            dev: { flags: { dev: true, beta: false } },
+            staging: {
+              when: true,
+              flags: { wip: true, beta: false },
+              jsonConfigPath: "ff.staging.json",
+            },
+            prod: { when: false, flags: {} },
           },
         }),
       );
       writeFileSync(
-        join(dir, "ff.preview.json"),
+        join(dir, "ff.staging.json"),
         JSON.stringify({
           environments: {
-            dev: { flags: { beta: true } },
+            staging: { flags: { beta: true } },
           },
         }),
       );
 
       const cfg = loadFeatureConfig({
-        root: dir,
+        configRoot: dir,
+        jsonConfigPath: join(dir, "ff.json"),
         mode: "development",
-        baseName: "ff",
-        fileEnv: "preview",
+        forceEnvironment: "staging",
       });
-      expect(cfg.flags.dev).toBe(true);
+      expect(cfg.flags.wip).toBe(true);
       expect(cfg.flags.beta).toBe(true);
-      expect(cfg.routeFlags["/"]).toEqual(["dev"]);
+      expect(cfg.routeFlags["/"]).toEqual(["wip"]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -176,8 +184,8 @@ describe("config loading", () => {
 });
 
 describe("route behavior", () => {
-  const routeFlags = { "/blog/": ["dev"], "/labs/": ["labs"] };
-  const flags = { dev: false, labs: true };
+  const routeFlags = { "/blog/": ["wip"], "/labs/": ["labs"] };
+  const flags = { wip: false, labs: true };
 
   it("matches flagged routes including descendants", () => {
     expect(isRouteFlagged("/blog/", routeFlags)).toBe(true);
@@ -220,27 +228,27 @@ describe("route behavior", () => {
 });
 
 describe("render behavior", () => {
-  it("always renders in dev mode", () => {
+  it("always renders in dev environment", () => {
     expect(
       shouldRenderFeatureInMode({
-        isDev: true,
+        activeEnvironment: "dev",
         flags: { dev: false },
         flag: "dev",
       }),
     ).toBe(true);
   });
 
-  it("obeys feature flags in production mode", () => {
+  it("obeys feature flags outside dev", () => {
     expect(
       shouldRenderFeatureInMode({
-        isDev: false,
+        activeEnvironment: "prod",
         flags: { dev: false },
         flag: "dev",
       }),
     ).toBe(false);
     expect(
       shouldRenderFeatureInMode({
-        isDev: false,
+        activeEnvironment: "prod",
         flags: { dev: true },
         flag: "dev",
       }),
@@ -249,35 +257,132 @@ describe("render behavior", () => {
 });
 
 describe("env overrides and pruning", () => {
-  it("supports AFF_FEATURE_* env overrides", () => {
+  it("supports AFF_FEATURE_* env overrides when not dev layer", () => {
     const runtime = resolveFeatureRuntime({
       mode: "production",
-      isDev: false,
+      forceEnvironment: "prod",
       env: {
-        AFF_FEATURE_DEV: "true",
+        AFF_FEATURE_WIP: "true",
         AFF_FEATURE_SHINY_NEW_FEATURE: "1",
       },
       tokenNamespace: "site-ff",
       flags: {
-        dev: { routes: ["/blog/*"] },
+        wip: { routes: ["/blog/*"] },
         shinyNewFeature: {},
       },
       environments: {
         prod: {
-          flags: { dev: false, shinyNewFeature: false },
+          when: true,
+          flags: { wip: false, shinyNewFeature: false },
         },
       },
     });
-    expect(runtime.flags.dev).toBe(true);
+    expect(runtime.activeEnvironment).toBe("prod");
+    expect(runtime.flags.wip).toBe(true);
     expect(runtime.flags.shinyNewFeature).toBe(true);
+  });
+
+  it("skips process env flag overrides in dev layer", () => {
+    const runtime = resolveFeatureRuntime({
+      mode: "development",
+      env: {
+        AFF_FEATURE_X: "false",
+      },
+      flags: { x: {} },
+      environments: {
+        prod: { when: false, flags: { x: false } },
+      },
+    });
+    expect(runtime.isDev).toBe(true);
+    expect(runtime.flags.x).toBe(true);
   });
 
   it("returns only disabled route paths for pruning", () => {
     expect(
       routePathsToPrune({
-        routeFlags: { "/blog/": ["dev"], "/labs/": ["labs"] },
-        flags: { dev: false, labs: true },
+        routeFlags: { "/blog/": ["wip"], "/labs/": ["labs"] },
+        flags: { wip: false, labs: true },
       }),
     ).toEqual(["blog"]);
+  });
+});
+
+describe("resolveFeatureFlagsByEnvironment", () => {
+  it("returns one resolved flag map per environments key", () => {
+    const byEnv = resolveFeatureFlagsByEnvironment({
+      mode: "development",
+      tokenNamespace: "x",
+      flags: {
+        a: {},
+        b: {},
+      },
+      environments: {
+        prod: { when: false, flags: { a: false, b: true } },
+      },
+    });
+    expect(byEnv.dev).toEqual({ a: true, b: true });
+    expect(byEnv.prod).toEqual({ a: false, b: true });
+  });
+
+  it("honours forceEnvironment on options", () => {
+    const base = {
+      flags: { x: {} },
+      environments: {
+        prod: { when: false, flags: { x: false } },
+      },
+    };
+    const cfgDev = loadFeatureConfig({
+      mode: "production",
+      forceEnvironment: "dev",
+      ...base,
+    });
+    expect(cfgDev.flags.x).toBe(true);
+    const cfgProd = loadFeatureConfig({
+      mode: "development",
+      forceEnvironment: "prod",
+      ...base,
+    });
+    expect(cfgProd.flags.x).toBe(false);
+  });
+
+  it("honours forceEnvironment on resolveFeatureRuntime", () => {
+    const rt = resolveFeatureRuntime({
+      mode: "development",
+      forceEnvironment: "prod",
+      flags: { x: {} },
+      environments: {
+        prod: { when: false, flags: { x: false } },
+      },
+      env: {},
+    });
+    expect(rt.flags.x).toBe(false);
+    expect(rt.activeEnvironment).toBe("prod");
+  });
+});
+
+describe("environment validation", () => {
+  it("throws when exactly one when is not set", () => {
+    expect(() =>
+      loadFeatureConfig({
+        mode: "production",
+        environments: {
+          prod: { when: false, flags: {} },
+        },
+      }),
+    ).toThrow(/exactly one environment must have when: true/);
+  });
+
+  it("injects reserved dev when omitted from config", () => {
+    const cfg = loadFeatureConfig({
+      mode: "production",
+      flags: {
+        onlyProd: {},
+      },
+      environments: {
+        prod: { when: true, flags: { onlyProd: true } },
+      },
+    });
+    expect(cfg.activeEnvironment).toBe("prod");
+    expect(cfg.flags.onlyProd).toBe(true);
   });
 });

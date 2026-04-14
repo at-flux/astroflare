@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 export type FeatureFlagMap = Record<string, boolean>;
 export type FeatureRouteMap = Record<string, string[]>;
@@ -14,27 +14,35 @@ export interface FeatureConfig {
   outlineDefaultsByToken: FeatureBoolByTokenMap;
   badgeDefaultsByToken: FeatureBoolByTokenMap;
   mode: string;
+  /** Which `environments` entry was used (reserved `dev` = all flags on, toolbar layer). */
+  activeEnvironment: string;
 }
 
+/**
+ * Declarative feature flags for Astro. Merge order: inline options → optional root
+ * {@link ResolveFeatureRuntimeOptions.jsonConfigPath} → optional per-environment
+ * `environments.<name>.jsonConfigPath` (merged when that layer is active).
+ *
+ * Exactly one `when: true` across environments unless `forceEnvironment` or `AFF_ENVIRONMENT`
+ * selects the layer. A reserved **`dev`** environment is required (all flags on at resolve time;
+ * toggles are dev-toolbar only) plus at least one other environment (e.g. `prod`).
+ */
 export interface ResolveFeatureRuntimeOptions {
-  /** Absolute or relative path to a JSON config file (preferred over root/baseName). */
+  /**
+   * Directory used to resolve relative {@link jsonConfigPath} values (root and per-environment).
+   * Defaults to `process.cwd()`.
+   */
+  configRoot?: string;
+  /** Optional main JSON file merged after inline `flags` / `environments`. */
   jsonConfigPath?: string;
-  root?: string;
-  /** `development` / `production` / aliases `dev` / `prod` */
+  /** Passed through to `ResolvedFeatureRuntime.mode` (e.g. `process.env.NODE_ENV`). */
   mode?: string;
-  isDev?: boolean;
+  /** Process env for `AFF_FEATURE_*` and `ASTRO_FEATURE_FLAGS` (skipped when active env is `dev`). */
   env?: Record<string, string | undefined>;
-  /** Base filename without extension (default `ff`). */
-  baseName?: string;
   /**
-   * Optional external override file suffix: `ff.<fileEnv>.json`.
-   * Useful for preview/branch deploy overrides.
+   * Use this `environments` entry regardless of `when` / `AFF_ENVIRONMENT` (e.g. sitemaps, tests).
    */
-  fileEnv?: string;
-  /**
-   * Inline base config from `astro.config`.
-   * If `ff.json` exists, it deep-merges over this object.
-   */
+  forceEnvironment?: string;
   tokenNamespace?: string;
   flags?: Record<
     string,
@@ -51,6 +59,8 @@ export interface ResolveFeatureRuntimeOptions {
     {
       when?: boolean;
       flags?: Record<string, boolean>;
+      /** Optional JSON merged after the root file when this environment is active. */
+      jsonConfigPath?: string;
     }
   >;
 }
@@ -110,11 +120,6 @@ export function toToken(flagName: string): string {
     .replace(/^-|-$/g, "");
 }
 
-function isProductionMode(mode: string): boolean {
-  const m = mode.trim().toLowerCase();
-  return m === "production" || m === "prod";
-}
-
 function mergeRecords<T extends Record<string, unknown>>(
   base: T,
   ...layers: Partial<T>[]
@@ -144,6 +149,12 @@ function mergeRecords<T extends Record<string, unknown>>(
   return out;
 }
 
+function resolvePath(relativeOrAbsolute: string, configRoot: string): string {
+  return isAbsolute(relativeOrAbsolute)
+    ? relativeOrAbsolute
+    : join(configRoot, relativeOrAbsolute);
+}
+
 type NormalizedFlagDef = {
   color?: string;
   outline: boolean;
@@ -151,17 +162,22 @@ type NormalizedFlagDef = {
   routes: string[];
 };
 
+type NormalizedEnvEntry = {
+  when?: boolean;
+  flags: Record<string, boolean>;
+  /** Per-environment JSON merged after root `jsonConfigPath` when this layer is active. */
+  jsonConfigPath?: string;
+};
+
 type DeclarativeFeatureConfig = {
   tokenNamespace: string;
   flags: Record<string, NormalizedFlagDef>;
-  environments: Record<
-    string,
-    { when?: boolean; flags: Record<string, boolean> }
-  >;
+  environments: Record<string, NormalizedEnvEntry>;
 };
 
 function normalizeDeclarativeConfig(
   raw: Record<string, unknown>,
+  mode: string = process.env.NODE_ENV ?? "development",
 ): DeclarativeFeatureConfig {
   const tokenNamespaceRaw =
     (typeof raw.tokenNamespace === "string" ? raw.tokenNamespace : undefined) ??
@@ -194,11 +210,9 @@ function normalizeDeclarativeConfig(
     !Array.isArray(raw.environments)
       ? (raw.environments as Record<string, unknown>)
       : {};
-  const environments: Record<
-    string,
-    { when?: boolean; flags: Record<string, boolean> }
-  > = {};
+  const environments: Record<string, NormalizedEnvEntry> = {};
   for (const [envName, maybeEnv] of Object.entries(envRaw)) {
+    if (envName === "dev") continue;
     if (!maybeEnv || typeof maybeEnv !== "object" || Array.isArray(maybeEnv))
       continue;
     const env = maybeEnv as Record<string, unknown>;
@@ -211,11 +225,19 @@ function normalizeDeclarativeConfig(
       envFlags[flagName] = Boolean(value);
     }
     const when = typeof env.when === "boolean" ? env.when : undefined;
+    const layerJson =
+      typeof env.jsonConfigPath === "string" ? env.jsonConfigPath : undefined;
     environments[envName] = {
       ...(when !== undefined ? { when } : {}),
+      ...(layerJson ? { jsonConfigPath: layerJson } : {}),
       flags: envFlags,
     };
   }
+
+  environments.dev = {
+    when: mode !== "production",
+    flags: {},
+  };
 
   return {
     tokenNamespace: tokenNamespaceRaw,
@@ -224,66 +246,133 @@ function normalizeDeclarativeConfig(
   };
 }
 
-function resolveActiveEnvironmentName({
-  environments,
-  mode,
-}: {
-  environments: Record<
-    string,
-    { when?: boolean; flags: Record<string, boolean> }
-  >;
-  mode: string;
-}): string | undefined {
-  const envOverride = process.env.AFF_ENVIRONMENT?.trim();
-  if (envOverride && environments[envOverride]) return envOverride;
+function assertEnvironmentShape(environments: Record<string, NormalizedEnvEntry>) {
+  const keys = Object.keys(environments);
+  if (!environments.dev) {
+    throw new Error(
+      'astro-feature-flags: environments must include a reserved "dev" entry.',
+    );
+  }
+  if (keys.length < 2) {
+    throw new Error(
+      "astro-feature-flags: environments must include `dev` plus at least one other layer (e.g. `prod`).",
+    );
+  }
+}
+
+function countActiveWhen(environments: Record<string, NormalizedEnvEntry>): number {
+  return Object.values(environments).filter((e) => e.when === true).length;
+}
+
+function resolveAffEnvironment(
+  options: ResolveFeatureRuntimeOptions,
+): string | undefined {
+  const proc =
+    options.env ?? (process.env as Record<string, string | undefined>);
+  return proc.AFF_ENVIRONMENT?.trim();
+}
+
+function resolveActiveEnvironmentName(
+  normalized: DeclarativeFeatureConfig,
+  options: ResolveFeatureRuntimeOptions,
+): string {
+  const { environments } = normalized;
+  assertEnvironmentShape(environments);
+
+  const forced = options.forceEnvironment?.trim();
+  if (forced && environments[forced]) return forced;
+
+  const aff = resolveAffEnvironment(options);
+  if (aff && environments[aff]) return aff;
+
+  const n = countActiveWhen(environments);
+  if (n !== 1) {
+    const activeNames = Object.entries(environments)
+      .filter(([, e]) => e.when === true)
+      .map(([k]) => k);
+    const devWhen = environments.dev?.when;
+    const hint =
+      n > 1 && environments.dev && devWhen === true
+        ? " The reserved `dev` environment is active for this `mode` while another layer also has `when: true`. Pin one layer with `forceEnvironment` or `AFF_ENVIRONMENT`, or adjust non-dev `when` predicates."
+        : "";
+    throw new Error(
+      `astro-feature-flags: exactly one environment must have when: true (found ${n}${activeNames.length ? `: ${activeNames.join(", ")}` : ""}).${hint} Set forceEnvironment or AFF_ENVIRONMENT to pick a layer explicitly.`,
+    );
+  }
   for (const [name, cfg] of Object.entries(environments)) {
     if (cfg.when === true) return name;
   }
-  if (isProductionMode(mode) && environments.prod) return "prod";
-  if (!isProductionMode(mode) && environments.dev) return "dev";
-  return Object.keys(environments)[0];
+  throw new Error("astro-feature-flags: internal error resolving environment.");
 }
 
-export function loadFeatureConfig({
-  jsonConfigPath,
-  root = process.cwd(),
-  mode = process.env.NODE_ENV || "development",
-  baseName = "ff",
-  fileEnv,
-  tokenNamespace = "ff",
-  flags = {},
-  environments = {},
-}: ResolveFeatureRuntimeOptions = {}): FeatureConfig {
-  const basePath = jsonConfigPath ?? join(root, `${baseName}.json`);
-  const envSuffix = (fileEnv ?? process.env.FF_ENV)?.trim();
-  const envPath = envSuffix ? join(root, `${baseName}.${envSuffix}.json`) : "";
-
+function readBaseMergedRaw(options: ResolveFeatureRuntimeOptions): Record<string, unknown> {
+  const configRoot = options.configRoot ?? process.cwd();
+  const {
+    tokenNamespace = "ff",
+    flags = {},
+    environments = {},
+  } = options;
   const inlineRaw: Record<string, unknown> = {
     tokenNamespace,
     flags,
     environments,
   };
-  const fileRaw = readJsonIfExists(basePath);
-  const envFileRaw =
-    envPath && existsSync(envPath) ? readJsonIfExists(envPath) : {};
+  let merged = { ...inlineRaw };
+  if (options.jsonConfigPath) {
+    const p = resolvePath(options.jsonConfigPath, configRoot);
+    merged = mergeRecords(merged as Record<string, unknown>, readJsonIfExists(p));
+  }
+  return merged;
+}
 
-  const mergedRaw = mergeRecords(inlineRaw, fileRaw, envFileRaw);
-  const normalized = normalizeDeclarativeConfig(mergedRaw);
-  const envName = resolveActiveEnvironmentName({
-    environments: normalized.environments,
-    mode,
-  });
-  const envFlags = envName
-    ? (normalized.environments[envName]?.flags ?? {})
-    : {};
+function mergePerEnvironmentJson(
+  baseRaw: Record<string, unknown>,
+  envName: string,
+  configRoot: string,
+  mode: string,
+): Record<string, unknown> {
+  if (envName === "dev") return baseRaw;
+  const normalized = normalizeDeclarativeConfig(baseRaw, mode);
+  const entry = normalized.environments[envName];
+  const rel = entry?.jsonConfigPath;
+  if (!rel) return baseRaw;
+  const p = resolvePath(rel, configRoot);
+  return mergeRecords(baseRaw, readJsonIfExists(p));
+}
 
+function readMergedRawForActiveEnv(
+  options: ResolveFeatureRuntimeOptions,
+  envName: string,
+): Record<string, unknown> {
+  const configRoot = options.configRoot ?? process.cwd();
+  const mode = options.mode ?? process.env.NODE_ENV ?? "development";
+  const base = readBaseMergedRaw(options);
+  return mergePerEnvironmentJson(base, envName, configRoot, mode);
+}
+
+export function loadFeatureConfig(
+  options: ResolveFeatureRuntimeOptions = {},
+): FeatureConfig {
+  const mode = options.mode ?? process.env.NODE_ENV ?? "development";
+  const baseRaw = readBaseMergedRaw(options);
+  const baseNorm = normalizeDeclarativeConfig(baseRaw, mode);
+  const envName = resolveActiveEnvironmentName(baseNorm, options);
+  const fullRaw = readMergedRawForActiveEnv(options, envName);
+  const normalized = normalizeDeclarativeConfig(fullRaw, mode);
+
+  const envFlags = normalized.environments[envName]?.flags ?? {};
   const routeFlags: FeatureRouteMap = {};
   const colors: FeatureColorMap = {};
   const outlineDefaultsByToken: FeatureBoolByTokenMap = {};
   const badgeDefaultsByToken: FeatureBoolByTokenMap = {};
   const resolvedFlags: FeatureFlagMap = {};
+
   for (const [flagName, flagDef] of Object.entries(normalized.flags)) {
-    resolvedFlags[flagName] = envFlags[flagName] === true;
+    if (envName === "dev") {
+      resolvedFlags[flagName] = true;
+    } else {
+      resolvedFlags[flagName] = envFlags[flagName] === true;
+    }
     if (flagDef.color) colors[flagName] = flagDef.color;
     const token = toToken(flagName);
     outlineDefaultsByToken[token] = flagDef.outline;
@@ -301,7 +390,59 @@ export function loadFeatureConfig({
     outlineDefaultsByToken,
     badgeDefaultsByToken,
     mode,
+    activeEnvironment: envName,
   };
+}
+
+/** Applies `AFF_FEATURE_*` and `ASTRO_FEATURE_FLAGS` on top of a resolved flag map. */
+export function mergeFlagsWithProcessEnvOverrides(
+  flags: FeatureFlagMap,
+  env: Record<string, string | undefined> = process.env as Record<
+    string,
+    string | undefined
+  >,
+): FeatureFlagMap {
+  const resolvedFlags: FeatureFlagMap = { ...flags };
+  for (const [key, value] of Object.entries(resolvedFlags)) {
+    const slug = toToken(key).replace(/-/g, "_").toUpperCase();
+    const envKey = `AFF_FEATURE_${slug}`;
+    resolvedFlags[key] = toBoolean(env[envKey], Boolean(value));
+  }
+  const envMapRaw = env.ASTRO_FEATURE_FLAGS;
+  if (envMapRaw) {
+    try {
+      const envMap = JSON.parse(envMapRaw) as Record<string, unknown>;
+      for (const [flag, value] of Object.entries(envMap)) {
+        resolvedFlags[flag] = Boolean(value);
+      }
+    } catch {
+      // ignore invalid JSON override
+    }
+  }
+  return resolvedFlags;
+}
+
+/**
+ * Resolved flag booleans for each `environments` key, after the same process-env overrides
+ * as {@link resolveFeatureRuntime} (overrides skipped for the reserved `dev` layer).
+ */
+export function resolveFeatureFlagsByEnvironment(
+  options: ResolveFeatureRuntimeOptions = {},
+): Record<string, FeatureFlagMap> {
+  const baseRaw = readBaseMergedRaw(options);
+  const mode = options.mode ?? process.env.NODE_ENV ?? "development";
+  const normalized = normalizeDeclarativeConfig(baseRaw, mode);
+  const envKeys = Object.keys(normalized.environments);
+  const proc = options.env ?? (process.env as Record<string, string | undefined>);
+  const out: Record<string, FeatureFlagMap> = {};
+  for (const envName of envKeys) {
+    const cfg = loadFeatureConfig({ ...options, forceEnvironment: envName });
+    out[envName] =
+      envName === "dev"
+        ? { ...cfg.flags }
+        : mergeFlagsWithProcessEnvOverrides({ ...cfg.flags }, proc);
+  }
+  return out;
 }
 
 /** Normalize colour map keys (flag names or tokens) to CSS tokens. */
@@ -318,7 +459,9 @@ export function colorsToTokenMap(
 export interface ResolvedFeatureRuntime {
   namespace: string;
   mode: string;
+  /** True when the active environment is the reserved `dev` layer (toolbar + all flags on). */
   isDev: boolean;
+  activeEnvironment: string;
   flags: FeatureFlagMap;
   routeFlags: FeatureRouteMap;
   /** Outline/badge/route-frame colour per flag token (CSS colour strings). */
@@ -328,54 +471,23 @@ export interface ResolvedFeatureRuntime {
   flagBadgeDefaultsByToken: Record<string, boolean>;
 }
 
-export function resolveFeatureRuntime({
-  jsonConfigPath,
-  root = process.cwd(),
-  mode = process.env.NODE_ENV || "development",
-  isDev: isDevOverride,
-  env = process.env as Record<string, string | undefined>,
-  baseName = "ff",
-  fileEnv,
-  tokenNamespace,
-  flags,
-  environments,
-}: ResolveFeatureRuntimeOptions = {}): ResolvedFeatureRuntime {
-  const isDev = isDevOverride ?? !isProductionMode(mode);
-  const config = loadFeatureConfig({
-    root,
-    jsonConfigPath,
-    mode,
-    baseName,
-    fileEnv,
-    tokenNamespace,
-    flags,
-    environments,
-  });
-  const resolvedFlags: FeatureFlagMap = {};
-
-  for (const [key, value] of Object.entries(config.flags)) {
-    const slug = toToken(key).replace(/-/g, "_").toUpperCase();
-    const envKey = `AFF_FEATURE_${slug}`;
-    resolvedFlags[key] = toBoolean(env[envKey], Boolean(value));
-  }
-  const envMapRaw = env.ASTRO_FEATURE_FLAGS;
-  if (envMapRaw) {
-    try {
-      const envMap = JSON.parse(envMapRaw) as Record<string, unknown>;
-      for (const [flag, value] of Object.entries(envMap)) {
-        resolvedFlags[flag] = Boolean(value);
-      }
-    } catch {
-      // ignore invalid JSON override
-    }
-  }
+export function resolveFeatureRuntime(
+  options: ResolveFeatureRuntimeOptions = {},
+): ResolvedFeatureRuntime {
+  const env = options.env ?? (process.env as Record<string, string | undefined>);
+  const config = loadFeatureConfig(options);
+  const isDevLayer = config.activeEnvironment === "dev";
+  const resolvedFlags = isDevLayer
+    ? { ...config.flags }
+    : mergeFlagsWithProcessEnvOverrides(config.flags, env);
 
   const colorByToken = colorsToTokenMap(config.colors);
 
   return {
     namespace: config.namespace,
     mode: config.mode,
-    isDev,
+    isDev: isDevLayer,
+    activeEnvironment: config.activeEnvironment,
     flags: resolvedFlags,
     routeFlags: config.routeFlags,
     flagColorsByToken: colorByToken,
@@ -389,15 +501,15 @@ export function isFlagEnabled(flags: FeatureFlagMap, flag: string): boolean {
 }
 
 export function shouldRenderFeatureInMode({
-  isDev,
+  activeEnvironment,
   flags,
   flag,
 }: {
-  isDev: boolean;
+  activeEnvironment: string;
   flags: FeatureFlagMap;
   flag: string;
 }): boolean {
-  if (isDev) return true;
+  if (activeEnvironment === "dev") return true;
   return isFlagEnabled(flags, flag);
 }
 
