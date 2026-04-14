@@ -230,7 +230,6 @@ Layer select override: `AFF_ENVIRONMENT=prod`. **`forceEnvironment`** on the int
 | `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                                                                                                                        |
 | `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the host).                                                                                                             |
 | `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                                                                                                                                   |
-| `outlineWidth` / `outlineOffset` | `2px`, `-2px` | Applies to single-token dev outlines. Multi-token element rings remain solid multi-colour gradients. |
 
 Per-element badge overrides (markup):
 
