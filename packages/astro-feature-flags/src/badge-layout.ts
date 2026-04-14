@@ -6,21 +6,21 @@ export type ElementBadgeHorizontalAlign = "start" | "center" | "end";
 /** Subset of dev CSS options used for element-badge geometry (also on `DevOutlineCssOptions`). */
 export interface ElementBadgeLayoutOptions {
   /**
-   * Horizontal alignment along the host’s top or bottom edge. Default `end` (top-right in LTR).
+   * Horizontal alignment along the element’s top or bottom edge. Default `end` (top-right in LTR).
    * Ignored when `elementBadgeHorizontalPercent` is set.
    */
   elementBadgeHorizontalAlign?: ElementBadgeHorizontalAlign;
   /**
-   * Optional: anchor at a percentage along the host width (0–100), with the pill centred on that point (`translateX(-50%)`).
+   * Optional: anchor at a percentage along the element width (0–100), with the pill centred on that point (`translateX(-50%)`).
    * When set, overrides `elementBadgeHorizontalAlign`.
    */
   elementBadgeHorizontalPercent?: number;
   /**
    * Vertical shift as a percentage of the **badge’s own height** (CSS transform %).
-   * With anchor `top`, moves the badge upward. Default `80` (~20% of the pill overlaps the host top edge).
+   * With anchor `top`, moves the badge upward. Default `80` (~20% of the pill overlaps the element top edge).
    */
   elementBadgeVerticalShiftPercent?: number;
-  /** Anchor the badge to the top or bottom edge of the host. Default `top`. */
+  /** Anchor the badge to the top or bottom edge of the element. Default `top`. */
   elementBadgeVerticalAnchor?: ElementBadgeVerticalAnchor;
 }
 
