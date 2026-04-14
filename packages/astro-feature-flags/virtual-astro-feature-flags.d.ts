@@ -5,6 +5,8 @@ declare module "virtual:astro-feature-flags" {
   export const featureFlagTokens: readonly string[];
   export const featureFlagColors: Readonly<Record<string, string>>;
   export const featureFlags: Readonly<Record<string, boolean>>;
+  /** Resolved flags when `mode` is production (route prune + overlay preview); dev `featureFlags` may differ. */
+  export const featureFlagsProduction: Readonly<Record<string, boolean>>;
   export const featureRouteFlags: Readonly<Record<string, string[]>>;
   export const featureNamespace: string;
   export const featureMode: string;
@@ -15,6 +17,7 @@ declare module "virtual:astro-feature-flags" {
   export const affDevBootstrap: string;
 
   export function isFeatureEnabled(flag: string): boolean;
+  export function isFeatureEnabledProduction(flag: string): boolean;
   /** Same as `isFeatureEnabled` — SSR follows `ff.json`; dev toolbar does not change server output. */
   export function shouldRenderFeature(flag: string): boolean;
   export function isFeatureRoute(pathname: string): boolean;

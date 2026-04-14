@@ -18,7 +18,7 @@ Feature flags for Astro with a declarative config:
 - element gating via namespaced attributes (`data-ff` or `data-ff-<token>` by default)
 - production static HTML: gated `data-ff` nodes culled, dev-only CSS not shipped (`featureFlagStyles` is empty); `data-ff-route*` stripped from `<html>`
 - route badge + production route pruning
-- dev toolbar for enabled/outline/badge/colour preview
+- dev toolbar for enabled/outline/badge/colour preview (toolbar also hides **route** frame/pill per flag; routes omitted in **production** show a dim overlay in dev)
 
 ## Quickstart
 
@@ -261,7 +261,9 @@ If your editor misses virtual module types, add one reference in `src/env.d.ts`.
 
 Exports include **`FeatureFlag`**, **`FeatureToken`**, **`affDevBootstrap`**, **`routeFeatureTokenForPath`**, **`routeFeatureTokensForPath`**, **`shouldRenderFeature`**, **`matchedFeatureRoutePrefix`**, **`featureFlagStyles`**, etc.
 
-**`featureFlagStyles`**: dev-only (outlines, badges, route frame). In production it is always an **empty string** — static HTML is cleaned up after build instead (see note above). You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
+**`featureFlagStyles`**: dev-only (outlines, badges, route frame, route-prune overlay). In production it is always an **empty string** — static HTML is cleaned up after build instead (see note above). You can still import it so a shared layout keeps one code path; empty `<style>` tags are removed from emitted HTML.
+
+**`featureFlagsProduction`**: frozen map used by **`shouldIncludePathInProduction`**, **`isFeatureEnabledProduction`**, and the dev bootstrap route preview (dim overlay when the current URL would be pruned in production).
 
 ## How-to
 

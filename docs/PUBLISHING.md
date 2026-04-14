@@ -2,7 +2,7 @@
 
 This monorepo uses **`@qiwi/multi-semantic-release`**: each publishable package has its **own semver**, **own changelog** (`packages/<name>/CHANGELOG.md`), **own git tags** (default format `name@version`, e.g. `@at-flux/dom@0.1.0`), and **`npm publish` runs only for packages that had releasable commits**.
 
-Packages: **`@at-flux/astroflare`**, **`@at-flux/dom`**.
+Packages: **`@at-flux/astroflare`**, **`@at-flux/dom`**, **`@at-flux/astro-feature-flags`**.
 
 ### Versioning from `0.0.1`
 
@@ -20,7 +20,7 @@ npm **does not** give you a “Create package” button for scoped packages the 
 
 ## Recommended: [Trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)
 
-Configure **each** published package on npmjs.com → **Settings** → **Trusted publishing** → **GitHub Actions**:
+Configure **each** published package on npmjs.com → **Settings** → **Trusted publishing** → **GitHub Actions** (repeat for every scope package, including **`@at-flux/astro-feature-flags`**):
 
 - **Organization or user:** `at-flux`
 - **Repository:** `astroflare`
@@ -33,6 +33,16 @@ The **Release** workflow (`.github/workflows/release.yml`) runs after CI succeed
 - **No** `NODE_AUTH_TOKEN` on the publish step (OIDC)
 
 Requirements from npm: **npm CLI ≥ 11.5.1**, **Node ≥ 22.14** (this repo uses Node **24**).
+
+### `npm error 404 Not Found` on `PUT …/@scope%2fpackage`
+
+Usually either **trusted publishing is not registered for that exact package name**, or the npm user/token **cannot create or publish** under the **`@at-flux`** org.
+
+1. In npm → **Organizations** → **at-flux** → ensure the GitHub Actions publisher (or your user) has **publish** access.
+2. On the **package** page (after it exists) or via first manual publish: add **Trusted publishing** with workflow **`release.yml`** for `at-flux/astroflare`.
+3. **First publish of a new scoped name**: an org owner often must run once locally after `npm login` and a built `dist/`:  
+   `cd packages/<name> && pnpm build && npm publish --access public`  
+   so the package exists; OIDC can then publish subsequent versions from CI.
 
 ## Root-only changes vs bumping every package
 
@@ -61,7 +71,3 @@ pnpm publish --access public
 ## Alternative: token-based publish (not recommended)
 
 If you cannot use trusted publishing yet, use an **Automation** token and wire `NODE_AUTH_TOKEN` into a custom publish step (classic tokens + 2FA often cause **EOTP** in CI).
-
-## Relation to `joy-goodbye`
-
-Same OIDC pattern: **`id-token: write`**, modern **npm**, no long-lived token when trusted publishing is configured.
