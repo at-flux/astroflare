@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import astroFeatureFlags from "@at-flux/astro-feature-flags";
 
 export default defineConfig({
+  server: { port: 4339 },
   trailingSlash: "always",
   integrations: [
     astroFeatureFlags({

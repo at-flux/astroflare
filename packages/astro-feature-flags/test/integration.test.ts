@@ -1,4 +1,6 @@
 import type { ResolvedFeatureRuntime } from "../src/runtime";
+import { buildAffDevHeadInline } from "../src/dev-head-inject";
+import { buildAffDevBootstrapScript } from "../src/dev-outline-css";
 import { describe, expect, it } from "vitest";
 import astroFeatureFlags, {
   createFeatureFlagStyles,
@@ -38,6 +40,35 @@ const bare = (
 };
 
 describe("integration exports", () => {
+  it("inlines route prefix helper inside injected dev scripts (fn.toString() scope)", () => {
+    const bootstrap = buildAffDevBootstrapScript(
+      ["wip"],
+      {},
+      {},
+      {},
+      { "/blog/*": ["wip"] },
+      { wip: "wip" },
+      "ff",
+    );
+    expect(bootstrap).toMatch(/const toPrefix\s*=\s*\(/);
+    const head = buildAffDevHeadInline({
+      runtime: bare({
+        namespace: "ff",
+        mode: "development",
+        isDev: true,
+        flags: { wip: true },
+        routeFlags: { "/blog/*": ["wip"] },
+      }),
+      featureFlagStyles: "/*css*/",
+      affDevBootstrap: "/*boot*/",
+    });
+    expect(head).toMatch(/const toPrefix\s*=\s*\(/);
+    expect(bootstrap).toContain("hasDisabledInCombo");
+    expect(bootstrap).toContain("if (hasDisabledInCombo)");
+    expect(bootstrap).toContain("allTokens.join(\" \")");
+    expect(bootstrap).toContain("if (hasCombo) {");
+  });
+
   it("resolves runtime and route helper", () => {
     const runtime = getResolvedFeatures({
       mode: "production",
@@ -128,11 +159,34 @@ describe("integration exports", () => {
     expect(css).toContain("position: fixed");
     expect(css).toContain("data-ff-enabled-");
     expect(css).toContain(
-      ':is([data-demo-feat~="wip"], [data-demo-feat-wip]):hover::before',
+      ':is([data-demo-feat~="wip"], [data-demo-feat-wip]):not([data-demo-feat*=" "]):hover::before',
     );
     expect(css).toContain("pointer-events: auto");
     expect(css).toContain('[data-demo-feat~="wip"]');
     expect(css).toContain("position: relative");
+    expect(css).toContain('html [data-demo-feat*=" "]::after');
+    expect(css).toContain("mask-composite: exclude");
+    expect(css).toContain(
+      'html[data-ff-badge-wip="off"] :is([data-demo-feat~="wip"], [data-demo-feat-wip])[data-demo-feat*=" "]::before',
+    );
+    expect(css).toContain(
+      'html[data-ff-badge-wip="off"] :is([data-demo-feat~="wip"], [data-demo-feat-wip])[data-demo-feat*=" "][data-ff-label]::before',
+    );
+    expect(css).not.toContain(
+      'html[data-ff-badge-wip="off"] :is([data-demo-feat~="wip"], [data-demo-feat-wip])[data-demo-feat*=" "] {',
+    );
+    expect(css).toContain(
+      'html[data-ff-outline-wip="off"] :is([data-demo-feat~="wip"], [data-demo-feat-wip])[data-demo-feat*=" "]',
+    );
+    expect(css).toContain(
+      'html[data-ff-outline-wip="off"] :is([data-demo-feat~="wip"], [data-demo-feat-wip])[data-demo-feat*=" "]::after',
+    );
+    expect(css).toContain(
+      '[data-ff-route~="wip"][data-ff-enabled-wip="off"] #aff-route-frame',
+    );
+    expect(css).toContain(
+      '[data-ff-route~="wip"][data-ff-enabled-wip="off"] #aff-route-badge',
+    );
   });
 
   it("uses per-token colours from runtime for outlines when set", () => {

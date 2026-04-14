@@ -14,15 +14,14 @@ type BootstrapPayload = {
   namespace: string;
 };
 
-function toPrefix(pattern: string): string {
-  let p = String(pattern || "").trim();
-  if (p.endsWith("/**")) p = p.slice(0, -3);
-  else if (p.endsWith("/*")) p = p.slice(0, -2);
-  else if (p.length > 1 && p.endsWith("*")) p = p.slice(0, -1);
-  return p.endsWith("/") ? p : `${p}/`;
-}
-
 export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
+  const toPrefix = (pattern: string): string => {
+    let p = String(pattern || "").trim();
+    if (p.endsWith("/**")) p = p.slice(0, -3);
+    else if (p.endsWith("/*")) p = p.slice(0, -2);
+    else if (p.length > 1 && p.endsWith("*")) p = p.slice(0, -1);
+    return p.endsWith("/") ? p : `${p}/`;
+  };
   try {
     const { featureFlagStyles, routeFlags: RF, flagNameToToken: M } = payload;
     const s = document.createElement("style");
@@ -125,6 +124,13 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
 }
 
 export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
+  const toPrefix = (pattern: string): string => {
+    let p = String(pattern || "").trim();
+    if (p.endsWith("/**")) p = p.slice(0, -3);
+    else if (p.endsWith("/*")) p = p.slice(0, -2);
+    else if (p.length > 1 && p.endsWith("*")) p = p.slice(0, -1);
+    return p.endsWith("/") ? p : `${p}/`;
+  };
   const T = payload.flagTokens;
   const C = payload.colors;
   const OD = payload.outlineDefaults;
@@ -156,9 +162,31 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
     return unique(out);
   };
 
+  const stripBooleanFlagAttrs = (el: Element) => {
+    for (let i = 0; i < T.length; i++) {
+      el.removeAttribute(`data-${N}-${T[i]}`);
+    }
+  };
+
   const applyCombo = (el: Element, cols: Record<string, string>) => {
     const allTokens = comboTokens(el);
+    const hasCombo = allTokens.length >= 2;
+    const hasDisabledInCombo = hasCombo && allTokens.some((tk) => !isEnabled(tk));
     const visual = allTokens.filter((tk) => isEnabled(tk));
+    if (hasDisabledInCombo) {
+      // Fail-closed for combos: if any member token is disabled, hide the whole host.
+      // Keep all combo tokens mirrored in data-<ns> so enabled-off CSS selectors can hide it.
+      stripBooleanFlagAttrs(el);
+      el.setAttribute(`data-${N}`, allTokens.join(" "));
+      el.removeAttribute("data-ff-label");
+      el.style.removeProperty("--ff-combo-gradient");
+      el.style.removeProperty("--ff-combo-gradient-soft");
+      el.style.removeProperty("--ff-combo-outline");
+      el.style.removeProperty("--ff-combo-text");
+      el.style.removeProperty("--ff-combo-badge-border");
+      el.style.removeProperty("--ff-combo-badge-gradient");
+      return;
+    }
     if (visual.length < 2) {
       el.removeAttribute("data-ff-label");
       el.style.removeProperty("--ff-combo-gradient");
@@ -167,11 +195,19 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
       el.style.removeProperty("--ff-combo-text");
       el.style.removeProperty("--ff-combo-badge-border");
       el.style.removeProperty("--ff-combo-badge-gradient");
-      if (visual.length === 1) {
-        el.setAttribute(`data-${N}`, visual[0]!);
+      if (hasCombo) {
+        // Only normalize attrs for true combos. Single-flag shorthand markers
+        // (e.g. data-ff-wip) must stay intact so re-enabling can recover styling.
+        stripBooleanFlagAttrs(el);
+        if (visual.length === 1) {
+          el.setAttribute(`data-${N}`, visual[0]!);
+        } else {
+          el.removeAttribute(`data-${N}`);
+        }
       }
       return;
     }
+    stripBooleanFlagAttrs(el);
     // Mirror all enabled tokens into the primary namespace attribute so `[data-<ns>*=" "]`
     // matches (required for boolean-only combos like data-ff-a + data-ff-b).
     el.setAttribute(`data-${N}`, visual.join(" "));
