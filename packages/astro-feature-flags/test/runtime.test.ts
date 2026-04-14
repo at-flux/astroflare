@@ -358,6 +358,21 @@ describe("resolveFeatureFlagsByEnvironment", () => {
     expect(rt.flags.x).toBe(false);
     expect(rt.activeEnvironment).toBe("prod");
   });
+
+  it("prefers forceEnvironment over AFF_ENVIRONMENT", () => {
+    const rt = resolveFeatureRuntime({
+      mode: "development",
+      forceEnvironment: "prod",
+      env: { AFF_ENVIRONMENT: "staging" },
+      flags: { x: {} },
+      environments: {
+        staging: { when: false, flags: { x: true } },
+        prod: { when: false, flags: { x: false } },
+      },
+    });
+    expect(rt.activeEnvironment).toBe("prod");
+    expect(rt.flags.x).toBe(false);
+  });
 });
 
 describe("environment validation", () => {
