@@ -13,9 +13,9 @@
 
 Feature flags for Astro with a declarative config:
 
-- per-flag declaration (`colour`/`color` for dev-toolbar chrome, optional `routes` for matching pages)
-- **Astro dev vs `dev` layer (default):** **`isAstroDev`** is `import.meta.env.DEV` from Astro/Vite. The reserved **`dev` environment** is injected for you with `when: mode !== "production"` (same `mode` as the integration, defaulting to `NODE_ENV`). When that layer is active, all declared flags resolve **on** at build/SSR and process-env overrides are skipped; the dev toolbar only changes client preview. **`runtime.isDev`** is `activeEnvironment === "dev"` — it matches **`isAstroDev`** in the usual setup (`astro dev` + non-production `mode`). They differ only if you pin another layer with **`forceEnvironment`** / **`AFF_ENVIRONMENT`** while still running the dev server.
-- **At least one non-`dev` layer** in your config (`prod`, `staging`, …); you do **not** declare the reserved `dev` key — it is merged automatically. Exactly one `when: true` among layers (for that `mode`) unless you pin a layer.
+- per-flag declaration (`colour`/`color` for the dev toolbar, optional `routes` for matching pages)
+- **Two modes:** **Astro dev** (`astro dev`) vs **non-dev builds** (production deploys, `astro build` in CI, staging, …). Locally, the integration uses a built-in **dev** configuration layer (injected for you; all flags on at resolve time; process-env overrides off). For shipped output you declare layers such as **`prod`** / **`staging`** with `when` + `flags`. Exactly one `when: true` for the active `mode` unless you pin with **`forceEnvironment`** / **`AFF_ENVIRONMENT`**.
+- **Route gating (non-dev):** If a pathname matches a flag’s `routes` and that flag is **off** for the active layer, static output under that prefix is **removed after build** (and you should filter those URLs from sitemaps—see how-to). If the flag is **on**, routes emit like any other page.
 - element gating via namespaced attributes (`data-ff` or `data-ff-<token>` by default)
 - production static HTML: gated `data-ff` nodes culled, dev-only CSS not shipped (`featureFlagStyles` is empty); `data-ff-route*` stripped from `<html>`
 - route badge + production route pruning
@@ -25,9 +25,11 @@ Feature flags for Astro with a declarative config:
 
 | Term | Meaning |
 | ---- | ------- |
-| **Astro dev** | `astro dev` or `import.meta.env.DEV` → `isAstroDev`. |
-| **`dev` environment** | Reserved layer (auto-injected): all declared flags resolve **on**; no `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` overrides. Default `when` follows `mode !== "production"` (same idea as local `astro dev`). |
-| **Non-`dev` layer** | Any key you declare (`prod`, `staging`, …): uses `environments.<key>.flags` booleans. |
+| **Astro dev** | Local `astro dev` — the built-in dev layer is active; all flags on at resolve time; dev toolbar only affects the browser. |
+| **Non-dev build** | `astro build` / preview / deploy with a shipped layer (`prod`, `staging`, …): `environments.<key>.flags` drives SSR, HTML culling, and route pruning. |
+| **`isAstroDev`** (virtual module) | `import.meta.env.DEV` — Vite’s compile-time flag for components. Layer selection still comes from `environments` / `forceEnvironment`; use `isAstroDev` when you need Astro’s literal dev detection. |
+
+You cannot add an environment key named **`dev`** — that name is reserved and merged automatically (including its `when`; you do not set it in config).
 
 ## Quickstart
 
@@ -58,8 +60,6 @@ Feature flags for Astro with a declarative config:
            },
          },
          environments: {
-           // Reserved `dev` is injected for you. Declare non-dev layers only.
-           // Exactly one `when: true` for this `mode` unless you use forceEnvironment / AFF_ENVIRONMENT.
            prod: {
              when: process.env.NODE_ENV === "production",
              flags: {
@@ -95,7 +95,7 @@ Feature flags for Astro with a declarative config:
 
 > [!NOTE]
 > Flags are combinatory. If an element has `data-ff="wip hot-feature-2"`, both flags must be enabled for SSR outside the reserved `dev` layer.
-> In **`dev`**, all declared flags are on at resolve time; the dev toolbar only changes client preview. In **non-dev** builds, nodes that fail the check are **removed from the HTML**. Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
+> In **Astro dev**, all declared flags are on at resolve time; the dev toolbar only changes client preview. In **non-dev** builds, nodes that fail the check are **removed from the HTML**. Route-mapped prefixes with a flag **off** are pruned from static `dist/` after build. Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
 
 ## Common Use Cases
 
@@ -155,9 +155,9 @@ import { FeatureFlag } from 'virtual:astro-feature-flags';
 
 `data-ff` expects a space-separated list of feature flags.
 
-### 3) Dev toolbar chrome (automatic)
+### 3) Dev toolbar head injection (automatic)
 
-On **`astro dev`**, when the active layer is the reserved **`dev`** environment, the integration uses Astro’s **`injectScript('head-inline', …)`** to append dev-only CSS, set **`data-ff-route`** on `<html>` from the current URL (including after **`astro:page-load`** / **`astro:after-swap`**), and run the toolbar bootstrap script. You do **not** need to wire `affDevBootstrap`, `featureFlagStyles`, or `data-ff-route` in a root layout unless you intentionally want a second copy.
+On **`astro dev`**, when the built-in dev layer is active, the integration uses Astro’s **`injectScript('head-inline', …)`** to append dev-only CSS, set **`data-ff-route`** on `<html>` from the current URL (including after **`astro:page-load`** / **`astro:after-swap`**), and run the toolbar bootstrap script. You do **not** need to wire `affDevBootstrap`, `featureFlagStyles`, or `data-ff-route` in a root layout unless you intentionally want a second copy.
 
 The virtual module still exports **`affDevBootstrap`**, **`featureFlagStyles`**, and **`routeFeatureTokensForPath`** for advanced layouts.
 
@@ -189,6 +189,10 @@ The dev toolbar changes client-side preview state only.
 | `css`              | `DevOutlineCssOptions`              | defaults        | Global badge/outline layout and styling.                              |
 
 If you omit `environments`, the integration injects a minimal reserved `dev` plus **`prod`** tied to `mode` / `NODE_ENV` so `astroFeatureFlags()` still runs in small demos.
+
+### Reserved name `dev`
+
+The key **`dev`** is reserved: do not list it under `environments`. The integration injects it with `when: mode !== "production"` (same `mode` as the integration, defaulting to `NODE_ENV`) so local **`astro dev`** uses the all-flags-on layer. Configure only shipped layers (`prod`, `staging`, …) yourself.
 
 ### `FlagConfig`
 

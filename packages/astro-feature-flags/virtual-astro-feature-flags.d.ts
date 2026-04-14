@@ -8,7 +8,7 @@ declare module "virtual:astro-feature-flags" {
   export const featureFlags: Readonly<Record<string, boolean>>;
   /**
    * Resolved booleans per configured environment key (`staging`, `prod`, …). The reserved
-   * **`dev`** entry is the Astro “all flags on” layer; any other key is a normal layer.
+   * **`dev`** entry is the built-in local-dev layer (all flags on); any other key is a shipped layer.
    */
   export const featureFlagsByEnvironment: Readonly<
     Record<string, Readonly<Record<string, boolean>>>
@@ -22,10 +22,11 @@ declare module "virtual:astro-feature-flags" {
   export const featureRouteFlags: Readonly<Record<string, string[]>>;
   export const featureNamespace: string;
   export const featureMode: string;
-  /** Which environment layer this build resolved to (reserved name `dev` = toolbar + all flags on). */
+  /** Which environment layer this build resolved to (`dev` = built-in local dev layer when active). */
   export const activeEnvironmentKey: string;
   /**
-   * Astro’s dev server / `import.meta.env.DEV`. Not the same as `activeEnvironmentKey === "dev"`.
+   * `import.meta.env.DEV` from Vite. Usually matches a local `astro dev` session; can differ from
+   * `activeEnvironmentKey` if you pin another layer with `forceEnvironment` / `AFF_ENVIRONMENT`.
    */
   export const isAstroDev: boolean;
   /** Dev-only outline/badge CSS; empty string in production (static HTML is culled instead). */
