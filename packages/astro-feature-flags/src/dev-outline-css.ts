@@ -103,20 +103,25 @@ export function createFeatureFlagStyles(
   css?: DevOutlineCssOptions,
 ): string {
   const nsAttr = `data-${toToken(runtime.namespace) || "ff"}`;
+  const selectorsForFlag = (flag: string) => {
+    const token = toToken(flag);
+    const valueSelectors = [`[${nsAttr}~="${token}"]`];
+    if (flag !== token) valueSelectors.push(`[${nsAttr}~="${flag}"]`);
+    const baseSelectors = [...valueSelectors, `[${nsAttr}-${token}]`];
+    return {
+      token,
+      baseSelectors,
+      selOutline: baseSelectors.map((s) => `${s}:not([${nsAttr}*=" "])`).join(", "),
+      selIs: `:is(${baseSelectors.join(", ")})`,
+    };
+  };
   const opts = normalizeCssOptions(css, runtime);
   const badgeLayout = normalizeElementBadgeLayout(css);
   const badgePos = elementBadgePositionBlock(badgeLayout);
   const chunks: string[] = [];
 
   for (const flag of Object.keys(runtime.flags)) {
-    const token = toToken(flag);
-    const valueSelectors = [`[${nsAttr}~="${token}"]`];
-    if (flag !== token) valueSelectors.push(`[${nsAttr}~="${flag}"]`);
-    const baseSelectors = [...valueSelectors, `[${nsAttr}-${token}]`];
-    const selOutline = baseSelectors
-      .map((s) => `${s}:not([${nsAttr}*=" "])`)
-      .join(", ");
-    const selIs = `:is(${baseSelectors.join(", ")})`;
+    const { token, selOutline, selIs } = selectorsForFlag(flag);
     /** Combo hosts use `[${nsAttr}*=" "]` + `data-ff-label`; skip per-token ::before so combo rules win. */
     const selIsSingleBadge = `${selIs}:not([${nsAttr}*=" "])`;
     const col = colorForToken(token, opts);
@@ -282,11 +287,7 @@ html [${nsAttr}*=" "]:hover::before {
   // Combo chrome must be suppressed *after* generic combo rules so `!important` / order cannot be
   // overridden by `html [...][data-ff-label]::before { content: ... !important }`.
   for (const flag of Object.keys(runtime.flags)) {
-    const token = toToken(flag);
-    const valueSelectors = [`[${nsAttr}~="${token}"]`];
-    if (flag !== token) valueSelectors.push(`[${nsAttr}~="${flag}"]`);
-    const baseSelectors = [...valueSelectors, `[${nsAttr}-${token}]`];
-    const selIs = `:is(${baseSelectors.join(", ")})`;
+    const { token, selIs } = selectorsForFlag(flag);
     chunks.push(`
 html[data-ff-badge-${token}="off"] ${selIs}[${nsAttr}*=" "]::before,
 html[data-ff-badge-${token}="off"] ${selIs}[${nsAttr}*=" "][data-ff-label]::before {
