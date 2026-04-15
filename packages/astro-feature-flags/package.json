@@ -1,6 +1,6 @@
 {
   "name": "@at-flux/astro-feature-flags",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Typed Astro feature flags from JSON config. Includes environment specific rendering and pruning from elements to entire routes",
   "author": "atflux <dev@atflux.uk>",
