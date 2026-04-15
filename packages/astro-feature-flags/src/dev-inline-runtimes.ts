@@ -160,7 +160,6 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
     const allTokens = comboTokens(el);
     const visual = allTokens.filter((tk) => isEnabled(tk));
     if (visual.length < 2) {
-      el.removeAttribute("data-ff-combo");
       el.removeAttribute("data-ff-label");
       el.style.removeProperty("--ff-combo-gradient");
       el.style.removeProperty("--ff-combo-gradient-soft");
@@ -168,9 +167,14 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
       el.style.removeProperty("--ff-combo-text");
       el.style.removeProperty("--ff-combo-badge-border");
       el.style.removeProperty("--ff-combo-badge-gradient");
+      if (visual.length === 1) {
+        el.setAttribute(`data-${N}`, visual[0]!);
+      }
       return;
     }
-    el.setAttribute("data-ff-combo", visual.join(" "));
+    // Mirror all enabled tokens into the primary namespace attribute so `[data-<ns>*=" "]`
+    // matches (required for boolean-only combos like data-ff-a + data-ff-b).
+    el.setAttribute(`data-${N}`, visual.join(" "));
     el.setAttribute("data-ff-label", visual.join(" | "));
     const strong = visual.map((tk) => currentTokenColor(tk, cols));
     const soft = strong.map((c) => `color-mix(in oklab, white 86%, ${c} 14%)`);
@@ -226,16 +230,18 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
 
   const affSyncRouteChrome = (path: string) => {
     if (!document.body) return;
-    const toks = routeTokensForPath(path).filter((tk) => isEnabled(tk));
-    if (!toks.length) {
+    // Keep every matched route token on <html> so per-token toolbar rules
+    // (`[data-ff-route~="tk"]`) still apply; gradients use enabled-only below.
+    const routeAll = routeTokensForPath(path);
+    if (!routeAll.length) {
       document.getElementById("aff-route-frame")?.remove();
       document.getElementById("aff-route-badge")?.remove();
       root.removeAttribute("data-ff-route");
       root.removeAttribute("data-ff-route-label");
       return;
     }
-    root.setAttribute("data-ff-route", toks.join(" "));
-    root.setAttribute("data-ff-route-label", routeLabelFor(path, toks));
+    root.setAttribute("data-ff-route", routeAll.join(" "));
+    root.setAttribute("data-ff-route-label", routeLabelFor(path, routeAll));
     if (!document.getElementById("aff-route-frame")) {
       const frame = document.createElement("div");
       frame.id = "aff-route-frame";
