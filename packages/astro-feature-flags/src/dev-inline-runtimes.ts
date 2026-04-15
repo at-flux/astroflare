@@ -183,7 +183,7 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
     const hasDisabledInCombo = hasCombo && allTokens.some((tk) => !isEnabled(tk));
     const visual = allTokens.filter((tk) => isEnabled(tk));
     if (hasDisabledInCombo) {
-      // Fail-closed for combos: if any member token is disabled, hide the whole host.
+      // Fail-closed for combos: if any member token is disabled, hide the whole element.
       // Keep all combo tokens mirrored in data-<ns> so enabled-off CSS selectors can hide it.
       stripBooleanFlagAttrs(el);
       el.setAttribute(`data-${N}`, allTokens.join(" "));

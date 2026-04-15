@@ -96,7 +96,9 @@ You cannot add an environment key named **`dev`** — that name is reserved and 
 
 > [!NOTE]
 > Flags are combinatory. If an element has `data-ff="wip hot-feature-2"`, both flags must be enabled for SSR outside the reserved `dev` layer.
-> In the dev toolbar preview, combined hosts are also fail-closed for **Enabled**: if any token in the combo is set to Off, the whole combined host is hidden.
+>
+> In the dev toolbar preview, combined flags are also combinatory for **Enabled**: if any token in the combo is set to Off, the whole combined element is hidden.
+>
 > In **Astro dev**, all declared flags are on at resolve time; the dev toolbar only changes client preview. In **non-dev** builds, nodes that fail the check are **removed from the HTML**. Route-mapped prefixes with a flag **off** are pruned from static `dist/` after build. Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
 
 ## Common Use Cases
@@ -229,7 +231,7 @@ Layer select override: `AFF_ENVIRONMENT=prod`. **`forceEnvironment`** on the int
 | ------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `elementBadgeHorizontalAlign`                     | `'end'`                | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                                                                                                                                         |
 | `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                                                                                                                        |
-| `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the host).                                                                                                             |
+| `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the element).                                                                                                          |
 | `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                                                                                                                                   |
 
 Per-element badge overrides (markup):
