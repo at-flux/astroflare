@@ -185,7 +185,7 @@ The dev toolbar changes client-side preview state only.
 | `configRoot`       | `string`                            | `process.cwd()` | Resolves relative `jsonConfigPath` values (root + per-environment).   |
 | `jsonConfigPath`   | `string`                            | unset           | Optional **root** JSON file merged after inline config (see merge order for per-environment files). |
 | `forceEnvironment` | `string`                          | unset           | Pin the active layer (skips `when` / `AFF_ENVIRONMENT` validation).   |
-| `mode`             | `string`                            | `NODE_ENV`      | Input used to decide default injected `dev`/`prod` environment predicates. |
+| `mode`             | `string`                            | `NODE_ENV`      | Optional advanced override for runtime resolution (mainly tests/tooling). Most apps should omit this and rely on `NODE_ENV` + `environments.when`. |
 | `env`              | `Record<string, string \| undefined>` | `process.env` | `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` (not applied in `dev` layer). |
 | `tokenNamespace`   | `string`                            | `'ff'`          | CSS var namespace (`--ff-c-*`).                                       |
 | `flags`            | `Record<string, FlagConfig>`        | `{}`            | Flag declarations.                                                    |
@@ -193,7 +193,7 @@ The dev toolbar changes client-side preview state only.
 | `css`              | `DevOutlineCssOptions`              | defaults        | Global badge/outline layout and styling.                              |
 | `staticMinify`     | `boolean`                           | `true`          | For static builds: route-prune disabled prefixes + cull gated HTML in `dist/`. Set `false` to keep emitted files untouched. |
 
-If you omit `environments`, the integration injects a minimal reserved `dev` plus **`prod`** tied to `mode` / `NODE_ENV` so `astroFeatureFlags()` still runs in small demos.
+If you omit `environments`, the integration injects a minimal reserved `dev` plus **`prod`** tied to `NODE_ENV` (or `mode` only if you explicitly override it) so `astroFeatureFlags()` still runs in small demos.
 
 ### Reserved name `dev`
 
