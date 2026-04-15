@@ -167,7 +167,7 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
       el.removeAttribute(`data-${N}-${T[i]}`);
     }
   };
-  const clearComboVisualState = (el: Element) => {
+  const clearComboVisualState = (el: HTMLElement) => {
     el.removeAttribute("data-ff-label");
     el.style.removeProperty("--ff-combo-gradient");
     el.style.removeProperty("--ff-combo-gradient-soft");
@@ -177,7 +177,7 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
     el.style.removeProperty("--ff-combo-badge-gradient");
   };
 
-  const applyCombo = (el: Element, cols: Record<string, string>) => {
+  const applyCombo = (el: HTMLElement, cols: Record<string, string>) => {
     const allTokens = comboTokens(el);
     const hasCombo = allTokens.length >= 2;
     const hasDisabledInCombo = hasCombo && allTokens.some((tk) => !isEnabled(tk));
@@ -326,10 +326,14 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
     }
 
     const applyAll = () => {
-      const map = new Set<Element>();
-      document.querySelectorAll(`[data-${N}]`).forEach((el) => map.add(el));
+      const map = new Set<HTMLElement>();
+      document
+        .querySelectorAll<HTMLElement>(`[data-${N}]`)
+        .forEach((el) => map.add(el));
       for (let i = 0; i < T.length; i++) {
-        document.querySelectorAll(`[data-${N}-${T[i]}]`).forEach((el) => map.add(el));
+        document
+          .querySelectorAll<HTMLElement>(`[data-${N}-${T[i]}]`)
+          .forEach((el) => map.add(el));
       }
       map.forEach((el) => applyCombo(el, cols));
     };
