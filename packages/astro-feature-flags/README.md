@@ -96,6 +96,7 @@ You cannot add an environment key named **`dev`** — that name is reserved and 
 
 > [!NOTE]
 > Flags are combinatory. If an element has `data-ff="wip hot-feature-2"`, both flags must be enabled for SSR outside the reserved `dev` layer.
+> In the dev toolbar preview, combined hosts are also fail-closed for **Enabled**: if any token in the combo is set to Off, the whole combined host is hidden.
 > In **Astro dev**, all declared flags are on at resolve time; the dev toolbar only changes client preview. In **non-dev** builds, nodes that fail the check are **removed from the HTML**. Route-mapped prefixes with a flag **off** are pruned from static `dist/` after build. Prefer **`shouldRenderFeature`** when you need compile-time omission with no trace in `dist/`.
 
 ## Common Use Cases
@@ -249,9 +250,9 @@ If your editor misses virtual module types, add one reference in `src/env.d.ts`.
 
 | Control     | Effect                                                 |
 | ----------- | ------------------------------------------------------ |
-| **Enabled** | Off → hide nodes carrying that token in `data-ff`.     |
-| **Outline** | Visible stroke vs **transparent** (same width/offset). |
-| **Badges**  | Element pills + route pill.                            |
+| **Enabled** | Off → hide nodes carrying that token in `data-ff` (including combined hosts/pages when any member token is Off). |
+| **Outline** | Toggle outlines only (element and route frame). For combined hosts this is a non-layout-shifting overlay ring. |
+| **Badges**  | Toggle badges only (element pills + route pill).       |
 | **Colour**  | `--<namespace>-c-<token>` (persisted).                 |
 
 ## Virtual module
@@ -288,6 +289,7 @@ Remote percentage rollouts, per-user experiment assignment, analytics, or a host
 ```bash
 pnpm test
 pnpm typecheck
+ENABLE_SLOW=1 pnpm test
 ```
 
 Slow checks that run a real `example` production build plus a small fixture (route pruning, `shouldRenderFeature`, and `data-ff` HTML culling) are documented in [docs/testing.md](./docs/testing.md). Enable them with `ENABLE_SLOW=1`.
