@@ -275,7 +275,7 @@ Remote percentage rollouts, per-user experiment assignment, analytics, or a host
 
 ## How-to
 
-- `docs/how-to/hide-from-sitemaps.md`
+- [Hide feature locked pages from sitemaps in production builds](docs/how-to/hide-from-sitemaps.md)
 
 ## Example Pages
 
