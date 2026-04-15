@@ -113,8 +113,12 @@ export function createFeatureFlagStyles(
     const valueSelectors = [`[${nsAttr}~="${token}"]`];
     if (flag !== token) valueSelectors.push(`[${nsAttr}~="${flag}"]`);
     const baseSelectors = [...valueSelectors, `[${nsAttr}-${token}]`];
-    const sel = baseSelectors.join(", ");
+    const selOutline = baseSelectors
+      .map((s) => `${s}:not([${nsAttr}*=" "])`)
+      .join(", ");
     const selIs = `:is(${baseSelectors.join(", ")})`;
+    /** Combo hosts use `[${nsAttr}*=" "]` + `data-ff-label`; skip per-token ::before so combo rules win. */
+    const selIsSingleBadge = `${selIs}:not([${nsAttr}*=" "])`;
     const col = colorForToken(token, opts);
     const v = featureColorVar(token, runtime.namespace);
     const label =
@@ -129,13 +133,13 @@ html {
 html:not([data-ff-outline-${token}="off"]) {
   --aff-outline-c-${token}: var(${v}, ${col});
 }
-${sel} {
+${selOutline} {
   position: relative;
   outline: ${opts.outlineWidth} solid var(--aff-outline-c-${token});
   outline-offset: ${opts.outlineOffset};
   border-radius: ${opts.borderRadius};
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}::before {
   box-sizing: border-box;
   position: absolute;
   inset: auto;
@@ -161,52 +165,52 @@ ${badgePos}
   overflow: hidden;
   transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}:hover::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}:hover::before {
   opacity: 0.16;
   background: color-mix(in oklab, white 94%, var(${v}, ${col}) 6%);
   border-color: color-mix(in oklab, var(${v}, ${col}) 35%, transparent);
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-align="start"]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-align="start"]::before {
   left: 0.35rem;
   right: auto;
   transform: translateY(calc(-1 * 80%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-align="center"]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-align="center"]::before {
   left: 50%;
   right: auto;
   transform: translate(-50%, calc(-1 * 80%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-align="end"]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-align="end"]::before {
   left: auto;
   right: 0.35rem;
   transform: translateY(calc(-1 * 80%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-horizontal]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-horizontal]::before {
   left: calc(attr(data-ff-horizontal number, 50) * 1%);
   right: auto;
   transform: translate(-50%, calc(-1 * 80%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-horizontal][data-ff-anchor="bottom"]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-horizontal][data-ff-anchor="bottom"]::before {
   transform: translate(-50%, 80%);
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-anchor="bottom"]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-anchor="bottom"]::before {
   top: auto;
   bottom: 0;
   transform: translateY(80%);
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-anchor="bottom"][data-ff-align="center"]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-anchor="bottom"][data-ff-align="center"]::before {
   transform: translate(-50%, 80%);
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-vertical]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-vertical]::before {
   transform: translateY(calc(attr(data-ff-vertical number, 80) * -1%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-horizontal][data-ff-vertical]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-horizontal][data-ff-vertical]::before {
   transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * -1%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-anchor="bottom"][data-ff-vertical]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-anchor="bottom"][data-ff-vertical]::before {
   transform: translateY(calc(attr(data-ff-vertical number, 80) * 1%));
 }
-html:not([data-ff-badge-${token}="off"]) ${selIs}[data-ff-anchor="bottom"][data-ff-horizontal][data-ff-vertical]::before {
+html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}[data-ff-anchor="bottom"][data-ff-horizontal][data-ff-vertical]::before {
   transform: translate(-50%, calc(attr(data-ff-vertical number, 80) * 1%));
 }
 html[data-ff-enabled-${token}="off"] ${selIs} {
@@ -218,19 +222,51 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
   // Multi-token value on a single element: show combined badge text and a gradient outline.
   chunks.push(`
 [${nsAttr}*=" "] {
+  position: relative;
   outline: none !important;
   outline-offset: 0 !important;
-  border: ${opts.outlineWidth} solid transparent;
-  background:
-    linear-gradient(white, white) padding-box,
-    var(--ff-combo-gradient, linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0)) border-box;
   border-radius: ${opts.borderRadius};
 }
+html [${nsAttr}*=" "]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 10;
+  box-sizing: border-box;
+  padding: ${opts.outlineWidth};
+  background: var(--ff-combo-gradient, linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
 html [${nsAttr}*=" "]::before {
+  box-sizing: border-box;
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  width: max-content;
+  max-width: min(18rem, calc(100% - 0.75rem));
+  pointer-events: auto;
+  z-index: 20;
+${badgePos}
+  display: block;
   content: attr(${nsAttr});
   background: var(--ff-combo-badge-gradient, var(--ff-combo-gradient-soft, linear-gradient(90deg, #fff1f2, #eff6ff, #f0fdf4))) !important;
   color: var(--ff-combo-text, #111827) !important;
   border: 1px solid var(--ff-combo-badge-border, color-mix(in oklab, #94a3b8 50%, transparent)) !important;
+  border-radius: 9999px;
+  padding: 0.125rem 0.45rem;
+  font-size: 0.625rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
   transition: opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
 }
 html [${nsAttr}*=" "][data-ff-label]::before {
@@ -241,6 +277,40 @@ html [${nsAttr}*=" "]:hover::before {
   background: linear-gradient(90deg, #fff8f9, #f8fbff, #f8fff9);
   border-color: color-mix(in oklab, #94a3b8 35%, transparent);
 }
+`);
+
+  // Combo chrome must be suppressed *after* generic combo rules so `!important` / order cannot be
+  // overridden by `html [...][data-ff-label]::before { content: ... !important }`.
+  for (const flag of Object.keys(runtime.flags)) {
+    const token = toToken(flag);
+    const valueSelectors = [`[${nsAttr}~="${token}"]`];
+    if (flag !== token) valueSelectors.push(`[${nsAttr}~="${flag}"]`);
+    const baseSelectors = [...valueSelectors, `[${nsAttr}-${token}]`];
+    const selIs = `:is(${baseSelectors.join(", ")})`;
+    chunks.push(`
+html[data-ff-badge-${token}="off"] ${selIs}[${nsAttr}*=" "]::before,
+html[data-ff-badge-${token}="off"] ${selIs}[${nsAttr}*=" "][data-ff-label]::before {
+  display: none !important;
+  content: none !important;
+}
+html[data-ff-badge-${token}="off"] ${selIs}[${nsAttr}*=" "]:hover::before,
+html[data-ff-badge-${token}="off"] ${selIs}[${nsAttr}*=" "][data-ff-label]:hover::before {
+  display: none !important;
+  opacity: 1 !important;
+  background: none !important;
+  border-color: transparent !important;
+}
+html[data-ff-outline-${token}="off"] ${selIs}[${nsAttr}*=" "] {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+html[data-ff-outline-${token}="off"] ${selIs}[${nsAttr}*=" "]::after {
+  display: none !important;
+}
+`);
+  }
+
+  chunks.push(`
 .aff-route-frame {
   position: fixed;
   inset: 0.6rem;
@@ -322,6 +392,12 @@ html [${nsAttr}*=" "]:hover::before {
   display: none !important;
 }
 [data-ff-route~="${token}"][data-ff-badge-${token}="off"] #aff-route-badge {
+  display: none !important;
+}
+[data-ff-route~="${token}"][data-ff-enabled-${token}="off"] #aff-route-frame {
+  display: none !important;
+}
+[data-ff-route~="${token}"][data-ff-enabled-${token}="off"] #aff-route-badge {
   display: none !important;
 }
 `);
