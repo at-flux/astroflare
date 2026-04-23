@@ -1,0 +1,107 @@
+---
+import FilterPills from "./FilterPills.astro";
+import Pager from "./Pager.astro";
+import { buildCollectionHref, buildPageSequence } from "../collection-query";
+import type { CollectionQueryProps, CollectionQueryServerProps } from "./collection-query-props";
+type Props = CollectionQueryProps;
+
+const {
+  useServer = false,
+  filters = [],
+  maxPageButtons = 7,
+  filtersClass = "mb-8",
+  pagerClass = "mt-6",
+  perPage = 9,
+  class: className = "",
+} = Astro.props;
+
+const serverProps = useServer
+  ? (Astro.props as CollectionQueryServerProps)
+  : null;
+const pathname = serverProps?.pathname ?? "";
+const query = serverProps?.query ?? { page: 1, size: 9, offset: 0, filters: {} };
+const totalPages = serverProps?.totalPages ?? 1;
+const currentPage = serverProps?.currentPage ?? 1;
+
+const activeFilters = query.filters ?? {};
+const allHref = buildCollectionHref(pathname, query, { filters: {}, page: 1, offset: 0 });
+const serverFilterItems = filters.map((option) => {
+  const nextFilters = { ...activeFilters, [option.key]: option.value };
+  return {
+    value: `${option.key}:${option.value}`,
+    label: option.label ?? option.value,
+    href: buildCollectionHref(pathname, query, { filters: nextFilters, page: 1, offset: 0 }),
+    active: activeFilters[option.key] === option.value,
+    colorKey: option.value,
+  };
+});
+const clientFilterItems = filters.map((option) => ({
+  value: option.value,
+  label: option.label ?? option.value,
+  colorKey: option.value,
+}));
+const pagerItems = buildPageSequence(totalPages, currentPage, maxPageButtons).map((item) =>
+  item === "…"
+    ? { ellipsis: true as const }
+    : {
+        page: item,
+        href: buildCollectionHref(pathname, query, { page: item, offset: (item - 1) * query.size }),
+        active: item === currentPage,
+      },
+);
+---
+
+{useServer && (
+  <>
+    <slot
+      name="filters"
+    >
+      {serverFilterItems.length > 0 && (
+        <FilterPills
+          items={serverFilterItems}
+          allHref={allHref}
+          active={Object.keys(activeFilters).length === 0 ? "all" : "__filtered__"}
+          class={filtersClass}
+        />
+      )}
+    </slot>
+    <slot />
+    <slot name="pager">
+      <Pager items={pagerItems} class={pagerClass} />
+    </slot>
+  </>
+)}
+
+{!useServer && (
+  <collection-query
+    class={className}
+    data-af-query
+    data-per-page={String(perPage)}
+    data-max-page-buttons={String(maxPageButtons)}
+  >
+    <slot
+      name="filters"
+    >
+      {clientFilterItems.length > 0 && (
+        <FilterPills
+          items={clientFilterItems}
+          active="all"
+          class={filtersClass}
+        />
+      )}
+    </slot>
+    <slot />
+    <slot name="pager">
+      <Pager class={pagerClass} />
+    </slot>
+  </collection-query>
+)}
+
+{
+  !useServer && (
+    <script>
+      import { initCollectionQueryRoots } from "../runtime/collection-query";
+      initCollectionQueryRoots();
+    </script>
+  )
+}
