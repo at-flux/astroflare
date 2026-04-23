@@ -1,0 +1,32 @@
+---
+import "../../src/styles/global.css";
+import MediaProtect from "../../../src/components/MediaProtect.astro";
+import InstagramProfileLink from "../../../src/components/InstagramProfileLink.astro";
+import GuideLayout from "../layouts/GuideLayout.astro";
+
+const nav = [
+  { href: "/", label: "Overview" },
+  { href: "/paging", label: "Paging" },
+  { href: "/summaries", label: "Summaries" },
+  { href: "/modals", label: "Modals" },
+  { href: "/media", label: "Media" },
+];
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid">
+    <h2>Media protect</h2>
+    <MediaProtect containerClass="sg-card">
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect width='800' height='450' fill='%23d9dce6'/%3E%3Ctext x='50%25' y='50%25' fill='%23323a55' font-size='32' text-anchor='middle' dominant-baseline='middle'%3EMediaProtect demo%3C/text%3E%3C/svg%3E"
+        alt="placeholder"
+        style="max-width: 100%;"
+      />
+    </MediaProtect>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>External profile link component</h2>
+    <InstagramProfileLink handle="mock.profile" href="https://example.com/mock-profile" />
+  </section>
+</GuideLayout>

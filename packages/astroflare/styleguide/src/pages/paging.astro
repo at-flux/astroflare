@@ -1,0 +1,65 @@
+---
+import "../../src/styles/global.css";
+import CollectionQuery from "../../../src/components/CollectionQuery.astro";
+import GuideLayout from "../layouts/GuideLayout.astro";
+import { matchesCollectionFilters, paginateCollection, parseCollectionQuery } from "../../../src/collection-query";
+
+const nav = [
+  { href: "/", label: "Overview" },
+  { href: "/paging", label: "Paging" },
+  { href: "/summaries", label: "Summaries" },
+  { href: "/modals", label: "Modals" },
+  { href: "/media", label: "Media" },
+];
+
+const cards = [
+  { title: "Alpha release notes", tags: ["ops", "platform"] },
+  { title: "Beta product diary", tags: ["product"] },
+  { title: "Gamma render trial", tags: ["platform", "ux"] },
+  { title: "Delta launch prep", tags: ["ops"] },
+  { title: "Epsilon editorial flow", tags: ["content", "ux"] },
+];
+
+const query = parseCollectionQuery(Astro.url.searchParams, { defaultSize: 1 });
+const filteredCards =
+  Object.keys(query.filters).length === 0
+    ? cards
+    : cards.filter((card) => matchesCollectionFilters({ tag: card.tags }, query.filters));
+const pageData = paginateCollection(filteredCards, query);
+const currentPage = Math.min(pageData.totalPages, Math.max(1, Math.floor(query.offset / query.size) + 1));
+const activeQuery = { ...query, page: currentPage, offset: (currentPage - 1) * query.size };
+const filterTags = Array.from(new Set(cards.flatMap((card) => card.tags))).sort((a, b) => a.localeCompare(b));
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid">
+    <h2>Client-side filtering + paging</h2>
+    <CollectionQuery perPage={2}>
+      <div class="sg-grid">
+        {cards.map((card) => (
+          <article data-card data-tags={card.tags.join("|")} class="sg-card">
+            <h3>{card.title}</h3>
+            <p>{card.tags.join(" / ")}</p>
+          </article>
+        ))}
+      </div>
+    </CollectionQuery>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Server query via CollectionQuery</h2>
+    <CollectionQuery
+      useServer
+      pathname={Astro.url.pathname}
+      query={activeQuery}
+      totalPages={pageData.totalPages}
+      currentPage={currentPage}
+      filters={filterTags.map((tag) => ({ key: "tag", value: tag }))}
+      server:defer
+    />
+    <article class="sg-card">
+      <h3>{pageData.items[0]?.title ?? "No results"}</h3>
+      <p>{pageData.items[0]?.tags.join(" / ") ?? "Adjust filters to see a result."}</p>
+    </article>
+  </section>
+</GuideLayout>

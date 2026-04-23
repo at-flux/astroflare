@@ -55,6 +55,7 @@
   "files": [
     "dist",
     "src/components",
+    "src/runtime",
     "src/styles",
     "scripts/link-local.mjs",
     "README.md"
@@ -62,6 +63,9 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "styleguide:dev": "astro dev --root styleguide",
+    "styleguide:build": "astro build --root styleguide",
+    "styleguide:preview": "astro preview --root styleguide",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -69,6 +73,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
+    "@astrojs/node": "^9.5.5",
     "jsdom": "^25.0.1",
     "tsdown": "^0.21.7",
     "typescript": "^5.0.0",

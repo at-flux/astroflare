@@ -1,0 +1,24 @@
+---
+import "../../src/styles/global.css";
+import { formatDisplayDate } from "../../../src/date-format";
+import GuideLayout from "../layouts/GuideLayout.astro";
+
+const nav = [
+  { href: "/", label: "Overview" },
+  { href: "/paging", label: "Paging" },
+  { href: "/summaries", label: "Summaries" },
+  { href: "/modals", label: "Modals" },
+  { href: "/media", label: "Media" },
+];
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid">
+    <h2>Overview</h2>
+    <p>
+      This styleguide is intentionally mock-only and framework-neutral. Each tab isolates a component
+      family using reusable, headless defaults.
+    </p>
+    <p>Example utility output: <strong>{formatDisplayDate("2026-04-14T00:00:00.000Z")}</strong></p>
+  </section>
+</GuideLayout>
