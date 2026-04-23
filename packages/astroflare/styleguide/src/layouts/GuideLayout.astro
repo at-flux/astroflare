@@ -1,0 +1,42 @@
+---
+interface NavItem {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  nav: NavItem[];
+}
+
+const { title, nav } = Astro.props;
+const normalize = (value: string) =>
+  value.length > 1 && value.endsWith("/") ? value.slice(0, -1) : value;
+const pathname = normalize(Astro.url.pathname);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <header class="sg-header sg-card">
+        <h1>{title}</h1>
+        <nav class="sg-nav" aria-label="Styleguide pages">
+          {nav.map((item) => (
+            <a
+              href={item.href}
+              class:list={["sg-tab", pathname === normalize(item.href) && "is-active"]}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </header>
+      <slot />
+    </main>
+  </body>
+</html>

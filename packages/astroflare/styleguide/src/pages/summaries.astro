@@ -1,0 +1,27 @@
+---
+import "../../src/styles/global.css";
+import Tooltip from "../../../src/components/Tooltip.astro";
+import ListSummary from "../../../src/components/ListSummary.astro";
+import TagSummary from "../../../src/components/TagSummary.astro";
+import GuideLayout from "../layouts/GuideLayout.astro";
+
+const tags = ["alpha", "beta", "gamma", "delta", "omega", "zeta", "theta", "kappa"];
+const nav = [
+  { href: "/", label: "Overview" },
+  { href: "/paging", label: "Paging" },
+  { href: "/summaries", label: "Summaries" },
+  { href: "/modals", label: "Modals" },
+  { href: "/media", label: "Media" },
+];
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid">
+    <h2>Summaries + Tooltip</h2>
+    <Tooltip text="Tooltip details">
+      <button type="button">Hover me</button>
+    </Tooltip>
+    <ListSummary items={["Alpha", "Beta", "Gamma", "Delta"]} visibleCount={2} />
+    <TagSummary items={tags} visibleCount={3} />
+  </section>
+</GuideLayout>
