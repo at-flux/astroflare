@@ -4,12 +4,15 @@
  * `class` applies to the modal panel (card). Dialog element keeps backdrop/transparent shell.
  */
 interface Props {
+  /** Dialog id used by triggers (`ModalTrigger`, direct DOM calls). */
   id: string;
   /** Panel (card) classes — surface, border, radius, etc. */
   class?: string;
+  /** Classes applied to the `<dialog>` shell/backdrop container. */
   backdropClass?: string;
   /** Extra panel classes merged after `class`. */
   panelClass?: string;
+  /** Classes applied to the built-in close button. */
   closeButtonClass?: string;
   /** Scrollable inner wrapper around the default slot. */
   contentClass?: string;

@@ -2,8 +2,11 @@
 interface Props {
   /** Instagram username without @ */
   handle: string;
+  /** Optional explicit profile URL (defaults to `https://www.instagram.com/{handle}`). */
   href?: string;
+  /** Classes merged onto the anchor element. */
   class?: string;
+  /** Optional accessible label override for the link. */
   'aria-label'?: string;
 }
 

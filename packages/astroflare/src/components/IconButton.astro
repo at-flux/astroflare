@@ -5,10 +5,15 @@
  * Consumers must supply their own icon via slot.
  */
 interface Props {
+  /** Accessible label announced by screen readers. */
   label: string;
+  /** Optional URL; when set, renders an `<a>` instead of `<button>`. */
   href?: string;
+  /** Extra classes merged with base button styles. */
   class?: string;
+  /** Optional element id for targeting and tests. */
   id?: string;
+  /** Additional passthrough attributes for anchor/button element. */
   [key: string]: unknown;
 }
 
