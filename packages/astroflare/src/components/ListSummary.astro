@@ -1,0 +1,63 @@
+---
+import Tooltip from "./Tooltip.astro";
+
+interface Props {
+  /** Ordered list values to render. */
+  items: string[];
+  /** Maximum number of visible items before overflow summary is shown. */
+  visibleCount?: number;
+  /** String used to join visible/overflow values. */
+  separator?: string;
+  /** Classes applied to the outer summary wrapper. */
+  class?: string;
+  /** Fallback label when `items` is empty. */
+  emptyLabel?: string;
+  /** Classes applied to the overflow `+N` chip. */
+  overflowClass?: string;
+  /** Tooltip placement for overflow details. */
+  tooltipPosition?: "top" | "bottom";
+  /** Optional value casing transform before render. */
+  itemCase?: "none" | "upper";
+}
+
+const {
+  items,
+  visibleCount = 3,
+  separator = ", ",
+  class: className = "",
+  emptyLabel = "",
+  overflowClass = "",
+  tooltipPosition = "top",
+  itemCase = "none",
+} = Astro.props;
+
+const formatItem = (item: string): string =>
+  itemCase === "upper" ? item.toUpperCase() : item;
+
+const visibleItems = items.slice(0, visibleCount).map(formatItem);
+const overflowItems = items.slice(visibleCount).map(formatItem);
+const overflowLabel = `+ ${overflowItems.length}`;
+const tooltipText = overflowItems.join(separator);
+---
+
+<span class:list={["inline-flex flex-wrap items-center gap-1", className]}>
+  {items.length === 0 ? (
+    emptyLabel && <span>{emptyLabel}</span>
+  ) : (
+    <>
+      <span>{visibleItems.join(separator)}</span>
+      {overflowItems.length > 0 && (
+        <Tooltip text={tooltipText} position={tooltipPosition}>
+          <span
+            class:list={[
+              "inline-flex cursor-help items-center rounded-full border px-2 py-0.5 text-xs",
+              overflowClass,
+            ]}
+          >
+            {overflowLabel}
+          </span>
+        </Tooltip>
+      )}
+    </>
+  )}
+</span>
