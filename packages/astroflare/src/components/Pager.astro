@@ -1,0 +1,92 @@
+---
+interface Props {
+  /** Optional initial page count for static rendering. */
+  pageCount?: number;
+  /** Active page index (1-based) for static rendering. */
+  activePage?: number;
+  /** Classes applied to the pagination wrapper. */
+  class?: string;
+  /** Optional explicit pager items for link-based server rendering. */
+  items?: Array<
+    | { page: number; label?: string; href?: string; active?: boolean }
+    | { ellipsis: true; label?: string }
+  >;
+}
+
+const { pageCount = 0, activePage = 1, class: className = "", items = [] } = Astro.props;
+const fallbackPages = Array.from({ length: Math.max(0, pageCount) }, (_, index) => index + 1);
+---
+
+<div class:list={["af-pager flex items-center justify-center gap-2", className]} data-pagination>
+  {items.length > 0
+    ? items.map((item) =>
+        "ellipsis" in item ? (
+          <span class="af-pager-ellipsis" aria-hidden="true">{item.label ?? "…"}</span>
+        ) : item.href ? (
+          <a
+            href={item.href}
+            data-page={String(item.page)}
+            class:list={["af-pager-pill", item.active && "is-active"]}
+          >
+            {item.label ?? item.page}
+          </a>
+        ) : (
+          <button
+            type="button"
+            data-page={String(item.page)}
+            class:list={["af-pager-pill", item.active && "is-active"]}
+          >
+            {item.label ?? item.page}
+          </button>
+        ),
+      )
+    : fallbackPages.map((page) => (
+        <button
+          type="button"
+          data-page={String(page)}
+          class:list={["af-pager-pill", page === activePage && "is-active"]}
+        >
+          {page}
+        </button>
+      ))}
+</div>
+
+<style is:global>
+  .af-pager .af-pager-pill {
+    border-radius: 9999px;
+    border: 1px solid var(--color-light-border);
+    padding: 0.35rem 0.9rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-light-text-subtle) 78%, transparent);
+    background: color-mix(in oklab, var(--color-light-surface) 80%, transparent);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  [data-theme="dark"] .af-pager .af-pager-pill {
+    border-color: var(--color-dark-border);
+    color: color-mix(in oklab, var(--color-dark-text-subtle) 78%, transparent);
+    background: color-mix(in oklab, var(--color-dark-surface) 70%, transparent);
+  }
+  .af-pager .af-pager-pill.is-active {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+    background: color-mix(in oklab, var(--color-secondary) 12%, transparent);
+  }
+  .af-pager .af-pager-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.7rem;
+    font-size: 0.8rem;
+    color: color-mix(in oklab, var(--color-light-text-subtle) 75%, transparent);
+  }
+  [data-theme="dark"] .af-pager .af-pager-ellipsis {
+    color: color-mix(in oklab, var(--color-dark-text-subtle) 75%, transparent);
+  }
+</style>
