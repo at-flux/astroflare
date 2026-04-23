@@ -1,7 +1,10 @@
 ---
 interface Props {
+  /** Optional section id attribute. */
   id?: string;
+  /** Additional classes merged onto the section container. */
   class?: string;
+  /** Use narrower inner max width (`max-w-4xl`) instead of default wide layout. */
   narrow?: boolean;
   /** Inner max-width wrapper only — no section padding (e.g. modal body). */
   contentOnly?: boolean;

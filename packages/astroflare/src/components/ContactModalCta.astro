@@ -4,9 +4,11 @@ import ModalTrigger from './ModalTrigger.astro';
 interface Props {
   /** Target dialog id (must match `<dialog id="…">`). */
   modalId?: string;
+  /** Visible CTA text. */
   label: string;
   /** `solid` — primary pill; `text` — tertiary link style (e.g. inline in prose). */
   variant?: 'solid' | 'text';
+  /** Classes applied to the trigger host. */
   class?: string;
 }
 
