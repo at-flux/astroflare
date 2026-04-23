@@ -1,0 +1,41 @@
+---
+/**
+ * Wrap media/content in no-save utility classes and register delegated protection handlers.
+ *
+ * - `drag`: block dragstart inside this protected region (defaults to true)
+ * - `contextMenu`: block right-click context menu inside this protected region (defaults to true)
+ */
+interface Props {
+  /** Classes applied to the inner `.no-save` wrapper. */
+  class?: string;
+  /** Classes applied to the outer `.no-save-container` wrapper. */
+  containerClass?: string;
+  /** Enable dragstart prevention in this protected region. Defaults to true. */
+  drag?: boolean;
+  /** Enable contextmenu prevention in this protected region. Defaults to true. */
+  contextMenu?: boolean;
+}
+
+const {
+  class: className = "",
+  containerClass = "",
+  drag = true,
+  contextMenu = true,
+} = Astro.props;
+---
+
+<div
+  class:list={["no-save-container", containerClass]}
+  data-media-protect-root
+  data-media-protect-drag={drag ? "true" : "false"}
+  data-media-protect-context-menu={contextMenu ? "true" : "false"}
+>
+  <div class:list={["no-save", className]}>
+    <slot />
+  </div>
+</div>
+<script>
+  import { initMediaProtectRoots } from "../runtime/media-protect";
+
+  initMediaProtectRoots();
+</script>
