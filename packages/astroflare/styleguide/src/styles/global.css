@@ -140,10 +140,6 @@ h2 {
   padding: 0.3rem 0.45rem;
 }
 
-.sg-server-results {
-  min-height: 9.5rem;
-}
-
 .sg-size-skeleton,
 .sg-controls-skeleton,
 .sg-skeleton-card {
@@ -163,4 +159,8 @@ h2 {
 
 .sg-skeleton-card {
   min-height: 6.5rem;
+}
+
+.sg-server-fallback {
+  min-height: 9.5rem;
 }
