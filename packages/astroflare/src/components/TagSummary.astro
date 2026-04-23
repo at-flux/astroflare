@@ -1,0 +1,71 @@
+---
+import Tooltip from "./Tooltip.astro";
+import { getTagPalette } from "../tag-colors";
+
+interface Props {
+  /** Ordered tag list to render as pills. */
+  items: string[];
+  /** Maximum number of visible tags before overflow summary is shown. */
+  visibleCount?: number;
+  /** Classes applied to the outer tag list wrapper. */
+  class?: string;
+  /** Classes applied to each visible tag pill. */
+  itemClass?: string;
+  /** Classes applied to the overflow `+N` chip. */
+  overflowClass?: string;
+  /** Optional value casing transform before render. */
+  itemCase?: "none" | "upper";
+  /** Explicit color map by lowercase tag key, overriding default hues. */
+  colorOverrides?: Record<string, string>;
+}
+
+const {
+  items,
+  visibleCount = 3,
+  class: className = "",
+  itemClass = "",
+  overflowClass = "",
+  itemCase = "upper",
+  colorOverrides,
+} = Astro.props;
+
+const formatItem = (item: string): string =>
+  itemCase === "upper" ? item.toUpperCase() : item;
+
+const visibleItems = items.slice(0, visibleCount);
+const overflowItems = items.slice(visibleCount);
+const overflowTooltip = overflowItems.map(formatItem).join(", ");
+---
+
+<div class:list={["flex flex-wrap gap-1.5", className]}>
+  {visibleItems.map((item) => {
+    const palette = getTagPalette(item, { overrides: colorOverrides });
+    return (
+      <span
+        style={{
+          backgroundColor: palette.bg,
+          borderColor: palette.border,
+          color: palette.text,
+        }}
+        class:list={[
+          "inline-block rounded-full border px-2.5 py-0.5 text-[0.68rem] font-medium uppercase tracking-[0.06em]",
+          itemClass,
+        ]}
+      >
+        {formatItem(item)}
+      </span>
+    );
+  })}
+  {overflowItems.length > 0 && (
+    <Tooltip text={overflowTooltip}>
+      <span
+        class:list={[
+          "inline-flex cursor-help items-center rounded-full border border-black/20 px-2.5 py-0.5 text-xs font-medium text-black/70 dark:border-white/20 dark:text-white/70",
+          overflowClass,
+        ]}
+      >
+        + {overflowItems.length}
+      </span>
+    </Tooltip>
+  )}
+</div>
