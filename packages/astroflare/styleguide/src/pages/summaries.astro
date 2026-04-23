@@ -11,13 +11,15 @@ const nav = [
   { href: "/paging", label: "Paging" },
   { href: "/summaries", label: "Summaries" },
   { href: "/modals", label: "Modals" },
+  { href: "/controls", label: "Controls" },
   { href: "/media", label: "Media" },
 ];
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
   <section class="sg-card sg-grid">
-    <h2>Summaries + Tooltip</h2>
+    <h2>Tooltip and compact summaries</h2>
+    <p class="sg-muted">Hover and overflow patterns for dense metadata.</p>
     <Tooltip text="Tooltip details">
       <button type="button">Hover me</button>
     </Tooltip>

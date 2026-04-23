@@ -3,9 +3,6 @@ import "../../src/styles/global.css";
 import Modal from "../../../src/components/Modal.astro";
 import ModalTrigger from "../../../src/components/ModalTrigger.astro";
 import Section from "../../../src/components/Section.astro";
-import IconButton from "../../../src/components/IconButton.astro";
-import ThemeToggle from "../../../src/components/ThemeToggle.astro";
-import ClientRouterLoadingSpinner from "../../../src/components/ClientRouterLoadingSpinner.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 
 const nav = [
@@ -13,13 +10,15 @@ const nav = [
   { href: "/paging", label: "Paging" },
   { href: "/summaries", label: "Summaries" },
   { href: "/modals", label: "Modals" },
+  { href: "/controls", label: "Controls" },
   { href: "/media", label: "Media" },
 ];
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
   <section class="sg-card sg-grid">
-    <h2>Modal pattern</h2>
+    <h2>Modal trigger pattern</h2>
+    <p class="sg-muted">Single canonical trigger + dialog flow.</p>
     <ModalTrigger modalId="styleguide-modal">
       <button type="button">Open modal</button>
     </ModalTrigger>
@@ -30,12 +29,4 @@ const nav = [
       </Section>
     </Modal>
   </section>
-
-  <section class="sg-card sg-grid">
-    <h2>Core controls</h2>
-    <IconButton label="Settings"><span aria-hidden="true">⚙</span></IconButton>
-    <ThemeToggle />
-  </section>
-
-  <ClientRouterLoadingSpinner />
 </GuideLayout>

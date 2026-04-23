@@ -31,6 +31,8 @@ const { text, position = "top", class: className = "", panelClass = "" } = Astro
   [data-af-tooltip-root] {
     position: relative;
     display: inline-flex;
+    width: max-content;
+    justify-self: start;
   }
 
   [data-af-tooltip-root] .af-tooltip-panel {

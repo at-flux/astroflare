@@ -1,0 +1,57 @@
+---
+import "../../src/styles/global.css";
+import IconButton from "../../../src/components/IconButton.astro";
+import ThemeToggle from "../../../src/components/ThemeToggle.astro";
+import ClientRouterLoadingSpinner from "../../../src/components/ClientRouterLoadingSpinner.astro";
+import GuideLayout from "../layouts/GuideLayout.astro";
+
+const nav = [
+  { href: "/", label: "Overview" },
+  { href: "/paging", label: "Paging" },
+  { href: "/summaries", label: "Summaries" },
+  { href: "/modals", label: "Modals" },
+  { href: "/controls", label: "Controls" },
+  { href: "/media", label: "Media" },
+];
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid">
+    <h2>Icon buttons</h2>
+    <p class="sg-muted">Use these for compact control affordances.</p>
+    <div class="sg-inline">
+      <IconButton label="Settings"><span aria-hidden="true">⚙</span></IconButton>
+      <IconButton label="Search"><span aria-hidden="true">⌕</span></IconButton>
+    </div>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Theme toggle</h2>
+    <p class="sg-muted">Built-in light/dark switch component.</p>
+    <ThemeToggle />
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Route loading spinner</h2>
+    <p class="sg-muted">Preview transition behavior using manual trigger buttons.</p>
+    <div class="sg-inline">
+      <button type="button" id="sg-spinner-show">Show</button>
+      <button type="button" id="sg-spinner-cycle">Show + hide</button>
+    </div>
+    <ClientRouterLoadingSpinner />
+  </section>
+</GuideLayout>
+
+<script>
+  const show = document.querySelector("#sg-spinner-show");
+  const cycle = document.querySelector("#sg-spinner-cycle");
+  show?.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("astro:before-preparation"));
+  });
+  cycle?.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("astro:before-preparation"));
+    window.setTimeout(() => {
+      document.dispatchEvent(new CustomEvent("astro:page-load"));
+    }, 700);
+  });
+</script>
