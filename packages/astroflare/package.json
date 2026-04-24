@@ -1,6 +1,6 @@
 {
   "name": "@at-flux/astroflare",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "description": "Reusable headless components, styles, and utilities for Astro + Tailwind v4 + Cloudflare projects",
   "author": "atflux <dev@atflux.uk>",
