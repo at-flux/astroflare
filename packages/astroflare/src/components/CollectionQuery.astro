@@ -11,6 +11,9 @@ const {
   maxPageButtons = 7,
   filtersClass = "mb-8",
   pagerClass = "mt-6",
+  sizeOptions = [4, 2, 8, 12, 16],
+  showPageSize = true,
+  pageSizeClass = "",
   perPage = 9,
   class: className = "",
 } = Astro.props;
@@ -47,8 +50,12 @@ const pagerItems = buildPageSequence(totalPages, currentPage, maxPageButtons).ma
         page: item,
         href: buildCollectionHref(pathname, query, { page: item, offset: (item - 1) * query.size }),
         active: item === currentPage,
+        disabled: totalPages <= 1 || item === currentPage,
       },
 );
+const sanitizedSizeOptions = Array.from(
+  new Set([query.size, ...sizeOptions].filter((value) => Number.isFinite(value) && value > 0)),
+).sort((a, b) => a - b);
 ---
 
 {useServer && (
@@ -67,7 +74,32 @@ const pagerItems = buildPageSequence(totalPages, currentPage, maxPageButtons).ma
     </slot>
     <slot />
     <slot name="pager">
-      <Pager items={pagerItems} class={pagerClass} />
+      <div class:list={["af-query-pager-row flex flex-col gap-3 md:flex-row md:items-center md:justify-between", pagerClass]}>
+        <Pager items={pagerItems} class="md:order-1 md:flex-1 md:justify-center" />
+        {showPageSize && (
+          <form method="get" action={pathname} class:list={["af-query-size-form md:order-2 md:ml-auto", pageSizeClass]}>
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="offset" value="0" />
+            {Object.keys(activeFilters).length > 0 && (
+              <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
+            )}
+            <label class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
+              <span>Page size</span>
+              <select
+                name="size"
+                class="rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+                onchange="this.form?.submit()"
+              >
+                {sanitizedSizeOptions.map((size) => (
+                  <option value={String(size)} selected={size === query.size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </form>
+        )}
+      </div>
     </slot>
   </>
 )}
