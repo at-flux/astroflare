@@ -1,6 +1,7 @@
 ---
 import "../../src/styles/global.css";
 import CollectionQuery from "../../../src/components/CollectionQuery.astro";
+import ServerCollectionQueryResults from "../components/ServerCollectionQueryResults.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { matchesCollectionFilters, paginateCollection, parseCollectionQuery } from "../../../src/collection-query";
 
@@ -9,6 +10,7 @@ const nav = [
   { href: "/paging", label: "Paging" },
   { href: "/summaries", label: "Summaries" },
   { href: "/modals", label: "Modals" },
+  { href: "/controls", label: "Controls" },
   { href: "/media", label: "Media" },
 ];
 
@@ -19,22 +21,49 @@ const cards = [
   { title: "Delta launch prep", tags: ["ops"] },
   { title: "Epsilon editorial flow", tags: ["content", "ux"] },
 ];
-
-const query = parseCollectionQuery(Astro.url.searchParams, { defaultSize: 1 });
-const filteredCards =
-  Object.keys(query.filters).length === 0
+const clientSizeOptions = [1, 2, 3, 4, 5, 10];
+const clientSizeRaw = Number.parseInt(Astro.url.searchParams.get("clientSize") ?? "2", 10);
+const clientSize = Number.isFinite(clientSizeRaw) ? Math.max(1, clientSizeRaw) : 2;
+const serverSizeOptions = [1, 2, 3, 4, 5, 10];
+const serverQuery = parseCollectionQuery(Astro.url.searchParams, { defaultSize: 1 });
+const serverFilteredCards =
+  Object.keys(serverQuery.filters).length === 0
     ? cards
-    : cards.filter((card) => matchesCollectionFilters({ tag: card.tags }, query.filters));
-const pageData = paginateCollection(filteredCards, query);
-const currentPage = Math.min(pageData.totalPages, Math.max(1, Math.floor(query.offset / query.size) + 1));
-const activeQuery = { ...query, page: currentPage, offset: (currentPage - 1) * query.size };
-const filterTags = Array.from(new Set(cards.flatMap((card) => card.tags))).sort((a, b) => a.localeCompare(b));
+    : cards.filter((card) => matchesCollectionFilters({ tag: card.tags }, serverQuery.filters));
+const serverPageData = paginateCollection(serverFilteredCards, serverQuery);
+const serverCurrentPage = Math.min(
+  serverPageData.totalPages,
+  Math.max(1, Math.floor(serverQuery.offset / serverQuery.size) + 1),
+);
+const serverActiveQuery = {
+  ...serverQuery,
+  page: serverCurrentPage,
+  offset: (serverCurrentPage - 1) * serverQuery.size,
+};
+const serverFilterTags = Array.from(new Set(cards.flatMap((card) => card.tags))).sort((a, b) =>
+  a.localeCompare(b),
+);
+const serverFiltersValue =
+  Object.keys(serverActiveQuery.filters).length > 0 ? JSON.stringify(serverActiveQuery.filters) : "";
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
   <section class="sg-card sg-grid">
-    <h2>Client-side filtering + paging</h2>
-    <CollectionQuery perPage={2}>
+    <h2>Client filtering and paging</h2>
+    <p class="sg-muted">Entire dataset stays in the browser, including page-size controls.</p>
+    <form method="get" class="sg-size-form">
+      <label for="sg-client-size-select">Page size</label>
+      <select id="sg-client-size-select" name="clientSize" onchange="this.form.submit()">
+        {clientSizeOptions.map((size) => (
+          <option value={String(size)} selected={clientSize === size}>{size}</option>
+        ))}
+      </select>
+      {Astro.url.searchParams.get("size") && <input type="hidden" name="size" value={Astro.url.searchParams.get("size") ?? ""} />}
+      {Astro.url.searchParams.get("page") && <input type="hidden" name="page" value={Astro.url.searchParams.get("page") ?? ""} />}
+      {Astro.url.searchParams.get("offset") && <input type="hidden" name="offset" value={Astro.url.searchParams.get("offset") ?? ""} />}
+      {Astro.url.searchParams.get("filters") && <input type="hidden" name="filters" value={Astro.url.searchParams.get("filters") ?? ""} />}
+    </form>
+    <CollectionQuery perPage={clientSize}>
       <div class="sg-grid">
         {cards.map((card) => (
           <article data-card data-tags={card.tags.join("|")} class="sg-card">
@@ -47,19 +76,37 @@ const filterTags = Array.from(new Set(cards.flatMap((card) => card.tags))).sort(
   </section>
 
   <section class="sg-card sg-grid">
-    <h2>Server query via CollectionQuery</h2>
+    <h2>Server query paging</h2>
+    <p class="sg-muted">Controls render immediately; only result content is deferred to reduce flicker.</p>
+    <form method="get" class="sg-size-form">
+      <label for="sg-server-size-select">Page size</label>
+      <select id="sg-server-size-select" name="size" onchange="this.form.submit()">
+        {serverSizeOptions.map((size) => (
+          <option value={String(size)} selected={serverActiveQuery.size === size}>{size}</option>
+        ))}
+      </select>
+      <input type="hidden" name="page" value="1" />
+      <input type="hidden" name="offset" value="0" />
+      {Astro.url.searchParams.get("clientSize") && (
+        <input type="hidden" name="clientSize" value={Astro.url.searchParams.get("clientSize") ?? ""} />
+      )}
+      {serverFiltersValue && <input type="hidden" name="filters" value={serverFiltersValue} />}
+    </form>
     <CollectionQuery
       useServer
       pathname={Astro.url.pathname}
-      query={activeQuery}
-      totalPages={pageData.totalPages}
-      currentPage={currentPage}
-      filters={filterTags.map((tag) => ({ key: "tag", value: tag }))}
-      server:defer
+      query={serverActiveQuery}
+      totalPages={serverPageData.totalPages}
+      currentPage={serverCurrentPage}
+      filters={serverFilterTags.map((tag) => ({ key: "tag", value: tag }))}
     />
-    <article class="sg-card">
-      <h3>{pageData.items[0]?.title ?? "No results"}</h3>
-      <p>{pageData.items[0]?.tags.join(" / ") ?? "Adjust filters to see a result."}</p>
-    </article>
+    <ServerCollectionQueryResults search={Astro.url.search} server:defer>
+      <div slot="fallback" class="sg-grid sg-server-results">
+        <div class="sg-controls-skeleton" aria-hidden="true"></div>
+        <div class="sg-grid sg-server-results">
+          <article class="sg-card sg-skeleton-card" aria-hidden="true"></article>
+        </div>
+      </div>
+    </ServerCollectionQueryResults>
   </section>
 </GuideLayout>

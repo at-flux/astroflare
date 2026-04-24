@@ -1,0 +1,39 @@
+---
+import { matchesCollectionFilters, paginateCollection, parseCollectionQuery } from "../../../src/collection-query";
+
+interface Props {
+  search?: string;
+}
+
+const cards = [
+  { title: "Alpha release notes", tags: ["ops", "platform"] },
+  { title: "Beta product diary", tags: ["product"] },
+  { title: "Gamma render trial", tags: ["platform", "ux"] },
+  { title: "Delta launch prep", tags: ["ops"] },
+  { title: "Epsilon editorial flow", tags: ["content", "ux"] },
+];
+
+const { search = "" } = Astro.props;
+const query = parseCollectionQuery(new URLSearchParams(search), { defaultSize: 1 });
+const filteredCards =
+  Object.keys(query.filters).length === 0
+    ? cards
+    : cards.filter((card) => matchesCollectionFilters({ tag: card.tags }, query.filters));
+const pageData = paginateCollection(filteredCards, query);
+---
+
+<div class="sg-grid sg-server-results">
+  {pageData.items.length === 0 ? (
+    <article class="sg-card">
+      <h3>No results</h3>
+      <p>Adjust filters to see matching cards.</p>
+    </article>
+  ) : (
+    pageData.items.map((card) => (
+      <article class="sg-card">
+        <h3>{card.title}</h3>
+        <p>{card.tags.join(" / ")}</p>
+      </article>
+    ))
+  )}
+</div>
