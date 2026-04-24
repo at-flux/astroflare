@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.6](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.5...@at-flux/astroflare@1.0.6) (2026-04-24)
+
+
+### Bug Fixes
+
+* **astroflare:** add server page-size control and disable active pager links ([242892f](https://github.com/at-flux/astroflare/commit/242892f5fc13bd56116bc3dfc9c4ddbadf4b4c41))
+
 ## @at-flux/astroflare [1.0.5](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.4...@at-flux/astroflare@1.0.5) (2026-04-24)
 
 
