@@ -128,3 +128,26 @@ export const buildPageSequence = (
   sequence.push(totalPages);
   return sequence;
 };
+
+/**
+ * For Astro server islands: the serialized `search` prop is usually set from the
+ * page request, but the island subrequest may omit it. When empty, use the
+ * `Referer` request header so `parseCollectionQuery` still matches the main document URL.
+ */
+export const resolveIslandSearchString = (
+  searchFromProps: string | undefined,
+  request: Request,
+): string => {
+  if (searchFromProps) {
+    return searchFromProps;
+  }
+  const referer = request.headers.get("referer") ?? "";
+  if (!referer) {
+    return "";
+  }
+  try {
+    return new URL(referer).search;
+  } catch {
+    return "";
+  }
+};

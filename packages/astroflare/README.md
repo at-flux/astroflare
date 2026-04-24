@@ -50,6 +50,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `FilterPills.astro` — Tag-colored filter chips with an `all` option and active-state styling
 - `Pager.astro` — Pagination UI primitive for both browser-only and link-driven query pagination
 - `CollectionQuery.astro` — Unified collection filtering/pagination component (client mode by default; URL-driven server mode with `useServer`)
+- `CollectionFooterControls.astro` — Server-only row: optional `summary` slot, `Pager`, and page-size `<form>` (same query contract as `CollectionQuery` server mode)
 
 #### Component props reference
 
@@ -68,6 +69,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `Pager.astro`: `pageCount`, `activePage`, `items`, `class`
 - `CollectionQuery.astro`: `useServer`, `pathname`, `query`, `totalPages`, `currentPage`, `filters`, `maxPageButtons`, `filtersClass`, `pagerClass`, `perPage`, `class`
   - when `useServer` is `true`, `pathname`, `query`, `totalPages`, and `currentPage` are required
+- `CollectionFooterControls.astro`: `pathname`, `query`, `totalPages`, `currentPage`, `sizeOptions`, `maxPageButtons`, `class` — slot `summary` for “Showing X–Y of Z” text
 
 ### Server Islands Pattern
 
@@ -122,7 +124,7 @@ Use named slots to replace the default filter/pager rendering:
 
 - `getTagPalette(tag, options?)` — Deterministic, readable tag color assignment with optional explicit overrides
 - `formatDisplayDate(date, config?)` — Consistent card/detail date formatting with locale override support
-- `parseCollectionQuery(searchParams, options?)` + `paginateCollection(list, query)` + `buildCollectionHref(path, query, overrides?)` + `buildPageSequence(total, current, max?)` + `matchesCollectionFilters(values, filters)` — URL-driven filtering and pagination helpers (`filters` query param supports stringified JSON for multi-filter payloads)
+- `parseCollectionQuery(searchParams, options?)` + `paginateCollection(list, query)` + `buildCollectionHref(path, query, overrides?)` + `buildPageSequence(total, current, max?)` + `matchesCollectionFilters(values, filters)` + `resolveIslandSearchString(searchFromProps, request)` — URL-driven filtering and pagination helpers (`filters` query param supports stringified JSON for multi-filter payloads). Use `resolveIslandSearchString` when a server island must read the main page’s `location.search` (pass props from the page, fall back to `Referer` on the island subrequest)
 
 ## Usage
 
