@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.5](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.4...@at-flux/astroflare@1.0.5) (2026-04-24)
+
+
+### Bug Fixes
+
+* **astroflare:** include src utility modules in package files ([8640d70](https://github.com/at-flux/astroflare/commit/8640d7079d8515c3c3af50a67612b1fc62125b68))
+
 ## @at-flux/astroflare [1.0.4](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.3...@at-flux/astroflare@1.0.4) (2026-04-23)
 
 
