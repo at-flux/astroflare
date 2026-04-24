@@ -106,10 +106,61 @@ h2 {
   font-size: 1.18rem;
 }
 
+.sg-muted {
+  color: color-mix(in oklab, var(--sg-text) 68%, transparent);
+  font-size: 0.92rem;
+}
+
+.sg-inline {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
 .mb-3 {
   margin-bottom: 0.75rem;
 }
 
 .mt-3 {
   margin-top: 0.75rem;
+}
+
+.sg-size-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+}
+
+.sg-size-form select {
+  border: 1px solid var(--sg-border);
+  border-radius: 0.5rem;
+  background: var(--sg-surface);
+  color: var(--sg-text);
+  padding: 0.3rem 0.45rem;
+}
+
+.sg-server-results {
+  min-height: 9.5rem;
+}
+
+.sg-size-skeleton,
+.sg-controls-skeleton,
+.sg-skeleton-card {
+  border: 1px solid var(--sg-border);
+  border-radius: 0.8rem;
+  background: color-mix(in oklab, var(--sg-surface) 70%, var(--sg-border));
+}
+
+.sg-size-skeleton {
+  height: 2.2rem;
+  width: 11rem;
+}
+
+.sg-controls-skeleton {
+  height: 5rem;
+}
+
+.sg-skeleton-card {
+  min-height: 6.5rem;
 }
