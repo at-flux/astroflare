@@ -8,7 +8,7 @@ interface Props {
   class?: string;
   /** Optional explicit pager items for link-based server rendering. */
   items?: Array<
-    | { page: number; label?: string; href?: string; active?: boolean }
+    | { page: number; label?: string; href?: string; active?: boolean; disabled?: boolean }
     | { ellipsis: true; label?: string }
   >;
 }
@@ -22,7 +22,7 @@ const fallbackPages = Array.from({ length: Math.max(0, pageCount) }, (_, index) 
     ? items.map((item) =>
         "ellipsis" in item ? (
           <span class="af-pager-ellipsis" aria-hidden="true">{item.label ?? "…"}</span>
-        ) : item.href ? (
+        ) : item.href && !item.active && !item.disabled ? (
           <a
             href={item.href}
             data-page={String(item.page)}
@@ -34,6 +34,8 @@ const fallbackPages = Array.from({ length: Math.max(0, pageCount) }, (_, index) 
           <button
             type="button"
             data-page={String(item.page)}
+            disabled={item.disabled ?? item.active}
+            aria-disabled={item.disabled ?? item.active}
             class:list={["af-pager-pill", item.active && "is-active"]}
           >
             {item.label ?? item.page}
@@ -67,6 +69,12 @@ const fallbackPages = Array.from({ length: Math.max(0, pageCount) }, (_, index) 
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+  .af-pager .af-pager-pill:disabled,
+  .af-pager .af-pager-pill[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.72;
+    pointer-events: none;
   }
   [data-theme="dark"] .af-pager .af-pager-pill {
     border-color: var(--color-dark-border);

@@ -15,6 +15,12 @@ interface CollectionQueryBaseProps {
   filtersClass?: string;
   /** Optional wrapper class for pager row. */
   pagerClass?: string;
+  /** Available page sizes for server-mode size selector. */
+  sizeOptions?: number[];
+  /** Toggle server-mode page size selector visibility. */
+  showPageSize?: boolean;
+  /** Optional wrapper class for page-size selector. */
+  pageSizeClass?: string;
   /** Visible cards per page in client mode. */
   perPage?: number;
   /** Classes applied to the host wrapper element in client mode. */
