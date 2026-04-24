@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCollectionHref,
   buildPageSequence,
+  formatCollectionRangeLabel,
   matchesCollectionFilters,
   paginateCollection,
   parseCollectionQuery,
@@ -46,6 +47,31 @@ describe("collection query helpers", () => {
     expect(href).toBe(
       "/tech/portfolio?page=3&size=5&offset=10&filters=%7B%22tag%22%3A%22beta%22%7D",
     );
+  });
+
+  it("buildCollectionHref follows page+size, not a stale offset of 0", () => {
+    const href = buildCollectionHref(
+      "/tech/portfolio",
+      { page: 1, size: 2, offset: 0, filters: {} },
+      { page: 2 },
+    );
+    expect(href).toBe("/tech/portfolio?page=2&size=2&offset=2");
+  });
+
+  it("reconciles conflicting page and offset (offset wins and is aligned)", () => {
+    const q = parseCollectionQuery(new URLSearchParams("page=2&size=2&offset=0"));
+    expect(q).toEqual({ page: 1, size: 2, offset: 0, filters: {} });
+    const q2 = parseCollectionQuery(new URLSearchParams("page=1&size=2&offset=2"));
+    expect(q2).toEqual({ page: 2, size: 2, offset: 2, filters: {} });
+  });
+
+  it("formatCollectionRangeLabel uses en dash for ranges, single for one item", () => {
+    expect(
+      formatCollectionRangeLabel({ start: 0, end: 2, totalItems: 4 }),
+    ).toBe("Showing results 1–2 of 4");
+    expect(
+      formatCollectionRangeLabel({ start: 2, end: 3, totalItems: 3 }),
+    ).toBe("Showing result 3 of 3");
   });
 
   it("builds windowed page sequences with ellipsis", () => {

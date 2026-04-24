@@ -4,7 +4,8 @@
  * Does not change package.json or the lockfile — run `pnpm install` first so the
  * registry version is recorded, then this replaces only the on-disk resolution.
  */
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { lstatSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { platform } from 'node:os';
@@ -126,7 +127,9 @@ function cmdStatus(projectRoot) {
     console.log(`  marker: ${marker}`);
     console.log(`  local:  ${data.localPath}`);
     if (existsSync(target)) {
-      console.log(`  node_modules: ${target}`);
+      const st = lstatSync(target);
+      const link = st.isSymbolicLink() ? ` → ${readlinkSync(target)}` : " (not a symlink — registry or copy)";
+      console.log(`  node_modules: ${target}${link}`);
     }
   } catch {
     console.log('astroflare-link-local: marker present but invalid');
@@ -153,6 +156,9 @@ if (argv[0] === 'help' || argv[0] === '-h' || argv[0] === '--help') {
   astroflare-link-local unlink       # remove symlink; run pnpm install
   astroflare-link-local unlink --no-install
   astroflare-link-local status
+
+Shipped with @at-flux/astroflare: run from the app that depends on the package (not only from the monorepo
+that builds astroflare). Walks up directories until it finds a package.json that depends on @at-flux/astroflare.
 
 Symlinks node_modules/@at-flux/astroflare → local checkout. Does not edit package.json or lockfile.`);
   process.exit(0);
