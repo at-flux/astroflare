@@ -1,0 +1,71 @@
+---
+/**
+ * Server-rendered row: result summary, link-driven Pager, and page-size form.
+ * Pairs with CollectionQuery filter pills when filters use URL query state.
+ */
+import Pager from "./Pager.astro";
+import { buildCollectionHref, buildPageSequence, type CollectionQueryState } from "../collection-query";
+
+interface Props {
+  pathname: string;
+  query: CollectionQueryState;
+  totalPages: number;
+  currentPage: number;
+  sizeOptions?: number[];
+  maxPageButtons?: number;
+  class?: string;
+}
+
+const {
+  pathname,
+  query,
+  totalPages,
+  currentPage,
+  sizeOptions = [4, 2, 8, 12, 16],
+  maxPageButtons = 7,
+  class: className = "",
+} = Astro.props;
+
+const activeFilters = query.filters ?? {};
+const pagerItems = buildPageSequence(totalPages, currentPage, maxPageButtons).map((item) =>
+  item === "…"
+    ? { ellipsis: true as const }
+    : {
+        page: item,
+        href: buildCollectionHref(pathname, query, { page: item, offset: (item - 1) * query.size }),
+        active: item === currentPage,
+        disabled: totalPages <= 1 || item === currentPage,
+      },
+);
+const sanitizedSizeOptions = Array.from(
+  new Set([query.size, ...sizeOptions].filter((value) => Number.isFinite(value) && value > 0)),
+).sort((a, b) => a - b);
+---
+
+<div class:list={["af-collection-footer grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-center", className]}>
+  <div class="text-sm text-light-text-subtle dark:text-dark-text-subtle">
+    <slot name="summary" />
+  </div>
+  <Pager items={pagerItems} class="md:justify-center" />
+  <form method="get" action={pathname} class="md:justify-self-end">
+    <input type="hidden" name="page" value="1" />
+    <input type="hidden" name="offset" value="0" />
+    {Object.keys(activeFilters).length > 0 && (
+      <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
+    )}
+    <label class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
+      <span>Page size</span>
+      <select
+        name="size"
+        class="rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+        onchange="this.form?.submit()"
+      >
+        {sanitizedSizeOptions.map((size) => (
+          <option value={String(size)} selected={size === query.size}>
+            {size}
+          </option>
+        ))}
+      </select>
+    </label>
+  </form>
+</div>

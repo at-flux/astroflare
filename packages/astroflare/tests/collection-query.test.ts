@@ -5,6 +5,7 @@ import {
   matchesCollectionFilters,
   paginateCollection,
   parseCollectionQuery,
+  resolveIslandSearchString,
 } from "../src/collection-query";
 
 describe("collection query helpers", () => {
@@ -64,5 +65,16 @@ describe("collection query helpers", () => {
         { tag: "alpha", area: "sites" },
       ),
     ).toBe(false);
+  });
+
+  it("resolveIslandSearchString prefers prop, else referer query", () => {
+    expect(
+      resolveIslandSearchString("?page=2", new Request("https://x.test/a")),
+    ).toBe("?page=2");
+    const r = new Request("https://x.test/_island", {
+      headers: { referer: "https://x.test/blog/?size=4" },
+    });
+    expect(resolveIslandSearchString(undefined, r)).toBe("?size=4");
+    expect(resolveIslandSearchString("", new Request("https://x.test/"))).toBe("");
   });
 });
