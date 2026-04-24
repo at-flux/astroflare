@@ -45,6 +45,7 @@ const serverFilterTags = Array.from(new Set(cards.flatMap((card) => card.tags)))
 );
 const serverFiltersValue =
   Object.keys(serverActiveQuery.filters).length > 0 ? JSON.stringify(serverActiveQuery.filters) : "";
+const shouldDeferResults = Astro.url.search.length === 0;
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
@@ -100,13 +101,17 @@ const serverFiltersValue =
       currentPage={serverCurrentPage}
       filters={serverFilterTags.map((tag) => ({ key: "tag", value: tag }))}
     />
-    <ServerCollectionQueryResults search={Astro.url.search} server:defer>
-      <div slot="fallback" class="sg-grid sg-server-results">
-        <div class="sg-controls-skeleton" aria-hidden="true"></div>
-        <div class="sg-grid sg-server-results">
-          <article class="sg-card sg-skeleton-card" aria-hidden="true"></article>
+    {shouldDeferResults ? (
+      <ServerCollectionQueryResults search={Astro.url.search} server:defer>
+        <div slot="fallback" class="sg-grid sg-server-results sg-server-fallback">
+          <div class="sg-controls-skeleton" aria-hidden="true"></div>
+          <div class="sg-grid sg-server-results">
+            <article class="sg-card sg-skeleton-card" aria-hidden="true"></article>
+          </div>
         </div>
-      </div>
-    </ServerCollectionQueryResults>
+      </ServerCollectionQueryResults>
+    ) : (
+      <ServerCollectionQueryResults search={Astro.url.search} />
+    )}
   </section>
 </GuideLayout>
