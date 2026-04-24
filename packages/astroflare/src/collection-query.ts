@@ -30,13 +30,19 @@ export const parseCollectionQuery = (
 ): CollectionQueryState => {
   const { defaultPage = 1, defaultSize = 12, maxSize = 100 } = options;
 
-  const page = Math.max(1, toInt(searchParams.get("page"), defaultPage));
   const size = Math.min(
     maxSize,
     Math.max(1, toInt(searchParams.get("size"), defaultSize)),
   );
-  const fallbackOffset = (page - 1) * size;
-  const offset = Math.max(0, toInt(searchParams.get("offset"), fallbackOffset));
+  const pageParam = Math.max(1, toInt(searchParams.get("page"), defaultPage));
+  const hasOffset = searchParams.has("offset");
+  const rawOffset = hasOffset
+    ? Math.max(0, toInt(searchParams.get("offset"), 0))
+    : (pageParam - 1) * size;
+  // Offset (which window of the list) is authoritative. Fixes ?page=2&size=2&offset=0
+  // where 0 is valid but is not a multiple of size for page 2, and 0 is not "missing".
+  const page = Math.max(1, Math.floor(rawOffset / size) + 1);
+  const offset = (page - 1) * size;
   const rawFilters = searchParams.get("filters");
   let filters: Record<string, string> = {};
   if (rawFilters) {
@@ -86,11 +92,12 @@ export const buildCollectionHref = (
     ...query,
     ...overrides,
   };
-  const normalizedOffset = (next.page - 1) * next.size;
+  const offsetFromPage = (next.page - 1) * next.size;
   const params = new URLSearchParams({
     page: String(next.page),
     size: String(next.size),
-    offset: String(next.offset ?? normalizedOffset),
+    /* Always follow page+size. Stale offset:0 is valid but must not break page 2+ links (0 is not nullish for ??) */
+    offset: String(offsetFromPage),
   });
   if (Object.keys(next.filters ?? {}).length > 0) {
     params.set("filters", JSON.stringify(next.filters));
@@ -134,6 +141,19 @@ export const buildPageSequence = (
  * page request, but the island subrequest may omit it. When empty, use the
  * `Referer` request header so `parseCollectionQuery` still matches the main document URL.
  */
+/** "Showing …" for collection footers: avoids "3—3" when one item; uses en dash for ranges. */
+export const formatCollectionRangeLabel = (slice: Pick<PaginationSlice<unknown>, "start" | "end" | "totalItems">): string => {
+  if (slice.totalItems === 0) {
+    return "Showing 0 of 0";
+  }
+  const a = slice.start + 1;
+  const b = slice.end;
+  if (a === b) {
+    return `Showing result ${a} of ${slice.totalItems}`;
+  }
+  return `Showing results ${a}–${b} of ${slice.totalItems}`;
+};
+
 export const resolveIslandSearchString = (
   searchFromProps: string | undefined,
   request: Request,

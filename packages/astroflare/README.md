@@ -124,7 +124,8 @@ Use named slots to replace the default filter/pager rendering:
 
 - `getTagPalette(tag, options?)` — Deterministic, readable tag color assignment with optional explicit overrides
 - `formatDisplayDate(date, config?)` — Consistent card/detail date formatting with locale override support
-- `parseCollectionQuery(searchParams, options?)` + `paginateCollection(list, query)` + `buildCollectionHref(path, query, overrides?)` + `buildPageSequence(total, current, max?)` + `matchesCollectionFilters(values, filters)` + `resolveIslandSearchString(searchFromProps, request)` — URL-driven filtering and pagination helpers (`filters` query param supports stringified JSON for multi-filter payloads). Use `resolveIslandSearchString` when a server island must read the main page’s `location.search` (pass props from the page, fall back to `Referer` on the island subrequest)
+- `parseCollectionQuery` + `paginateCollection` + `buildCollectionHref` + `buildPageSequence` + `matchesCollectionFilters` + `formatCollectionRangeLabel` + `resolveIslandSearchString` — URL-driven filtering and pagination (`filters` as stringified JSON). `resolveIslandSearchString` is for server islands (pass the page’s search from the page; fall back to `Referer`). `formatCollectionRangeLabel` is for “Showing result N of T” / “Showing results a–b of T” footers.
+- `astroflare-link-local` is **shipped in this package**; run it from any project that depends on `@at-flux/astroflare` (it walks up to the nearest `package.json` that lists the dep). `status` shows whether a local overlay is active. See **Local checkout** below.
 
 ## Usage
 
