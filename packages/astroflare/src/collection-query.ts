@@ -19,6 +19,8 @@ export interface PaginationSlice<T> {
   end: number;
 }
 
+const normalizeToken = (value: string): string => value.trim().toLowerCase();
+
 const toInt = (value: string | null, fallback: number): number => {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -110,8 +112,9 @@ export const matchesCollectionFilters = (
   filters: Record<string, string>,
 ): boolean =>
   Object.entries(filters).every(([key, value]) => {
-    const candidates = values[key] ?? [];
-    return candidates.includes(value);
+    const expected = normalizeToken(value);
+    const candidates = (values[key] ?? []).map(normalizeToken);
+    return candidates.includes(expected);
   });
 
 export const buildPageSequence = (

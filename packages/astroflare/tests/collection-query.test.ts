@@ -93,6 +93,21 @@ describe("collection query helpers", () => {
     ).toBe(false);
   });
 
+  it("matches filters case-insensitively", () => {
+    expect(
+      matchesCollectionFilters(
+        { tag: ["Website", "Astro"] },
+        { tag: "website" },
+      ),
+    ).toBe(true);
+    expect(
+      matchesCollectionFilters(
+        { tag: ["website"] },
+        { tag: "WEB COMPONENTS" },
+      ),
+    ).toBe(false);
+  });
+
   it("resolveIslandSearchString prefers prop, else referer query", () => {
     expect(
       resolveIslandSearchString("?page=2", new Request("https://x.test/a")),
