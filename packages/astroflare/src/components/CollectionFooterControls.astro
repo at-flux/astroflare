@@ -42,12 +42,12 @@ const sanitizedSizeOptions = Array.from(
 ).sort((a, b) => a - b);
 ---
 
-<div class:list={["af-collection-footer grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-center", className]}>
+<div class:list={["af-collection-footer grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center", className]}>
   <div class="text-sm text-light-text-subtle dark:text-dark-text-subtle">
     <slot name="summary" />
   </div>
-  <Pager items={pagerItems} class="md:justify-center" />
-  <form method="get" action={pathname} class="md:justify-self-end">
+  <Pager items={pagerItems} class="md:col-start-2 md:justify-center" />
+  <form method="get" action={pathname} class="md:col-start-3 md:justify-self-end">
     <input type="hidden" name="page" value="1" />
     <input type="hidden" name="offset" value="0" />
     {Object.keys(activeFilters).length > 0 && (

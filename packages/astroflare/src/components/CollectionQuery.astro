@@ -27,6 +27,7 @@ const totalPages = serverProps?.totalPages ?? 1;
 const currentPage = serverProps?.currentPage ?? 1;
 
 const activeFilters = query.filters ?? {};
+const normalize = (value: string): string => value.trim().toLowerCase();
 const allHref = buildCollectionHref(pathname, query, { filters: {}, page: 1, offset: 0 });
 const serverFilterItems = filters.map((option) => {
   const nextFilters = { ...activeFilters, [option.key]: option.value };
@@ -34,7 +35,7 @@ const serverFilterItems = filters.map((option) => {
     value: `${option.key}:${option.value}`,
     label: option.label ?? option.value,
     href: buildCollectionHref(pathname, query, { filters: nextFilters, page: 1, offset: 0 }),
-    active: activeFilters[option.key] === option.value,
+    active: normalize(activeFilters[option.key] ?? "") === normalize(option.value),
     colorKey: option.value,
   };
 });
@@ -74,10 +75,10 @@ const sanitizedSizeOptions = Array.from(
     </slot>
     <slot />
     <slot name="pager">
-      <div class:list={["af-query-pager-row flex flex-col gap-3 md:flex-row md:items-center md:justify-between", pagerClass]}>
-        <Pager items={pagerItems} class="md:order-1 md:flex-1 md:justify-center" />
+      <div class:list={["af-query-pager-row grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center", pagerClass]}>
+        <Pager items={pagerItems} class="md:col-start-2 md:justify-center" />
         {showPageSize && (
-          <form method="get" action={pathname} class:list={["af-query-size-form md:order-2 md:ml-auto", pageSizeClass]}>
+          <form method="get" action={pathname} class:list={["af-query-size-form md:col-start-3 md:justify-self-end", pageSizeClass]}>
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="offset" value="0" />
             {Object.keys(activeFilters).length > 0 && (
