@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.8](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.7...@at-flux/astroflare@1.0.8) (2026-04-26)
+
+
+### Features
+
+* **collection-filters:** comma labels, empty-state lock, and typed totalItems ([6d4e551](https://github.com/at-flux/astroflare/commit/6d4e551d1d33a467971e5e368f994c2decc887d2))
+
 ## @at-flux/astroflare [1.0.7](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.6...@at-flux/astroflare@1.0.7) (2026-04-26)
 
 
