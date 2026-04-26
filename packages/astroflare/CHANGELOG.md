@@ -1,3 +1,17 @@
+## @at-flux/astroflare [1.0.7](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.6...@at-flux/astroflare@1.0.7) (2026-04-26)
+
+
+### Bug Fixes
+
+* **collection-query:** reconcile offset with page; href from page+size ([9968830](https://github.com/at-flux/astroflare/commit/9968830ef9b317e8f9257bf5c7785d6f3c0a9d8b))
+* **collection-query:** support multi-tag filters and stable island refresh ([7956cbf](https://github.com/at-flux/astroflare/commit/7956cbf09f642ffb9d7da32cfdc5e4a77fd90cb7))
+* **collection-ui:** normalize filters, strengthen active pills, center pager row ([1f24192](https://github.com/at-flux/astroflare/commit/1f24192b7bc6dc91ece57c466946303529992d32))
+
+
+### Features
+
+* CollectionFooterControls and resolveIslandSearchString ([495788a](https://github.com/at-flux/astroflare/commit/495788abff9104bc21f52f122c48af0d3ef08b0a))
+
 ## @at-flux/astroflare [1.0.6](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.5...@at-flux/astroflare@1.0.6) (2026-04-24)
 
 
