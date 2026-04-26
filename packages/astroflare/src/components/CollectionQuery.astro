@@ -1,7 +1,12 @@
 ---
 import FilterPills from "./FilterPills.astro";
 import Pager from "./Pager.astro";
-import { buildCollectionHref, buildPageSequence } from "../collection-query";
+import {
+  buildCollectionHref,
+  buildPageSequence,
+  normalizeFilterToken,
+  parseFilterValueList,
+} from "../collection-query";
 import type { CollectionQueryProps, CollectionQueryServerProps } from "./collection-query-props";
 type Props = CollectionQueryProps;
 
@@ -28,14 +33,42 @@ const currentPage = serverProps?.currentPage ?? 1;
 
 const activeFilters = query.filters ?? {};
 const normalize = (value: string): string => value.trim().toLowerCase();
+const maxTagFilters = 5;
+const activeTagTokens = parseFilterValueList(activeFilters.tag);
 const allHref = buildCollectionHref(pathname, query, { filters: {}, page: 1, offset: 0 });
 const serverFilterItems = filters.map((option) => {
-  const nextFilters = { ...activeFilters, [option.key]: option.value };
+  const isTagFilter = option.key === "tag";
+  const normalizedOptionValue = normalizeFilterToken(option.value);
+  const selectedTagTokens = activeTagTokens;
+  const isSelectedTag = isTagFilter && selectedTagTokens.includes(normalizedOptionValue);
+  const canAddTag = isTagFilter ? selectedTagTokens.length < maxTagFilters : true;
+  const nextTagTokens = isTagFilter
+    ? (isSelectedTag
+        ? selectedTagTokens.filter((token) => token !== normalizedOptionValue)
+        : [...selectedTagTokens, normalizedOptionValue]
+      )
+    : [];
+  const nextFilters = { ...activeFilters };
+  if (isTagFilter) {
+    if (nextTagTokens.length === 0) {
+      delete nextFilters.tag;
+    } else {
+      nextFilters.tag = nextTagTokens.join(",");
+    }
+  } else {
+    nextFilters[option.key] = normalizeFilterToken(option.value);
+  }
+  const isDisabledTag = isTagFilter && !isSelectedTag && !canAddTag;
   return {
     value: `${option.key}:${option.value}`,
     label: option.label ?? option.value,
-    href: buildCollectionHref(pathname, query, { filters: nextFilters, page: 1, offset: 0 }),
-    active: normalize(activeFilters[option.key] ?? "") === normalize(option.value),
+    href: isDisabledTag
+      ? undefined
+      : buildCollectionHref(pathname, query, { filters: nextFilters, page: 1, offset: 0 }),
+    active: isTagFilter
+      ? isSelectedTag
+      : normalize(activeFilters[option.key] ?? "") === normalize(option.value),
+    disabled: isDisabledTag,
     colorKey: option.value,
   };
 });
@@ -78,17 +111,17 @@ const sanitizedSizeOptions = Array.from(
       <div class:list={["af-query-pager-row grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center", pagerClass]}>
         <Pager items={pagerItems} class="md:col-start-2 md:justify-center" />
         {showPageSize && (
-          <form method="get" action={pathname} class:list={["af-query-size-form md:col-start-3 md:justify-self-end", pageSizeClass]}>
+          <form method="get" action={pathname} data-astro-reload class:list={["af-query-size-form md:col-start-3 md:justify-self-end", pageSizeClass]}>
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="offset" value="0" />
             {Object.keys(activeFilters).length > 0 && (
               <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
             )}
-            <label class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
+            <label class="af-page-size-label inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
               <span>Page size</span>
               <select
                 name="size"
-                class="rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+                class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
                 onchange="this.form?.submit()"
               >
                 {sanitizedSizeOptions.map((size) => (
@@ -138,3 +171,15 @@ const sanitizedSizeOptions = Array.from(
     </script>
   )
 }
+
+<style is:global>
+  .af-page-size-label {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .af-page-size-label select,
+  .af-page-size-label option {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+</style>

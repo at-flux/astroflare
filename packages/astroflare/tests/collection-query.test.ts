@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   buildCollectionHref,
   buildPageSequence,
+  formatFilterValueListLabel,
   formatCollectionRangeLabel,
   matchesCollectionFilters,
+  normalizeFilterToken,
   paginateCollection,
+  parseFilterValueList,
   parseCollectionQuery,
   resolveIslandSearchString,
 } from "../src/collection-query";
@@ -58,6 +61,17 @@ describe("collection query helpers", () => {
     expect(href).toBe("/tech/portfolio?page=2&size=2&offset=2");
   });
 
+  it("normalizes filter values in href to lowercase snake case", () => {
+    const href = buildCollectionHref(
+      "/tech/portfolio",
+      { page: 1, size: 4, offset: 0, filters: {} },
+      { filters: { tag: "Web Components,TypeScript" } },
+    );
+    expect(href).toBe(
+      "/tech/portfolio?page=1&size=4&offset=0&filters=%7B%22tag%22%3A%22web_components%2Ctypescript%22%7D",
+    );
+  });
+
   it("reconciles conflicting page and offset (offset wins and is aligned)", () => {
     const q = parseCollectionQuery(new URLSearchParams("page=2&size=2&offset=0"));
     expect(q).toEqual({ page: 1, size: 2, offset: 0, filters: {} });
@@ -106,6 +120,37 @@ describe("collection query helpers", () => {
         { tag: "WEB COMPONENTS" },
       ),
     ).toBe(false);
+  });
+
+  it("normalizes filter tokens to lowercase snake case", () => {
+    expect(normalizeFilterToken("Web Components")).toBe("web_components");
+    expect(normalizeFilterToken("  DEV   Experience ")).toBe("dev_experience");
+  });
+
+  it("supports comma-delimited combinatory filters", () => {
+    expect(
+      matchesCollectionFilters(
+        { tag: ["Website", "TypeScript", "Astro"] },
+        { tag: "website,typescript" },
+      ),
+    ).toBe(true);
+    expect(
+      matchesCollectionFilters(
+        { tag: ["Website", "Astro"] },
+        { tag: "website,typescript" },
+      ),
+    ).toBe(false);
+  });
+
+  it("parses and labels multi-value filter lists", () => {
+    expect(parseFilterValueList(" Website, TypeScript ,, web components ")).toEqual([
+      "website",
+      "typescript",
+      "web_components",
+    ]);
+    expect(formatFilterValueListLabel("website,typescript")).toBe(
+      "WEBSITE + TYPESCRIPT",
+    );
   });
 
   it("resolveIslandSearchString prefers prop, else referer query", () => {

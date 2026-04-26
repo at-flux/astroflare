@@ -10,6 +10,7 @@ interface Props {
         label?: string;
         href?: string;
         active?: boolean;
+        disabled?: boolean;
         colorKey?: string;
       }
   >;
@@ -43,6 +44,13 @@ const {
 const formatLabel = (value: string): string =>
   itemCase === "upper" ? value.toUpperCase() : value;
 const normalize = (value: string): string => value.trim().toLowerCase();
+const formPartsFromHref = (href: string): { action: string; fields: Array<{ name: string; value: string }> } => {
+  const url = new URL(href, "https://astroflare.local");
+  return {
+    action: url.pathname,
+    fields: Array.from(url.searchParams.entries()).map(([name, value]) => ({ name, value })),
+  };
+};
 
 const normalizedItems = items.map((item) =>
   typeof item === "string"
@@ -52,6 +60,7 @@ const normalizedItems = items.map((item) =>
         label: item.label ?? item.value,
         href: item.href,
         active: item.active,
+        disabled: item.disabled,
         colorKey: item.colorKey,
       },
 );
@@ -60,12 +69,22 @@ const normalizedItems = items.map((item) =>
 <div class:list={["af-filter-pills flex flex-wrap items-center gap-2", className]}>
   {includeAll && (
     allHref ? (
-      <a
-        href={allHref}
-        class:list={["af-filter-pill", "af-filter-pill-all", active === "all" && "is-active"]}
-      >
-        {formatLabel(allLabel)}
-      </a>
+      (() => {
+        const form = formPartsFromHref(allHref);
+        return (
+          <form method="get" action={form.action} data-astro-reload class="af-filter-pill-form">
+            {form.fields.map((field) => (
+              <input type="hidden" name={field.name} value={field.value} />
+            ))}
+            <button
+              type="submit"
+              class:list={["af-filter-pill", "af-filter-pill-all", active === "all" && "is-active"]}
+            >
+              {formatLabel(allLabel)}
+            </button>
+          </form>
+        );
+      })()
     ) : (
       <button
         type="button"
@@ -81,9 +100,33 @@ const normalizedItems = items.map((item) =>
     const isActive = item.active ?? normalize(active) === normalize(item.value);
     const label = formatLabel(item.label);
     return (
-      item.href ? (
-        <a
-          href={item.href}
+      item.href && !item.disabled ? (
+        (() => {
+          const form = formPartsFromHref(item.href);
+          return (
+            <form method="get" action={form.action} data-astro-reload class="af-filter-pill-form">
+              {form.fields.map((field) => (
+                <input type="hidden" name={field.name} value={field.value} />
+              ))}
+              <button
+                type="submit"
+                class:list={["af-filter-pill", isActive && "is-active"]}
+                style={{
+                  "--af-pill-bg": palette.bg,
+                  "--af-pill-border": palette.border,
+                  "--af-pill-text": palette.text,
+                }}
+              >
+                {label}
+              </button>
+            </form>
+          );
+        })()
+      ) : item.disabled ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
           class:list={["af-filter-pill", isActive && "is-active"]}
           style={{
             "--af-pill-bg": palette.bg,
@@ -92,7 +135,7 @@ const normalizedItems = items.map((item) =>
           }}
         >
           {label}
-        </a>
+        </button>
       ) : (
         <button
           type="button"
@@ -127,10 +170,22 @@ const normalizedItems = items.map((item) =>
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .af-filter-pill-form {
+    display: inline-flex;
+    margin: 0;
   }
 
   .af-filter-pill:hover {
     filter: brightness(1.04);
+  }
+  .af-filter-pill:disabled,
+  .af-filter-pill[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.48;
+    filter: grayscale(0.3);
   }
 
   .af-filter-pill.is-active {
@@ -140,6 +195,9 @@ const normalizedItems = items.map((item) =>
     outline-offset: 1px;
     font-weight: 600;
     filter: saturate(1.14) brightness(1.06);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
   }
   .af-filter-pill.af-filter-pill-all {
     --af-pill-bg: transparent;
