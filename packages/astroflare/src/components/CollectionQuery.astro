@@ -30,11 +30,13 @@ const pathname = serverProps?.pathname ?? "";
 const query = serverProps?.query ?? { page: 1, size: 9, offset: 0, filters: {} };
 const totalPages = serverProps?.totalPages ?? 1;
 const currentPage = serverProps?.currentPage ?? 1;
+const totalItems = serverProps?.totalItems ?? 0;
 
 const activeFilters = query.filters ?? {};
 const normalize = (value: string): string => value.trim().toLowerCase();
 const maxTagFilters = 5;
 const activeTagTokens = parseFilterValueList(activeFilters.tag);
+const lockFiltersToAll = totalItems === 0 && activeTagTokens.length >= 2;
 const allHref = buildCollectionHref(pathname, query, { filters: {}, page: 1, offset: 0 });
 const serverFilterItems = filters.map((option) => {
   const isTagFilter = option.key === "tag";
@@ -58,7 +60,7 @@ const serverFilterItems = filters.map((option) => {
   } else {
     nextFilters[option.key] = normalizeFilterToken(option.value);
   }
-  const isDisabledTag = isTagFilter && !isSelectedTag && !canAddTag;
+  const isDisabledTag = isTagFilter && (lockFiltersToAll || (!isSelectedTag && !canAddTag));
   return {
     value: `${option.key}:${option.value}`,
     label: option.label ?? option.value,

@@ -149,7 +149,7 @@ describe("collection query helpers", () => {
       "web_components",
     ]);
     expect(formatFilterValueListLabel("website,typescript")).toBe(
-      "WEBSITE + TYPESCRIPT",
+      "WEBSITE, TYPESCRIPT",
     );
   });
 

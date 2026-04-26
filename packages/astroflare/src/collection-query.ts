@@ -37,7 +37,7 @@ export const parseFilterValueList = (value: string | undefined): string[] =>
 export const formatFilterValueListLabel = (value: string | undefined): string =>
   parseFilterValueList(value)
     .map((token) => token.replace(/_/g, " ").toUpperCase())
-    .join(" + ");
+    .join(", ");
 
 const toInt = (value: string | null, fallback: number): number => {
   const parsed = Number.parseInt(value ?? "", 10);
