@@ -41,6 +41,8 @@ export interface CollectionQueryServerProps extends CollectionQueryBaseProps {
   totalPages: number;
   /** Currently selected page (1-based) in server mode. */
   currentPage: number;
+  /** Total filtered items for current query (used for empty-state control behavior). */
+  totalItems?: number;
 }
 
 export interface CollectionQueryClientProps extends CollectionQueryBaseProps {
