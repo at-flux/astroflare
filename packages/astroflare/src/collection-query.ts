@@ -19,7 +19,25 @@ export interface PaginationSlice<T> {
   end: number;
 }
 
-const normalizeToken = (value: string): string => value.trim().toLowerCase();
+export const normalizeFilterToken = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .replace(/_+/g, "_");
+
+export const parseFilterValueList = (value: string | undefined): string[] =>
+  (value ?? "")
+    .split(",")
+    .map(normalizeFilterToken)
+    .filter(Boolean)
+    .filter((token, index, list) => list.indexOf(token) === index);
+
+export const formatFilterValueListLabel = (value: string | undefined): string =>
+  parseFilterValueList(value)
+    .map((token) => token.replace(/_/g, " ").toUpperCase())
+    .join(" + ");
 
 const toInt = (value: string | null, fallback: number): number => {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -53,7 +71,7 @@ export const parseCollectionQuery = (
       filters = Object.fromEntries(
         Object.entries(parsed)
           .filter(([, value]) => typeof value === "string")
-          .map(([key, value]) => [key, String(value)]),
+          .map(([key, value]) => [key, parseFilterValueList(String(value)).join(",")]),
       );
     } catch {
       filters = {};
@@ -102,7 +120,13 @@ export const buildCollectionHref = (
     offset: String(offsetFromPage),
   });
   if (Object.keys(next.filters ?? {}).length > 0) {
-    params.set("filters", JSON.stringify(next.filters));
+    const normalizedFilters = Object.fromEntries(
+      Object.entries(next.filters).map(([key, value]) => [
+        key,
+        parseFilterValueList(value).join(","),
+      ]),
+    );
+    params.set("filters", JSON.stringify(normalizedFilters));
   }
   return `${pathname}?${params.toString()}`;
 };
@@ -112,9 +136,9 @@ export const matchesCollectionFilters = (
   filters: Record<string, string>,
 ): boolean =>
   Object.entries(filters).every(([key, value]) => {
-    const expected = normalizeToken(value);
-    const candidates = (values[key] ?? []).map(normalizeToken);
-    return candidates.includes(expected);
+    const expected = parseFilterValueList(value);
+    const candidates = (values[key] ?? []).map(normalizeFilterToken);
+    return expected.every((token) => candidates.includes(token));
   });
 
 export const buildPageSequence = (

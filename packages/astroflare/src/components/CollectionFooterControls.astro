@@ -43,21 +43,21 @@ const sanitizedSizeOptions = Array.from(
 ---
 
 <div class:list={["af-collection-footer grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center", className]}>
-  <div class="text-sm text-light-text-subtle dark:text-dark-text-subtle">
+  <div class="af-collection-summary text-sm text-light-text-subtle dark:text-dark-text-subtle">
     <slot name="summary" />
   </div>
   <Pager items={pagerItems} class="md:col-start-2 md:justify-center" />
-  <form method="get" action={pathname} class="md:col-start-3 md:justify-self-end">
+  <form method="get" action={pathname} data-astro-reload class="md:col-start-3 md:justify-self-end">
     <input type="hidden" name="page" value="1" />
     <input type="hidden" name="offset" value="0" />
     {Object.keys(activeFilters).length > 0 && (
       <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
     )}
-    <label class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
+    <label class="af-page-size-label inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
       <span>Page size</span>
       <select
         name="size"
-        class="rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+        class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
         onchange="this.form?.submit()"
       >
         {sanitizedSizeOptions.map((size) => (
@@ -69,3 +69,16 @@ const sanitizedSizeOptions = Array.from(
     </label>
   </form>
 </div>
+
+<style is:global>
+  .af-collection-summary,
+  .af-page-size-label {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .af-page-size-label select,
+  .af-page-size-label option {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+</style>
