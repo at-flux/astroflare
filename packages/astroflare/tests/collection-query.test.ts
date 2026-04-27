@@ -72,6 +72,64 @@ describe("collection query helpers", () => {
     );
   });
 
+  it("preserves ISO date filters in href", () => {
+    const href = buildCollectionHref(
+      "/blog",
+      { page: 1, size: 4, offset: 0, filters: {} },
+      {
+        filters: {
+          date_from: "2026-03-28",
+          date_to: "2026-04-27",
+        },
+      },
+    );
+    expect(href).toBe(
+      "/blog?page=1&size=4&offset=0&filters=%7B%22date_from%22%3A%222026-03-28%22%2C%22date_to%22%3A%222026-04-27%22%7D",
+    );
+  });
+
+  it("normalizes underscore date filters to ISO in href", () => {
+    const href = buildCollectionHref(
+      "/blog",
+      { page: 1, size: 4, offset: 0, filters: {} },
+      {
+        filters: {
+          date_from: "2026_03_28",
+          date_to: "2026_04_27",
+        },
+      },
+    );
+    expect(href).toBe(
+      "/blog?page=1&size=4&offset=0&filters=%7B%22date_from%22%3A%222026-03-28%22%2C%22date_to%22%3A%222026-04-27%22%7D",
+    );
+  });
+
+  it("parses legacy underscore date filters as ISO", () => {
+    const params = new URLSearchParams(
+      `filters=${encodeURIComponent(
+        JSON.stringify({ date_from: "2026_03_28", date_to: "2026_04_27" }),
+      )}`,
+    );
+    const query = parseCollectionQuery(params);
+    expect(query.filters).toEqual({
+      date_from: "2026-03-28",
+      date_to: "2026-04-27",
+    });
+  });
+
+  it("drops invalid date filters while preserving valid tokens", () => {
+    const params = new URLSearchParams(
+      `filters=${encodeURIComponent(
+        JSON.stringify({ date_from: "bad-value", date_to: "2026_04_27", tag: "Website" }),
+      )}`,
+    );
+    const query = parseCollectionQuery(params);
+    expect(query.filters).toEqual({
+      date_to: "2026-04-27",
+      tag: "website",
+    });
+  });
+
   it("reconciles conflicting page and offset (offset wins and is aligned)", () => {
     const q = parseCollectionQuery(new URLSearchParams("page=2&size=2&offset=0"));
     expect(q).toEqual({ page: 1, size: 2, offset: 0, filters: {} });

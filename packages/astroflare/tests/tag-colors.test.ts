@@ -11,9 +11,9 @@ describe("tag color palettes", () => {
   it("uses built-in override hues for known tags", () => {
     const shoots = getTagPalette("shoots");
     expect(shoots).toEqual({
-      bg: "hsla(354 48% 58% / 0.12)",
-      border: "hsla(354 52% 58% / 0.34)",
-      text: "hsl(354 50% 66%)",
+      bg: "hsla(9 58% 56% / 0.16)",
+      border: "hsla(9 56% 46% / 0.42)",
+      text: "hsl(9 58% 32%)",
     });
   });
 
@@ -22,9 +22,9 @@ describe("tag color palettes", () => {
       overrides: { docs: "#00ff00" },
     });
     expect(tagged).toEqual({
-      bg: "hsla(120 48% 58% / 0.12)",
-      border: "hsla(120 52% 58% / 0.34)",
-      text: "hsl(120 50% 66%)",
+      bg: "hsla(120 58% 56% / 0.16)",
+      border: "hsla(120 56% 46% / 0.42)",
+      text: "hsl(120 58% 32%)",
     });
   });
 
