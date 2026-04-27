@@ -1,6 +1,8 @@
 ---
 import "../../src/styles/global.css";
 import CollectionQuery from "../../../src/components/CollectionQuery.astro";
+import DateRangeFilterControls from "../../../src/components/DateRangeFilterControls.astro";
+import DisclosurePanel from "../../../src/components/DisclosurePanel.astro";
 import ServerCollectionQueryResults from "../components/ServerCollectionQueryResults.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { matchesCollectionFilters, paginateCollection, parseCollectionQuery } from "../../../src/collection-query";
@@ -46,6 +48,21 @@ const serverFilterTags = Array.from(new Set(cards.flatMap((card) => card.tags)))
 const serverFiltersValue =
   Object.keys(serverActiveQuery.filters).length > 0 ? JSON.stringify(serverActiveQuery.filters) : "";
 const shouldDeferResults = Astro.url.search.length === 0;
+const demoStickyParams = { filters_open: "1" };
+const demoBaseFilters = { tag: "platform" };
+const demoDatePresets = [
+  {
+    value: "last_30_days",
+    label: "Last 30 Days",
+    href: "/paging?filters_open=1&filters=%7B%22tag%22%3A%22platform%22%2C%22date_from%22%3A%222026-03-01%22%2C%22date_to%22%3A%222026-03-31%22%7D",
+  },
+  {
+    value: "year_to_date",
+    label: "Year to Date",
+    href: "/paging?filters_open=1&filters=%7B%22tag%22%3A%22platform%22%2C%22date_from%22%3A%222026-01-01%22%7D",
+    active: true,
+  },
+];
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
@@ -113,5 +130,22 @@ const shouldDeferResults = Astro.url.search.length === 0;
     ) : (
       <ServerCollectionQueryResults search={Astro.url.search} />
     )}
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Disclosure and date controls</h2>
+    <p class="sg-muted">Mirrors the filter accordion/date-range composition used in host apps.</p>
+    <DisclosurePanel summary="Filters" open>
+      <DateRangeFilterControls
+        pathname="/paging"
+        size={serverActiveQuery.size}
+        activeDateFrom="2026-01-01"
+        activeDateTo=""
+        baseFilters={demoBaseFilters}
+        anyDateHref="/paging?filters_open=1&filters=%7B%22tag%22%3A%22platform%22%7D"
+        datePresets={demoDatePresets}
+        stickyParams={demoStickyParams}
+      />
+    </DisclosurePanel>
   </section>
 </GuideLayout>
