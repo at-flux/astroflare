@@ -1,0 +1,57 @@
+---
+interface Props {
+  label: string;
+  class?: string;
+}
+
+const { label, class: className = "" } = Astro.props;
+---
+
+<div class:list={["af-filter-row", className]}>
+  <p class="af-filter-row-label">{label}</p>
+  <div class="af-filter-row-content">
+    <slot />
+  </div>
+</div>
+
+<style is:global>
+  .af-filter-row {
+    display: grid;
+    grid-template-columns: 4.75rem 1fr;
+    align-items: start;
+    column-gap: 0.75rem;
+  }
+  .af-filter-row + .af-filter-row {
+    margin-top: 0.95rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-area-divider-light, var(--color-light-border, #d1d5db)) 58%, transparent);
+  }
+  .af-filter-row-label {
+    margin: 0;
+    padding-top: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-area-ui-label-light, color-mix(in oklab, var(--color-light-text-subtle, #6b7280) 92%, transparent));
+  }
+  .af-filter-row-content {
+    min-width: 0;
+    padding-bottom: 0.15rem;
+  }
+  [data-theme="dark"] .af-filter-row-label {
+    color: var(--color-area-ui-label-dark, color-mix(in oklab, var(--color-dark-text-body, #f3f4f6) 68%, var(--color-dark-text-subtle, #9ca3af) 32%));
+  }
+  [data-theme="dark"] .af-filter-row + .af-filter-row {
+    border-top-color: color-mix(in oklab, var(--color-area-divider-dark, var(--color-dark-border, #374151)) 58%, transparent);
+  }
+  @media (max-width: 640px) {
+    .af-filter-row {
+      grid-template-columns: 1fr;
+      row-gap: 0.35rem;
+    }
+    .af-filter-row-label {
+      padding-top: 0;
+    }
+  }
+</style>

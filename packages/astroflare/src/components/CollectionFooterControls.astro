@@ -9,8 +9,10 @@ import { buildCollectionHref, buildPageSequence, type CollectionQueryState } fro
 interface Props {
   pathname: string;
   query: CollectionQueryState;
+  stickyParams?: Record<string, string>;
   totalPages: number;
   currentPage: number;
+  totalItems?: number;
   sizeOptions?: number[];
   maxPageButtons?: number;
   class?: string;
@@ -19,8 +21,10 @@ interface Props {
 const {
   pathname,
   query,
+  stickyParams = {},
   totalPages,
   currentPage,
+  totalItems = 0,
   sizeOptions = [4, 2, 8, 12, 16],
   maxPageButtons = 7,
   class: className = "",
@@ -40,34 +44,58 @@ const pagerItems = buildPageSequence(totalPages, currentPage, maxPageButtons).ma
 const sanitizedSizeOptions = Array.from(
   new Set([query.size, ...sizeOptions].filter((value) => Number.isFinite(value) && value > 0)),
 ).sort((a, b) => a - b);
+const pageSizeDisabled = totalItems === 0;
+const pageSizeDisabledTitle = "Unavailable ⛔ Nothing to show. Reset filters to change page size.";
+const withStickyParams = (href: string): string => {
+  if (Object.keys(stickyParams).length === 0) return href;
+  const url = new URL(href, "https://astroflare.local");
+  for (const [key, value] of Object.entries(stickyParams)) {
+    url.searchParams.set(key, value);
+  }
+  return `${url.pathname}?${url.searchParams.toString()}`;
+};
+const pagerItemsWithSticky = pagerItems.map((item) =>
+  "href" in item && typeof item.href === "string"
+    ? { ...item, href: withStickyParams(item.href) }
+    : item,
+);
 ---
 
-<div class:list={["af-collection-footer grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center", className]}>
-  <div class="af-collection-summary text-sm text-light-text-subtle dark:text-dark-text-subtle">
+<div class:list={["af-collection-footer grid gap-3", className]}>
+  <div class="af-collection-controls-row flex items-center justify-between gap-3">
+    <Pager items={pagerItemsWithSticky} />
+    <form method="get" action={pathname} data-astro-reload>
+      <input type="hidden" name="page" value="1" />
+      <input type="hidden" name="offset" value="0" />
+      {Object.entries(stickyParams).map(([key, value]) => (
+        <input type="hidden" name={key} value={value} />
+      ))}
+      {Object.keys(activeFilters).length > 0 && (
+        <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
+      )}
+      <label
+        class:list={["af-page-size-label inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle", pageSizeDisabled && "is-disabled"]}
+        title={pageSizeDisabled ? pageSizeDisabledTitle : undefined}
+      >
+        <span>Page size</span>
+        <select
+          name="size"
+          disabled={pageSizeDisabled}
+          class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+          onchange="this.form?.submit()"
+        >
+          {sanitizedSizeOptions.map((size) => (
+            <option value={String(size)} selected={size === query.size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </label>
+    </form>
+  </div>
+  <div class="af-collection-summary text-right text-sm text-light-text-subtle dark:text-dark-text-subtle">
     <slot name="summary" />
   </div>
-  <Pager items={pagerItems} class="md:col-start-2 md:justify-center" />
-  <form method="get" action={pathname} data-astro-reload class="md:col-start-3 md:justify-self-end">
-    <input type="hidden" name="page" value="1" />
-    <input type="hidden" name="offset" value="0" />
-    {Object.keys(activeFilters).length > 0 && (
-      <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
-    )}
-    <label class="af-page-size-label inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
-      <span>Page size</span>
-      <select
-        name="size"
-        class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
-        onchange="this.form?.submit()"
-      >
-        {sanitizedSizeOptions.map((size) => (
-          <option value={String(size)} selected={size === query.size}>
-            {size}
-          </option>
-        ))}
-      </select>
-    </label>
-  </form>
 </div>
 
 <style is:global>
@@ -80,5 +108,13 @@ const sanitizedSizeOptions = Array.from(
   .af-page-size-label option {
     user-select: none;
     -webkit-user-select: none;
+  }
+  .af-page-size-label.is-disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+  }
+  .af-page-size-label.is-disabled select {
+    cursor: not-allowed;
+    border-style: dashed;
   }
 </style>

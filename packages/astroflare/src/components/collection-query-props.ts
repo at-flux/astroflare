@@ -7,6 +7,16 @@ export interface CollectionQueryFilterOption {
 }
 
 interface CollectionQueryBaseProps {
+  /** Extra query params to preserve across filter/pager/size interactions. */
+  stickyParams?: Record<string, string>;
+  /** Optional title shown above filters block in server mode. */
+  filtersTitle?: string;
+  /** Label shown left of tag pills in server mode. */
+  filtersLabel?: string;
+  /** Label shown left of optional extra filters slot in server mode. */
+  extraFiltersLabel?: string;
+  /** Controls whether the optional extra-filters row renders. */
+  showExtraFilters?: boolean;
   /** Available filters for filter pill rendering. */
   filters?: CollectionQueryFilterOption[];
   /** Max visible pager buttons before ellipsis. */

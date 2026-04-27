@@ -1,0 +1,106 @@
+---
+import FilterPills from "./FilterPills.astro";
+
+interface DatePresetItem {
+  value: string;
+  label: string;
+  href: string;
+  active?: boolean;
+  colorKey?: string;
+}
+
+interface Props {
+  pathname: string;
+  size: number;
+  activeDateFrom?: string;
+  activeDateTo?: string;
+  baseFilters: Record<string, string>;
+  anyDateHref: string;
+  datePresets: DatePresetItem[];
+  stickyParams?: Record<string, string>;
+  class?: string;
+}
+
+const {
+  pathname,
+  size,
+  activeDateFrom = "",
+  activeDateTo = "",
+  baseFilters,
+  anyDateHref,
+  datePresets,
+  stickyParams = {},
+  class: className = "",
+} = Astro.props;
+---
+
+<div class:list={["af-date-range-controls space-y-3", className]}>
+  <form
+    method="get"
+    action={pathname}
+    data-astro-reload
+    class="af-date-range-form flex flex-wrap items-end gap-2"
+    data-base-filters={JSON.stringify(baseFilters)}
+    onsubmit="const f=this;const base=JSON.parse(f.dataset.baseFilters||'{}');const from=f.querySelector('[data-date-from]')?.value?.trim();const to=f.querySelector('[data-date-to]')?.value?.trim();if(from)base.date_from=from;else delete base.date_from;if(to)base.date_to=to;else delete base.date_to;const hidden=f.querySelector('[data-filters-json]');if(Object.keys(base).length===0){hidden.removeAttribute('name');hidden.value='';}else{hidden.setAttribute('name','filters');hidden.value=JSON.stringify(base);}"
+  >
+    <input type="hidden" name="page" value="1" />
+    <input type="hidden" name="offset" value="0" />
+    <input type="hidden" name="size" value={String(size)} />
+    {Object.entries(stickyParams).map(([key, value]) => (
+      <input type="hidden" name={key} value={value} />
+    ))}
+    <input type="hidden" data-filters-json value={JSON.stringify(baseFilters)} />
+    <label class="inline-flex items-center gap-2 text-[0.68rem] font-medium uppercase tracking-[0.06em] text-light-text-subtle dark:text-dark-text-subtle">
+      <span>From</span>
+      <input
+        type="date"
+        data-date-from
+        value={activeDateFrom}
+        oninput="if(this.value===''||/^\d{4}-\d{2}-\d{2}$/.test(this.value)){this.form?.requestSubmit?.() ?? this.form?.submit()}"
+        onchange="this.form?.requestSubmit?.() ?? this.form?.submit()"
+        class="af-date-chip-input rounded-full border border-light-border bg-light-surface px-2.5 py-0.5 text-[0.68rem] font-medium tracking-[0.06em] text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+      />
+    </label>
+    <label class="inline-flex items-center gap-2 text-[0.68rem] font-medium uppercase tracking-[0.06em] text-light-text-subtle dark:text-dark-text-subtle">
+      <span>To</span>
+      <input
+        type="date"
+        data-date-to
+        value={activeDateTo}
+        oninput="if(this.value===''||/^\d{4}-\d{2}-\d{2}$/.test(this.value)){this.form?.requestSubmit?.() ?? this.form?.submit()}"
+        onchange="this.form?.requestSubmit?.() ?? this.form?.submit()"
+        class="af-date-chip-input rounded-full border border-light-border bg-light-surface px-2.5 py-0.5 text-[0.68rem] font-medium tracking-[0.06em] text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+      />
+    </label>
+  </form>
+  <FilterPills
+    includeAll
+    allLabel="Any Date"
+    allHref={anyDateHref}
+    active={datePresets.some((item) => item.active) ? "__filtered__" : "all"}
+    itemCase="none"
+    items={datePresets}
+  />
+</div>
+
+<style is:global>
+  .af-date-range-form input[type="date"] {
+    color-scheme: light;
+    min-height: 1.625rem;
+  }
+  [data-theme="dark"] .af-date-range-form input[type="date"] {
+    color-scheme: dark;
+  }
+  .af-date-range-form input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.95;
+    cursor: pointer;
+    filter: saturate(0) brightness(0.38) contrast(1.2);
+  }
+  [data-theme="dark"] .af-date-range-form input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: saturate(0) brightness(1.15) contrast(1.05);
+  }
+  .af-date-range-form input[type="date"]:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-secondary, #7c3aed) 55%, transparent);
+    outline-offset: 2px;
+  }
+</style>

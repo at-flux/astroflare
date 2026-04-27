@@ -1,0 +1,118 @@
+---
+interface Props {
+  summary: string;
+  open?: boolean;
+  class?: string;
+  summaryClass?: string;
+  contentClass?: string;
+}
+
+const {
+  summary,
+  open = false,
+  class: className = "",
+  summaryClass = "",
+  contentClass = "",
+} = Astro.props;
+---
+
+<details class:list={["af-disclosure", className]} open={open}>
+  <summary class:list={["af-disclosure-summary", summaryClass]}>
+    <span>{summary}</span>
+    <span class="af-disclosure-chevron" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="16" height="16" focusable="false" aria-hidden="true">
+        <path d="M4 6.5L8 10.5L12 6.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+  </summary>
+  <div class:list={["af-disclosure-content", contentClass]}>
+    <slot />
+  </div>
+</details>
+
+<script>
+  const parseHasActiveFilters = () => {
+    const params = new URLSearchParams(window.location.search);
+    const rawFilters = params.get("filters");
+    if (!rawFilters) return false;
+    try {
+      const parsed = JSON.parse(rawFilters);
+      return Boolean(parsed && typeof parsed === "object" && Object.keys(parsed).length > 0);
+    } catch {
+      return false;
+    }
+  };
+
+  const ensureStickyInput = (form) => {
+    let input = form.querySelector('input[name="filters_open"]');
+    if (!input) {
+      input = document.createElement("input");
+      input.setAttribute("type", "hidden");
+      input.setAttribute("name", "filters_open");
+      form.appendChild(input);
+    }
+    input.setAttribute("value", "1");
+  };
+
+  const syncFiltersOpenState = (isOpen) => {
+    const hasActiveFilters = parseHasActiveFilters();
+    const shouldPersistOpen = isOpen || hasActiveFilters;
+    const forms = document.querySelectorAll('form[method="get"]');
+
+    for (const formNode of forms) {
+      if (!(formNode instanceof HTMLFormElement)) continue;
+      if (shouldPersistOpen) {
+        ensureStickyInput(formNode);
+      } else {
+        const input = formNode.querySelector('input[name="filters_open"]');
+        if (input) input.remove();
+      }
+    }
+
+    const nextUrl = new URL(window.location.href);
+    if (shouldPersistOpen) nextUrl.searchParams.set("filters_open", "1");
+    else nextUrl.searchParams.delete("filters_open");
+    if (nextUrl.toString() !== window.location.href) {
+      window.history.replaceState(window.history.state, "", nextUrl.toString());
+    }
+  };
+
+  const disclosures = document.querySelectorAll("details.af-disclosure");
+  for (const disclosureNode of disclosures) {
+    if (!(disclosureNode instanceof HTMLDetailsElement)) continue;
+    syncFiltersOpenState(disclosureNode.open);
+    disclosureNode.addEventListener("toggle", () => {
+      syncFiltersOpenState(disclosureNode.open);
+    });
+  }
+</script>
+
+<style is:global>
+  .af-disclosure-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .af-disclosure-summary::-webkit-details-marker {
+    display: none;
+  }
+  .af-disclosure-chevron {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid currentColor;
+    flex: 0 0 auto;
+    opacity: 0.88;
+    transition: transform 140ms ease;
+    transform-origin: center;
+  }
+  .af-disclosure[open] .af-disclosure-chevron {
+    transform: rotate(180deg);
+  }
+</style>
