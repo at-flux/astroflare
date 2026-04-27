@@ -112,9 +112,9 @@ const normalizedItems = items.map((item) =>
                 type="submit"
                 class:list={["af-filter-pill", isActive && "is-active"]}
                 style={{
-                  "--af-pill-bg": palette.bg,
-                  "--af-pill-border": palette.border,
-                  "--af-pill-text": palette.text,
+                  "--af-tag-bg": palette.bg,
+                  "--af-tag-border": palette.border,
+                  "--af-tag-text": palette.text,
                 }}
               >
                 {label}
@@ -130,9 +130,9 @@ const normalizedItems = items.map((item) =>
           title="Nothing to show with current filters. Reset or remove filters."
           class:list={["af-filter-pill", isActive && "is-active"]}
           style={{
-            "--af-pill-bg": palette.bg,
-            "--af-pill-border": palette.border,
-            "--af-pill-text": palette.text,
+            "--af-tag-bg": palette.bg,
+            "--af-tag-border": palette.border,
+            "--af-tag-text": palette.text,
           }}
         >
           {label}
@@ -143,9 +143,9 @@ const normalizedItems = items.map((item) =>
           data-filter={item.value}
           class:list={["af-filter-pill", isActive && "is-active"]}
           style={{
-            "--af-pill-bg": palette.bg,
-            "--af-pill-border": palette.border,
-            "--af-pill-text": palette.text,
+            "--af-tag-bg": palette.bg,
+            "--af-tag-border": palette.border,
+            "--af-tag-text": palette.text,
           }}
         >
           {label}
@@ -158,9 +158,9 @@ const normalizedItems = items.map((item) =>
 <style>
   .af-filter-pill {
     border-radius: 9999px;
-    border: 1px solid var(--af-pill-border, var(--color-light-border));
-    background: var(--af-pill-bg, color-mix(in oklab, var(--color-light-surface) 80%, transparent));
-    color: var(--af-pill-text, color-mix(in oklab, var(--color-light-text-body, #111827) 88%, transparent));
+    border: 1px solid var(--af-tag-border, var(--color-light-border));
+    background: var(--af-tag-bg, color-mix(in oklab, var(--color-light-surface) 80%, transparent));
+    color: var(--af-tag-text, color-mix(in oklab, var(--color-light-text-body, #111827) 88%, transparent));
     padding: 0.125rem 0.625rem;
     font-size: 0.68rem;
     font-weight: 500;
@@ -187,13 +187,13 @@ const normalizedItems = items.map((item) =>
     cursor: not-allowed;
     opacity: 0.34;
     filter: grayscale(0.45) contrast(0.86);
-    color: color-mix(in oklab, var(--af-pill-text, var(--color-light-text-subtle, #6b7280)) 42%, var(--color-light-text-subtle, #6b7280));
+    color: color-mix(in oklab, var(--af-tag-text, var(--color-light-text-subtle, #6b7280)) 42%, var(--color-light-text-subtle, #6b7280));
   }
 
   .af-filter-pill.is-active {
-    border-color: color-mix(in oklab, var(--af-pill-text, var(--color-secondary)) 80%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--af-pill-text, var(--color-secondary)) 36%, transparent);
-    outline: 2px solid color-mix(in oklab, var(--af-pill-text, var(--color-secondary)) 48%, transparent);
+    border-color: color-mix(in oklab, var(--af-tag-text, var(--color-secondary)) 80%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--af-tag-text, var(--color-secondary)) 36%, transparent);
+    outline: 2px solid color-mix(in oklab, var(--af-tag-text, var(--color-secondary)) 48%, transparent);
     outline-offset: 1px;
     font-weight: 600;
     filter: saturate(1.14) brightness(1.06);
@@ -202,34 +202,34 @@ const normalizedItems = items.map((item) =>
     text-underline-offset: 0.15em;
   }
   .af-filter-pill.af-filter-pill-all {
-    --af-pill-bg: transparent;
-    --af-pill-border: color-mix(in oklab, var(--color-light-text-subtle) 45%, transparent);
-    --af-pill-text: color-mix(in oklab, var(--color-light-text-body) 92%, transparent);
+    --af-tag-bg: transparent;
+    --af-tag-border: color-mix(in oklab, var(--color-light-text-subtle) 45%, transparent);
+    --af-tag-text: color-mix(in oklab, var(--color-light-text-body) 92%, transparent);
   }
   .af-filter-pill.af-filter-pill-all.is-active {
-    --af-pill-bg: color-mix(in oklab, var(--color-light-text-body) 7%, transparent);
-    --af-pill-border: color-mix(in oklab, var(--color-light-text-body) 72%, transparent);
-    --af-pill-text: var(--color-light-text-body);
+    --af-tag-bg: color-mix(in oklab, var(--color-light-text-body) 7%, transparent);
+    --af-tag-border: color-mix(in oklab, var(--color-light-text-body) 72%, transparent);
+    --af-tag-text: var(--color-light-text-body);
   }
   :global([data-theme="dark"]) .af-filter-pill {
-    color: color-mix(in oklab, var(--af-pill-text, #d1d5db) 34%, var(--color-dark-text-body, #f3f4f6));
-    border-color: color-mix(in oklab, var(--af-pill-border, var(--color-dark-border)) 62%, var(--color-dark-border) 38%);
-    background: color-mix(in oklab, var(--af-pill-bg, transparent) 48%, var(--color-dark-surface, #1f2937) 52%);
+    color: color-mix(in oklab, var(--af-tag-text, #d1d5db) 34%, var(--color-dark-text-body, #f3f4f6));
+    border-color: color-mix(in oklab, var(--af-tag-border, var(--color-dark-border)) 62%, var(--color-dark-border) 38%);
+    background: color-mix(in oklab, var(--af-tag-bg, transparent) 48%, var(--color-dark-surface, #1f2937) 52%);
   }
   :global([data-theme="dark"]) .af-filter-pill.af-filter-pill-all {
-    --af-pill-bg: transparent;
-    --af-pill-border: color-mix(in oklab, var(--color-dark-text-subtle) 48%, transparent);
-    --af-pill-text: color-mix(in oklab, var(--color-dark-text-body) 90%, transparent);
+    --af-tag-bg: transparent;
+    --af-tag-border: color-mix(in oklab, var(--color-dark-text-subtle) 48%, transparent);
+    --af-tag-text: color-mix(in oklab, var(--color-dark-text-body) 90%, transparent);
   }
   :global([data-theme="dark"]) .af-filter-pill.af-filter-pill-all.is-active {
-    --af-pill-bg: color-mix(in oklab, var(--color-dark-text-body) 10%, transparent);
-    --af-pill-border: color-mix(in oklab, var(--color-dark-text-body) 70%, transparent);
-    --af-pill-text: var(--color-dark-text-body);
+    --af-tag-bg: color-mix(in oklab, var(--color-dark-text-body) 10%, transparent);
+    --af-tag-border: color-mix(in oklab, var(--color-dark-text-body) 70%, transparent);
+    --af-tag-text: var(--color-dark-text-body);
   }
   :global([data-theme="dark"]) .af-filter-pill:disabled,
   :global([data-theme="dark"]) .af-filter-pill[aria-disabled="true"] {
     opacity: 0.42;
     filter: grayscale(0.35) contrast(0.9);
-    color: color-mix(in oklab, var(--color-dark-text-subtle, #9ca3af) 68%, var(--af-pill-text, #d1d5db));
+    color: color-mix(in oklab, var(--color-dark-text-subtle, #9ca3af) 68%, var(--af-tag-text, #d1d5db));
   }
 </style>
