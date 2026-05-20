@@ -43,12 +43,12 @@ const overflowTooltip = overflowItems.map(formatItem).join(", ");
     return (
       <span
         style={{
-          backgroundColor: palette.bg,
-          borderColor: palette.border,
-          color: palette.text,
+          "--af-tag-bg": palette.bg,
+          "--af-tag-border": palette.border,
+          "--af-tag-text": palette.text,
         }}
         class:list={[
-          "inline-block rounded-full border px-2.5 py-0.5 text-[0.68rem] font-medium uppercase tracking-[0.06em]",
+          "af-tag-tone inline-block rounded-full border px-2.5 py-0.5 text-[0.68rem] font-medium uppercase tracking-[0.06em]",
           itemClass,
         ]}
       >
@@ -69,3 +69,16 @@ const overflowTooltip = overflowItems.map(formatItem).join(", ");
     </Tooltip>
   )}
 </div>
+
+<style is:global>
+  .af-tag-tone {
+    background: var(--af-tag-bg, color-mix(in oklab, var(--color-light-surface) 86%, transparent));
+    border-color: var(--af-tag-border, color-mix(in oklab, var(--color-light-border) 72%, transparent));
+    color: var(--af-tag-text, color-mix(in oklab, var(--color-light-text-title) 84%, var(--color-light-text-subtle) 16%));
+  }
+  [data-theme="dark"] .af-tag-tone {
+    background: color-mix(in oklab, var(--af-tag-bg, transparent) 48%, var(--color-dark-surface) 52%);
+    border-color: color-mix(in oklab, var(--af-tag-border, var(--color-dark-border)) 62%, var(--color-dark-border) 38%);
+    color: color-mix(in oklab, var(--af-tag-text, var(--color-dark-text-body)) 38%, var(--color-dark-text-body) 62%);
+  }
+</style>
