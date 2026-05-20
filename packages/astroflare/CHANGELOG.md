@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.9](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.8...@at-flux/astroflare@1.0.9) (2026-05-20)
+
+
+### Features
+
+* **collection-filters:** add sticky query controls and date-range composition ([198a1ae](https://github.com/at-flux/astroflare/commit/198a1ae0d2388bf06977155474b9c1ede1e7d918))
+
 ## @at-flux/astroflare [1.0.8](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.7...@at-flux/astroflare@1.0.8) (2026-04-26)
 
 
