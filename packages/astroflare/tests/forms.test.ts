@@ -40,10 +40,10 @@ describe("forms utilities", () => {
     const html = await renderEmailTemplate({
       title: "Contact",
       contentHtml: "<p>Body</p>",
-      brandName: "atflux",
+      brandName: "example-brand",
     });
     expect(html).toContain("Contact");
     expect(html).toContain("<p>Body</p>");
-    expect(html).toContain("atflux");
+    expect(html).toContain("example-brand");
   });
 });
