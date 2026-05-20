@@ -13,11 +13,11 @@ export interface TagColorOptions {
 }
 
 const DEFAULT_OVERRIDES: Record<string, string> = {
-  shoots: "#dc3545",
-  tech: "#8a95a5",
-  ai: "#6b7b8d",
-  sites: "#7dd3c0",
-  flow: "#b367e0",
+  shoots: "#c4786a",
+  tech: "#4d8c7a",
+  ai: "#d9773a",
+  sites: "#b8942e",
+  flow: "#9b6bc9",
 };
 
 const hashStringToHue = (input: string): number => {
@@ -82,8 +82,8 @@ export const getTagPalette = (
 ): TagPalette => {
   const hue = resolveHue(tag, options);
   return {
-    bg: `hsla(${hue} 48% 58% / 0.12)`,
-    border: `hsla(${hue} 52% 58% / 0.34)`,
-    text: `hsl(${hue} 50% 66%)`,
+    bg: `hsla(${hue} 58% 56% / 0.16)`,
+    border: `hsla(${hue} 56% 46% / 0.42)`,
+    text: `hsl(${hue} 58% 32%)`,
   };
 };

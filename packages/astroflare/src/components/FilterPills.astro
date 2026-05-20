@@ -127,6 +127,7 @@ const normalizedItems = items.map((item) =>
           type="button"
           disabled
           aria-disabled="true"
+          title="Nothing to show with current filters. Reset or remove filters."
           class:list={["af-filter-pill", isActive && "is-active"]}
           style={{
             "--af-pill-bg": palette.bg,
@@ -159,11 +160,11 @@ const normalizedItems = items.map((item) =>
     border-radius: 9999px;
     border: 1px solid var(--af-pill-border, var(--color-light-border));
     background: var(--af-pill-bg, color-mix(in oklab, var(--color-light-surface) 80%, transparent));
-    color: var(--af-pill-text, color-mix(in oklab, var(--color-light-text-subtle) 78%, transparent));
-    padding: 0.35rem 0.9rem;
-    font-size: 0.72rem;
+    color: var(--af-pill-text, color-mix(in oklab, var(--color-light-text-body, #111827) 88%, transparent));
+    padding: 0.125rem 0.625rem;
+    font-size: 0.68rem;
     font-weight: 500;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
     transition: transform 130ms ease, filter 130ms ease;
@@ -179,13 +180,14 @@ const normalizedItems = items.map((item) =>
   }
 
   .af-filter-pill:hover {
-    filter: brightness(1.04);
+    filter: brightness(0.97) saturate(1.04);
   }
   .af-filter-pill:disabled,
   .af-filter-pill[aria-disabled="true"] {
     cursor: not-allowed;
-    opacity: 0.48;
-    filter: grayscale(0.3);
+    opacity: 0.34;
+    filter: grayscale(0.45) contrast(0.86);
+    color: color-mix(in oklab, var(--af-pill-text, var(--color-light-text-subtle, #6b7280)) 42%, var(--color-light-text-subtle, #6b7280));
   }
 
   .af-filter-pill.is-active {
@@ -210,9 +212,9 @@ const normalizedItems = items.map((item) =>
     --af-pill-text: var(--color-light-text-body);
   }
   :global([data-theme="dark"]) .af-filter-pill {
-    color: var(--af-pill-text, color-mix(in oklab, var(--color-dark-text-subtle) 85%, transparent));
-    border-color: var(--af-pill-border, var(--color-dark-border));
-    background: var(--af-pill-bg, color-mix(in oklab, var(--color-dark-surface) 70%, transparent));
+    color: color-mix(in oklab, var(--af-pill-text, #d1d5db) 34%, var(--color-dark-text-body, #f3f4f6));
+    border-color: color-mix(in oklab, var(--af-pill-border, var(--color-dark-border)) 62%, var(--color-dark-border) 38%);
+    background: color-mix(in oklab, var(--af-pill-bg, transparent) 48%, var(--color-dark-surface, #1f2937) 52%);
   }
   :global([data-theme="dark"]) .af-filter-pill.af-filter-pill-all {
     --af-pill-bg: transparent;
@@ -223,5 +225,11 @@ const normalizedItems = items.map((item) =>
     --af-pill-bg: color-mix(in oklab, var(--color-dark-text-body) 10%, transparent);
     --af-pill-border: color-mix(in oklab, var(--color-dark-text-body) 70%, transparent);
     --af-pill-text: var(--color-dark-text-body);
+  }
+  :global([data-theme="dark"]) .af-filter-pill:disabled,
+  :global([data-theme="dark"]) .af-filter-pill[aria-disabled="true"] {
+    opacity: 0.42;
+    filter: grayscale(0.35) contrast(0.9);
+    color: color-mix(in oklab, var(--color-dark-text-subtle, #9ca3af) 68%, var(--af-pill-text, #d1d5db));
   }
 </style>
