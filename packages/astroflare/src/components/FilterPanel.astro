@@ -1,0 +1,29 @@
+---
+interface Props {
+  title?: string;
+  class?: string;
+}
+
+const { title = "Filters", class: className = "" } = Astro.props;
+---
+
+<section class:list={["af-filter-panel", className]} aria-label={title}>
+  {title && <p class="af-filter-panel-title">{title}</p>}
+  <div class="af-filter-panel-body">
+    <slot />
+  </div>
+</section>
+
+<style is:global>
+  .af-filter-panel-title {
+    margin: 0 0 0.8rem 0;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-light-text-title, #1f2937) 72%, var(--color-light-text-subtle, #6b7280));
+  }
+  [data-theme="dark"] .af-filter-panel-title {
+    color: color-mix(in oklab, var(--color-dark-text-title, #f3f4f6) 72%, var(--color-dark-text-subtle, #9ca3af));
+  }
+</style>

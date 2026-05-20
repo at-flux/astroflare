@@ -34,6 +34,14 @@ export const parseFilterValueList = (value: string | undefined): string[] =>
     .filter(Boolean)
     .filter((token, index, list) => list.indexOf(token) === index);
 
+const normalizeFilterValue = (key: string, value: string): string => {
+  if (key === "date_from" || key === "date_to") {
+    const canonical = value.trim().replace(/_/g, "-");
+    return /^\d{4}-\d{2}-\d{2}$/.test(canonical) ? canonical : "";
+  }
+  return parseFilterValueList(value).join(",");
+};
+
 export const formatFilterValueListLabel = (value: string | undefined): string =>
   parseFilterValueList(value)
     .map((token) => token.replace(/_/g, " ").toUpperCase())
@@ -71,7 +79,8 @@ export const parseCollectionQuery = (
       filters = Object.fromEntries(
         Object.entries(parsed)
           .filter(([, value]) => typeof value === "string")
-          .map(([key, value]) => [key, parseFilterValueList(String(value)).join(",")]),
+          .map(([key, value]) => [key, normalizeFilterValue(key, String(value))])
+          .filter(([, value]) => value.length > 0),
       );
     } catch {
       filters = {};
@@ -123,7 +132,7 @@ export const buildCollectionHref = (
     const normalizedFilters = Object.fromEntries(
       Object.entries(next.filters).map(([key, value]) => [
         key,
-        parseFilterValueList(value).join(","),
+        normalizeFilterValue(key, value),
       ]),
     );
     params.set("filters", JSON.stringify(normalizedFilters));

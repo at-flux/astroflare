@@ -1,5 +1,7 @@
 ---
 import FilterPills from "./FilterPills.astro";
+import FilterPanel from "./FilterPanel.astro";
+import FilterRow from "./FilterRow.astro";
 import Pager from "./Pager.astro";
 import {
   buildCollectionHref,
@@ -13,10 +15,15 @@ type Props = CollectionQueryProps;
 const {
   useServer = false,
   filters = [],
+  filtersTitle = "Filters",
+  filtersLabel = "Tags",
+  extraFiltersLabel = "Date",
+  showExtraFilters = false,
   maxPageButtons = 7,
   filtersClass = "mb-8",
   pagerClass = "mt-6",
   sizeOptions = [4, 2, 8, 12, 16],
+  stickyParams = {},
   showPageSize = true,
   pageSizeClass = "",
   perPage = 9,
@@ -37,7 +44,10 @@ const normalize = (value: string): string => value.trim().toLowerCase();
 const maxTagFilters = 5;
 const activeTagTokens = parseFilterValueList(activeFilters.tag);
 const lockFiltersToAll = totalItems === 0 && activeTagTokens.length >= 2;
-const allHref = buildCollectionHref(pathname, query, { filters: {}, page: 1, offset: 0 });
+const clearTagFilters = Object.fromEntries(
+  Object.entries(activeFilters).filter(([key]) => key !== "tag"),
+);
+const allHref = buildCollectionHref(pathname, query, { filters: clearTagFilters, page: 1, offset: 0 });
 const serverFilterItems = filters.map((option) => {
   const isTagFilter = option.key === "tag";
   const normalizedOptionValue = normalizeFilterToken(option.value);
@@ -92,6 +102,26 @@ const pagerItems = buildPageSequence(totalPages, currentPage, maxPageButtons).ma
 const sanitizedSizeOptions = Array.from(
   new Set([query.size, ...sizeOptions].filter((value) => Number.isFinite(value) && value > 0)),
 ).sort((a, b) => a - b);
+const pageSizeDisabled = totalItems === 0;
+const pageSizeDisabledTitle = "Unavailable ⛔ Nothing to show. Reset filters to change page size.";
+const withStickyParams = (href: string): string => {
+  if (Object.keys(stickyParams).length === 0) return href;
+  const url = new URL(href, "https://astroflare.local");
+  for (const [key, value] of Object.entries(stickyParams)) {
+    url.searchParams.set(key, value);
+  }
+  return `${url.pathname}?${url.searchParams.toString()}`;
+};
+const allHrefWithSticky = withStickyParams(allHref);
+const serverFilterItemsWithSticky = serverFilterItems.map((item) => ({
+  ...item,
+  href: item.href ? withStickyParams(item.href) : item.href,
+}));
+const pagerItemsWithSticky = pagerItems.map((item) =>
+  "href" in item && typeof item.href === "string"
+    ? { ...item, href: withStickyParams(item.href) }
+    : item,
+);
 ---
 
 {useServer && (
@@ -100,30 +130,46 @@ const sanitizedSizeOptions = Array.from(
       name="filters"
     >
       {serverFilterItems.length > 0 && (
-        <FilterPills
-          items={serverFilterItems}
-          allHref={allHref}
-          active={Object.keys(activeFilters).length === 0 ? "all" : "__filtered__"}
-          class={filtersClass}
-        />
+        <FilterPanel title={filtersTitle}>
+          <FilterRow label={filtersLabel}>
+            <FilterPills
+              items={serverFilterItemsWithSticky}
+              allHref={allHrefWithSticky}
+              active={activeTagTokens.length === 0 ? "all" : "__filtered__"}
+              class={filtersClass}
+            />
+          </FilterRow>
+          {showExtraFilters && Astro.slots.has("extra-filters") && (
+            <FilterRow label={extraFiltersLabel}>
+              <slot name="extra-filters" />
+            </FilterRow>
+          )}
+        </FilterPanel>
       )}
     </slot>
     <slot />
     <slot name="pager">
-      <div class:list={["af-query-pager-row grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center", pagerClass]}>
-        <Pager items={pagerItems} class="md:col-start-2 md:justify-center" />
+      <div class:list={["af-query-pager-row flex items-center justify-between gap-3", pagerClass]}>
+        <Pager items={pagerItemsWithSticky} />
         {showPageSize && (
           <form method="get" action={pathname} data-astro-reload class:list={["af-query-size-form md:col-start-3 md:justify-self-end", pageSizeClass]}>
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="offset" value="0" />
+            {Object.entries(stickyParams).map(([key, value]) => (
+              <input type="hidden" name={key} value={value} />
+            ))}
             {Object.keys(activeFilters).length > 0 && (
               <input type="hidden" name="filters" value={JSON.stringify(activeFilters)} />
             )}
-            <label class="af-page-size-label inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle">
+            <label
+              class:list={["af-page-size-label inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-light-text-subtle dark:text-dark-text-subtle", pageSizeDisabled && "is-disabled"]}
+              title={pageSizeDisabled ? pageSizeDisabledTitle : undefined}
+            >
               <span>Page size</span>
               <select
                 name="size"
                 class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
+                disabled={pageSizeDisabled}
                 onchange="this.form?.submit()"
               >
                 {sanitizedSizeOptions.map((size) => (
@@ -183,5 +229,13 @@ const sanitizedSizeOptions = Array.from(
   .af-page-size-label option {
     user-select: none;
     -webkit-user-select: none;
+  }
+  .af-page-size-label.is-disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+  }
+  .af-page-size-label.is-disabled select {
+    cursor: not-allowed;
+    border-style: dashed;
   }
 </style>

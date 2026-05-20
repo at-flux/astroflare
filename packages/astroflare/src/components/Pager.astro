@@ -53,6 +53,7 @@ const formPartsFromHref = (href: string): { action: string; fields: Array<{ name
             data-page={String(item.page)}
             disabled={item.disabled ?? item.active}
             aria-disabled={item.disabled ?? item.active}
+            title={(item.disabled ?? item.active) ? "Unavailable ⛔" : undefined}
             class:list={["af-pager-pill", item.active && "is-active"]}
           >
             {item.label ?? item.page}
@@ -97,7 +98,6 @@ const formPartsFromHref = (href: string): { action: string; fields: Array<{ name
   .af-pager .af-pager-pill[aria-disabled="true"] {
     cursor: not-allowed;
     opacity: 0.5;
-    pointer-events: none;
     border-color: color-mix(in oklab, var(--color-light-border) 65%, transparent);
     color: color-mix(in oklab, var(--color-light-text-subtle) 50%, transparent);
     background: color-mix(in oklab, var(--color-light-surface) 35%, transparent);
