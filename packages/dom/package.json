@@ -38,10 +38,10 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "jsdom": "^25.0.1",
-    "tsdown": "^0.21.7",
-    "typescript": "^5.0.0",
-    "vitest": "^3.2.4"
+    "jsdom": "25.0.1",
+    "tsdown": "0.21.8",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
   },
   "engines": {
     "node": ">=20.19"

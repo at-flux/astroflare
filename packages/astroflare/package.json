@@ -74,14 +74,14 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@astrojs/node": "^9.5.5",
-    "jsdom": "^25.0.1",
-    "tsdown": "^0.21.7",
-    "typescript": "^5.0.0",
-    "vitest": "^3.2.4"
+    "@astrojs/node": "9.5.5",
+    "jsdom": "25.0.1",
+    "tsdown": "0.21.8",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
   },
   "dependencies": {
-    "resend": "^4.0.0"
+    "resend": "4.8.0"
   },
   "peerDependencies": {
     "astro": ">=5.0.0"

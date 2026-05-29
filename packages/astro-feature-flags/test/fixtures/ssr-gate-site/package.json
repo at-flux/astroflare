@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "@at-flux/astro-feature-flags": "link:../../..",
-    "astro": "^5.18.0"
+    "astro": "5.18.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "5.9.3"
   }
 }
