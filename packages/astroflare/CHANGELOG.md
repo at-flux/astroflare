@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.10](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.9...@at-flux/astroflare@1.0.10) (2026-07-17)
+
+
+### Features
+
+* **astroflare:** add ImageFade image loading wrapper ([fef77cf](https://github.com/at-flux/astroflare/commit/fef77cfb9712f064a3f8a60935558c5cc6be6d28))
+
 ## @at-flux/astroflare [1.0.9](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.8...@at-flux/astroflare@1.0.9) (2026-05-20)
 
 
