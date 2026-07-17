@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.11](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.10...@at-flux/astroflare@1.0.11) (2026-07-21)
+
+
+### Bug Fixes
+
+* **astroflare:** stop ImageFade overriding slotted image object-fit ([8211498](https://github.com/at-flux/astroflare/commit/821149807506ff4bc02fe53db011c5650472ce13))
+
 ## @at-flux/astroflare [1.0.10](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.9...@at-flux/astroflare@1.0.10) (2026-07-17)
 
 
