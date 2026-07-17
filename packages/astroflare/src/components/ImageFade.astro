@@ -1,0 +1,172 @@
+---
+/**
+ * ImageFade — generic image loading wrapper.
+ *
+ * Wraps any slotted `<img>`, `<picture>`, or Astro `<Image />` (which renders
+ * an `<img>`). Shows a spinner (or shimmer skeleton) placeholder until the
+ * image finishes loading, then fades the image in and the placeholder out.
+ * Cached/already-complete images resolve instantly (no flash).
+ *
+ * Reserve layout space with `aspectRatio` to avoid CLS. Styling is theme-aware
+ * via `--color-brand` (override with `spinnerColor`).
+ *
+ * @example
+ * <ImageFade aspectRatio="16/9" rounded="rounded-2xl">
+ *   <Image src={hero} alt="…" />
+ * </ImageFade>
+ */
+interface Props {
+  /** Extra classes merged onto the wrapper. */
+  class?: string;
+  /** Radius class/utility applied to the wrapper (clips the image), e.g. `rounded-2xl`. */
+  rounded?: string;
+  /** CSS `aspect-ratio` to reserve space and prevent layout shift, e.g. `"16/9"`, `"1"`. */
+  aspectRatio?: string;
+  /** Fade-in duration in ms. */
+  duration?: number;
+  /** Spinner/skeleton accent colour (defaults to `--color-brand`). */
+  spinnerColor?: string;
+  /** Show a shimmer skeleton instead of a spinner. */
+  skeleton?: boolean;
+}
+
+const {
+  class: className = '',
+  rounded = '',
+  aspectRatio,
+  duration = 500,
+  spinnerColor,
+  skeleton = false,
+} = Astro.props;
+
+const style = [
+  aspectRatio ? `aspect-ratio:${aspectRatio}` : '',
+  spinnerColor ? `--if-accent:${spinnerColor}` : '',
+  `--if-duration:${duration}ms`,
+]
+  .filter(Boolean)
+  .join(';');
+---
+
+<image-fade class:list={['image-fade', skeleton && 'is-skeleton', rounded, className]} style={style}>
+  <span class='image-fade__placeholder' aria-hidden='true'>
+    {!skeleton && <span class='image-fade__ring'></span>}
+  </span>
+  <slot />
+</image-fade>
+
+<style is:global>
+  image-fade.image-fade {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 8%, transparent);
+  }
+
+  /* Slotted image starts hidden, fades in once loaded */
+  image-fade.image-fade > img,
+  image-fade.image-fade > picture > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity var(--if-duration, 500ms) ease-out;
+  }
+  image-fade.image-fade.is-loaded > img,
+  image-fade.image-fade.is-loaded > picture > img {
+    opacity: 1;
+  }
+
+  .image-fade__placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity var(--if-duration, 500ms) ease-out;
+    pointer-events: none;
+  }
+  image-fade.image-fade.is-loaded .image-fade__placeholder {
+    opacity: 0;
+  }
+
+  .image-fade__ring {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid transparent;
+    border-top-color: var(--if-accent, var(--color-brand, #7c5cff));
+    border-right-color: color-mix(
+      in oklab,
+      var(--if-accent, var(--color-brand, #7c5cff)) 50%,
+      transparent
+    );
+    border-radius: 50%;
+    animation: image-fade-spin 0.9s linear infinite;
+  }
+
+  /* Skeleton variant: shimmer sweep instead of a spinner */
+  image-fade.image-fade.is-skeleton .image-fade__placeholder {
+    background: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 6%, transparent) 30%,
+      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 16%, transparent) 50%,
+      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 6%, transparent) 70%
+    );
+    background-size: 200% 100%;
+    animation: image-fade-shimmer 1.4s ease-in-out infinite;
+  }
+
+  @keyframes image-fade-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes image-fade-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    image-fade.image-fade > img,
+    image-fade.image-fade > picture > img,
+    .image-fade__placeholder {
+      transition: none;
+    }
+    .image-fade__ring {
+      animation: none;
+    }
+    image-fade.image-fade.is-skeleton .image-fade__placeholder {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  class ImageFade extends HTMLElement {
+    connectedCallback() {
+      const img = this.querySelector('img');
+      if (!img) {
+        this.classList.add('is-loaded');
+        return;
+      }
+      const done = () => this.classList.add('is-loaded');
+      // Already cached / decoded
+      if (img.complete && img.naturalWidth > 0) {
+        done();
+        return;
+      }
+      img.addEventListener('load', done, { once: true });
+      // On error, still reveal (broken-image icon beats a permanent spinner)
+      img.addEventListener('error', done, { once: true });
+    }
+  }
+  if (!customElements.get('image-fade')) {
+    customElements.define('image-fade', ImageFade);
+  }
+</script>
