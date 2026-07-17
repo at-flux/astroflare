@@ -10,6 +10,10 @@
  * Reserve layout space with `aspectRatio` to avoid CLS. Styling is theme-aware
  * via `--color-brand` (override with `spinnerColor`).
  *
+ * The wrapper only controls the slotted image's opacity — size the image and
+ * choose its `object-fit` with your own classes, exactly as you would without
+ * this wrapper.
+ *
  * @example
  * <ImageFade aspectRatio="16/9" rounded="rounded-2xl">
  *   <Image src={hero} alt="…" />
@@ -63,13 +67,12 @@ const style = [
     background: color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 8%, transparent);
   }
 
-  /* Slotted image starts hidden, fades in once loaded */
+  /* Slotted image starts hidden, fades in once loaded.
+     Only opacity is owned here — sizing and `object-fit` stay with the caller
+     so consumer classes (`object-contain`, `object-fill`, …) are not overridden. */
   image-fade.image-fade > img,
   image-fade.image-fade > picture > img {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     opacity: 0;
     transition: opacity var(--if-duration, 500ms) ease-out;
   }
