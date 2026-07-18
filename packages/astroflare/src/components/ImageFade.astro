@@ -30,6 +30,12 @@ interface Props {
   duration?: number;
   /** Spinner/skeleton accent colour (defaults to `--color-brand`). */
   spinnerColor?: string;
+  /** Second accent, used by the counter-rotating inner ring (defaults to `spinnerColor`). */
+  spinnerColorSecondary?: string;
+  /** Outer ring diameter, any CSS length. */
+  spinnerSize?: string;
+  /** Wrapper background shown behind the image. Pass `"transparent"` for `object-contain` images. */
+  background?: string;
   /** Show a shimmer skeleton instead of a spinner. */
   skeleton?: boolean;
 }
@@ -40,12 +46,18 @@ const {
   aspectRatio,
   duration = 500,
   spinnerColor,
+  spinnerColorSecondary,
+  spinnerSize,
+  background,
   skeleton = false,
 } = Astro.props;
 
 const style = [
   aspectRatio ? `aspect-ratio:${aspectRatio}` : '',
   spinnerColor ? `--if-accent:${spinnerColor}` : '',
+  spinnerColorSecondary ? `--if-accent-2:${spinnerColorSecondary}` : '',
+  spinnerSize ? `--if-size:${spinnerSize}` : '',
+  background ? `--if-bg:${background}` : '',
   `--if-duration:${duration}ms`,
 ]
   .filter(Boolean)
@@ -54,7 +66,13 @@ const style = [
 
 <image-fade class:list={['image-fade', skeleton && 'is-skeleton', rounded, className]} style={style}>
   <span class='image-fade__placeholder' aria-hidden='true'>
-    {!skeleton && <span class='image-fade__ring'></span>}
+    {
+      !skeleton && (
+        <span class='image-fade__ring'>
+          <span class='image-fade__ring-inner' />
+        </span>
+      )
+    }
   </span>
   <slot />
 </image-fade>
@@ -64,7 +82,10 @@ const style = [
     position: relative;
     display: block;
     overflow: hidden;
-    background: color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 8%, transparent);
+    background: var(
+      --if-bg,
+      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 8%, transparent)
+    );
   }
 
   /* Slotted image starts hidden, fades in once loaded.
@@ -96,8 +117,10 @@ const style = [
   }
 
   .image-fade__ring {
-    width: 2.5rem;
-    height: 2.5rem;
+    position: relative;
+    display: block;
+    width: var(--if-size, 2.5rem);
+    height: var(--if-size, 2.5rem);
     border: 3px solid transparent;
     border-top-color: var(--if-accent, var(--color-brand, #7c5cff));
     border-right-color: color-mix(
@@ -106,7 +129,28 @@ const style = [
       transparent
     );
     border-radius: 50%;
-    animation: image-fade-spin 0.9s linear infinite;
+    /* `transform` is reset explicitly: a host page may set a base transform on
+       every element (e.g. a `* { transform: translateZ(0) }` GPU hint), which
+       would otherwise make the keyframes interpolate as matrices and cancel the
+       full turn out to no visible rotation. */
+    transform: rotate(0deg);
+    animation: image-fade-spin 1.2s linear infinite;
+  }
+
+  .image-fade__ring-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: -30% 0 0 -30%;
+    border: 2px solid transparent;
+    border-top-color: var(--if-accent-2, var(--if-accent, var(--color-brand, #7c5cff)));
+    border-right-color: var(--if-accent-2, var(--if-accent, var(--color-brand, #7c5cff)));
+    border-radius: 50%;
+    transform: rotate(0deg);
+    animation: image-fade-spin 0.8s linear infinite reverse;
   }
 
   /* Skeleton variant: shimmer sweep instead of a spinner */
@@ -121,7 +165,13 @@ const style = [
     animation: image-fade-shimmer 1.4s ease-in-out infinite;
   }
 
+  /* Both frames are explicit so the interpolation stays angular. An implicit
+     `from` would be taken from the element's computed transform, which is not
+     guaranteed to be `none` on every host page. */
   @keyframes image-fade-spin {
+    from {
+      transform: rotate(0deg);
+    }
     to {
       transform: rotate(360deg);
     }
@@ -141,7 +191,8 @@ const style = [
     .image-fade__placeholder {
       transition: none;
     }
-    .image-fade__ring {
+    .image-fade__ring,
+    .image-fade__ring-inner {
       animation: none;
     }
     image-fade.image-fade.is-skeleton .image-fade__placeholder {
