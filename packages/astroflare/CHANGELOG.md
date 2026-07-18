@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.12](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.11...@at-flux/astroflare@1.0.12) (2026-07-21)
+
+
+### Bug Fixes
+
+* **astroflare:** make ImageFade spinner rotate and add overridable background ([a59ed96](https://github.com/at-flux/astroflare/commit/a59ed962fa747a9170ebd2fd207ceb8fc62f2ff7))
+
 ## @at-flux/astroflare [1.0.11](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.10...@at-flux/astroflare@1.0.11) (2026-07-21)
 
 
