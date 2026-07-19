@@ -14,9 +14,10 @@
  * choose its `object-fit` with your own classes, exactly as you would without
  * this wrapper.
  *
- * The built-in placeholder is a spinner (or a shimmer skeleton). To use your own
- * loading indicator instead, fill the `placeholder` slot — it is centred in the
- * frame and faded out on load exactly like the built-in one.
+ * The default placeholder is a plain `LoadingSpinner` (or a shimmer skeleton).
+ * Anything fancier belongs in the `placeholder` slot rather than in props —
+ * whatever you put there is centred in the frame and faded out on load exactly
+ * like the default.
  *
  * @example
  * <ImageFade aspectRatio="16/9" rounded="rounded-2xl">
@@ -25,10 +26,12 @@
  *
  * @example Custom indicator
  * <ImageFade aspectRatio="16/9">
- *   <MySpinner slot="placeholder" />
+ *   <LoadingSpinner slot="placeholder" dual size="3rem" color="var(--brand)" />
  *   <Image src={hero} alt="…" />
  * </ImageFade>
  */
+import LoadingSpinner from './LoadingSpinner.astro';
+
 interface Props {
   /** Extra classes merged onto the wrapper. */
   class?: string;
@@ -38,12 +41,8 @@ interface Props {
   aspectRatio?: string;
   /** Fade-in duration in ms. */
   duration?: number;
-  /** Spinner/skeleton accent colour (defaults to `--color-brand`). */
+  /** Accent for the default spinner, the skeleton shimmer and the wrapper tint. */
   spinnerColor?: string;
-  /** Second accent, used by the counter-rotating inner ring (defaults to `spinnerColor`). */
-  spinnerColorSecondary?: string;
-  /** Outer ring diameter, any CSS length. */
-  spinnerSize?: string;
   /** Wrapper background shown behind the image. Pass `"transparent"` for `object-contain` images. */
   background?: string;
   /** Show a shimmer skeleton instead of a spinner. */
@@ -56,8 +55,6 @@ const {
   aspectRatio,
   duration = 500,
   spinnerColor,
-  spinnerColorSecondary,
-  spinnerSize,
   background,
   skeleton = false,
 } = Astro.props;
@@ -65,8 +62,6 @@ const {
 const style = [
   aspectRatio ? `aspect-ratio:${aspectRatio}` : '',
   spinnerColor ? `--if-accent:${spinnerColor}` : '',
-  spinnerColorSecondary ? `--if-accent-2:${spinnerColorSecondary}` : '',
-  spinnerSize ? `--if-size:${spinnerSize}` : '',
   background ? `--if-bg:${background}` : '',
   `--if-duration:${duration}ms`,
 ]
@@ -77,13 +72,7 @@ const style = [
 <image-fade class:list={['image-fade', skeleton && 'is-skeleton', rounded, className]} style={style}>
   <span class='image-fade__placeholder' aria-hidden='true'>
     <slot name='placeholder'>
-      {
-        !skeleton && (
-          <span class='image-fade__ring'>
-            <span class='image-fade__ring-inner' />
-          </span>
-        )
-      }
+      {!skeleton && <LoadingSpinner color={spinnerColor} />}
     </slot>
   </span>
   <slot />
@@ -128,43 +117,6 @@ const style = [
     opacity: 0;
   }
 
-  .image-fade__ring {
-    position: relative;
-    display: block;
-    width: var(--if-size, 2.5rem);
-    height: var(--if-size, 2.5rem);
-    border: 3px solid transparent;
-    border-top-color: var(--if-accent, var(--color-brand, #7c5cff));
-    border-right-color: color-mix(
-      in oklab,
-      var(--if-accent, var(--color-brand, #7c5cff)) 50%,
-      transparent
-    );
-    border-radius: 50%;
-    /* `transform` is reset explicitly: a host page may set a base transform on
-       every element (e.g. a `* { transform: translateZ(0) }` GPU hint), which
-       would otherwise make the keyframes interpolate as matrices and cancel the
-       full turn out to no visible rotation. */
-    transform: rotate(0deg);
-    animation: image-fade-spin 1.2s linear infinite;
-  }
-
-  .image-fade__ring-inner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: -30% 0 0 -30%;
-    border: 2px solid transparent;
-    border-top-color: var(--if-accent-2, var(--if-accent, var(--color-brand, #7c5cff)));
-    border-right-color: var(--if-accent-2, var(--if-accent, var(--color-brand, #7c5cff)));
-    border-radius: 50%;
-    transform: rotate(0deg);
-    animation: image-fade-spin 0.8s linear infinite reverse;
-  }
-
   /* Skeleton variant: shimmer sweep instead of a spinner */
   image-fade.image-fade.is-skeleton .image-fade__placeholder {
     background: linear-gradient(
@@ -177,35 +129,11 @@ const style = [
     animation: image-fade-shimmer 1.4s ease-in-out infinite;
   }
 
-  /* Both frames are explicit so the interpolation stays angular. An implicit
-     `from` would be taken from the element's computed transform, which is not
-     guaranteed to be `none` on every host page. */
-  @keyframes image-fade-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  @keyframes image-fade-shimmer {
-    from {
-      background-position: 200% 0;
-    }
-    to {
-      background-position: -200% 0;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     image-fade.image-fade > img,
     image-fade.image-fade > picture > img,
     .image-fade__placeholder {
       transition: none;
-    }
-    .image-fade__ring,
-    .image-fade__ring-inner {
-      animation: none;
     }
     image-fade.image-fade.is-skeleton .image-fade__placeholder {
       animation: none;
