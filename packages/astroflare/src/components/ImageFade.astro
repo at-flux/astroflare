@@ -14,8 +14,18 @@
  * choose its `object-fit` with your own classes, exactly as you would without
  * this wrapper.
  *
+ * The built-in placeholder is a spinner (or a shimmer skeleton). To use your own
+ * loading indicator instead, fill the `placeholder` slot — it is centred in the
+ * frame and faded out on load exactly like the built-in one.
+ *
  * @example
  * <ImageFade aspectRatio="16/9" rounded="rounded-2xl">
+ *   <Image src={hero} alt="…" />
+ * </ImageFade>
+ *
+ * @example Custom indicator
+ * <ImageFade aspectRatio="16/9">
+ *   <MySpinner slot="placeholder" />
  *   <Image src={hero} alt="…" />
  * </ImageFade>
  */
@@ -66,13 +76,15 @@ const style = [
 
 <image-fade class:list={['image-fade', skeleton && 'is-skeleton', rounded, className]} style={style}>
   <span class='image-fade__placeholder' aria-hidden='true'>
-    {
-      !skeleton && (
-        <span class='image-fade__ring'>
-          <span class='image-fade__ring-inner' />
-        </span>
-      )
-    }
+    <slot name='placeholder'>
+      {
+        !skeleton && (
+          <span class='image-fade__ring'>
+            <span class='image-fade__ring-inner' />
+          </span>
+        )
+      }
+    </slot>
   </span>
   <slot />
 </image-fade>
