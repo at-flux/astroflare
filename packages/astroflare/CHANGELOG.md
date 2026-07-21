@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.14](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.13...@at-flux/astroflare@1.0.14) (2026-07-21)
+
+
+### Features
+
+* **astroflare:** extract LoadingSpinner and use it as the default indicator ([e5795e2](https://github.com/at-flux/astroflare/commit/e5795e2c56fd5b9dde7e272e4324eed6cee7ae7f))
+
 ## @at-flux/astroflare [1.0.12](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.11...@at-flux/astroflare@1.0.12) (2026-07-21)
 
 
