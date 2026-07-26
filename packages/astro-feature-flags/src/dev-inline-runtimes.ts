@@ -24,10 +24,23 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
   };
   try {
     const { featureFlagStyles, routeFlags: RF, flagNameToToken: M } = payload;
-    const s = document.createElement("style");
-    s.setAttribute("data-astro-feature-flags", "");
-    s.textContent = featureFlagStyles;
-    (document.head || document.documentElement).appendChild(s);
+
+    // Inject the dev-chrome stylesheet. Astro's ClientRouter swaps <head> on a
+    // view-transition navigation, and a runtime-injected <style> is dropped on
+    // the first swap unless marked persistent — which is why the element
+    // outline/badge chrome vanished after navigating. Mark it
+    // data-astro-transition-persist so ClientRouter keeps a single copy, and
+    // keep the injector idempotent + re-run it on every nav so the styles stay
+    // constant across pages even where a swap removes them.
+    const ensureFeatureFlagStyles = () => {
+      if (document.querySelector("style[data-astro-feature-flags]")) return;
+      const s = document.createElement("style");
+      s.setAttribute("data-astro-feature-flags", "");
+      s.setAttribute("data-astro-transition-persist", "astro-feature-flags");
+      s.textContent = featureFlagStyles;
+      (document.head || document.documentElement).appendChild(s);
+    };
+    ensureFeatureFlagStyles();
 
     const affPath = () => {
       let p = typeof location !== "undefined" && location.pathname ? location.pathname : "/";
@@ -99,6 +112,7 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
     };
 
     const affApply = () => {
+      ensureFeatureFlagStyles();
       document.documentElement.setAttribute("data-ff-route", affTokens(affPath()).join(" "));
       affSyncDisabledOverlay();
     };
