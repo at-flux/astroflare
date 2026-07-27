@@ -18,6 +18,10 @@
  * Busy/idle label text is read from `data-label-busy` / `data-label-idle` on the
  * submit control. Success and error also dispatch bubbling `action-form:success` /
  * `action-form:error` CustomEvents so consumers can react (close a modal, etc.).
+ *
+ * On submit the form's native constraint validation runs first (`reportValidity`);
+ * an invalid form aborts before any request. Any `[data-action-form-timestamp]`
+ * input is stamped with the current ISO time at submit (for consent timestamps).
  */
 
 const INIT_ATTR = "data-action-form-init";
@@ -75,6 +79,16 @@ const onSubmit = async (
   event.preventDefault();
   const url = root.dataset.actionUrl;
   if (!url) return;
+
+  // Native constraint validation (required fields, email format, checked consent).
+  if (typeof form.reportValidity === "function" && !form.reportValidity()) return;
+
+  // Stamp submit-time timestamps (e.g. consent timestamps).
+  form
+    .querySelectorAll<HTMLInputElement>("[data-action-form-timestamp]")
+    .forEach((input) => {
+      input.value = new Date().toISOString();
+    });
 
   const errorRegion = q<HTMLElement>(root, "[data-action-form-error]");
   if (errorRegion) errorRegion.hidden = true;

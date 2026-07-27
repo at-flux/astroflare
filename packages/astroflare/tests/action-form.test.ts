@@ -103,6 +103,44 @@ describe("action form runtime", () => {
     expect(onError).toHaveBeenCalledOnce();
   });
 
+  it("aborts submit when native constraint validation fails", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const { form } = els();
+    // Force the form invalid regardless of field state.
+    form.reportValidity = vi.fn().mockReturnValue(false);
+
+    initActionFormRoots();
+    submitForm(form);
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("stamps submit-time timestamps into marked inputs", async () => {
+    let sent: FormData | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+        sent = init.body as FormData;
+        return Promise.resolve({ ok: true, json: async () => [[], true] });
+      }),
+    );
+    const { form } = els();
+    const stamp = document.createElement("input");
+    stamp.type = "hidden";
+    stamp.name = "consentTimestamp";
+    stamp.setAttribute("data-action-form-timestamp", "");
+    form.appendChild(stamp);
+
+    initActionFormRoots();
+    submitForm(form);
+    await flush();
+
+    expect(stamp.value).not.toBe("");
+    expect(sent?.get("consentTimestamp")).toBe(stamp.value);
+  });
+
   it("binds each form only once across repeated init passes", async () => {
     const fetchMock = vi
       .fn()
