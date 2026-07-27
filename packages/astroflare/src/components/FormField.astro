@@ -1,0 +1,162 @@
+---
+/**
+ * Labelled text input / textarea. Generic and theme-agnostic — pass `inputClass`
+ * / `labelClass` / `class` to style. Help text is wired to the control via
+ * `aria-describedby`; `required` is conveyed with the native attribute (the visual
+ * asterisk is `aria-hidden`).
+ */
+interface Props {
+  /** Visible field label. */
+  label: string;
+  /** Control `name` (also seeds the default id). */
+  name: string;
+  /** Input type; ignored when `rows > 1` (renders a textarea). */
+  type?: 'text' | 'email' | 'tel' | 'number' | 'date' | 'url' | 'password';
+  required?: boolean;
+  placeholder?: string;
+  /** Hint rendered under the label and linked via aria-describedby. */
+  helpText?: string;
+  /** > 1 renders a `<textarea>` with this many rows. */
+  rows?: number;
+  value?: string;
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
+  pattern?: string;
+  autocomplete?: string;
+  inputmode?: 'text' | 'search' | 'email' | 'tel' | 'url' | 'numeric' | 'decimal' | 'none';
+  /** Override the control id (defaults to `field-<name>`). */
+  id?: string;
+  /** Classes on the wrapper. */
+  class?: string;
+  /** Classes on the `<label>`. */
+  labelClass?: string;
+  /** Classes on the input/textarea. */
+  inputClass?: string;
+  /** Classes on the help text. */
+  helpClass?: string;
+}
+
+const {
+  label,
+  name,
+  type = 'text',
+  required = false,
+  placeholder,
+  helpText,
+  rows,
+  value,
+  min,
+  max,
+  step,
+  pattern,
+  autocomplete,
+  inputmode,
+  id = `field-${name}`,
+  class: className = '',
+  labelClass = '',
+  inputClass = '',
+  helpClass = '',
+} = Astro.props;
+
+const isTextarea = typeof rows === 'number' && rows > 1;
+const helpId = helpText ? `${id}-help` : undefined;
+---
+
+<div class:list={['af-field', className]}>
+  <label for={id} class:list={['af-field-label', labelClass]}>
+    {label}
+    {required && <span aria-hidden='true' class='af-field-required'>*</span>}
+  </label>
+
+  {helpText && <p id={helpId} class:list={['af-field-help', helpClass]}>{helpText}</p>}
+
+  {
+    isTextarea ? (
+      <textarea
+        id={id}
+        name={name}
+        required={required}
+        rows={rows}
+        placeholder={placeholder}
+        autocomplete={autocomplete}
+        aria-describedby={helpId}
+        class:list={['af-field-control', inputClass]}
+      >
+        {value}
+      </textarea>
+    ) : (
+      <input
+        id={id}
+        type={type}
+        name={name}
+        required={required}
+        placeholder={placeholder}
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        pattern={pattern}
+        autocomplete={autocomplete}
+        inputmode={inputmode}
+        aria-describedby={helpId}
+        class:list={['af-field-control', inputClass]}
+      />
+    )
+  }
+</div>
+
+<style>
+  .af-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .af-field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-light-text-body, #2f2a44);
+  }
+
+  :global([data-theme='dark']) .af-field-label {
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+
+  .af-field-required {
+    color: var(--color-danger, #dc2626);
+  }
+
+  .af-field-help {
+    font-size: 0.75rem;
+    color: var(--color-light-text-subtle, #6b6580);
+  }
+
+  :global([data-theme='dark']) .af-field-help {
+    color: var(--color-dark-text-subtle, #a5a1b8);
+  }
+
+  .af-field-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-light-border, #e8e4f0);
+    background: var(--color-light-surface, #ffffff);
+    color: var(--color-light-text-body, #2f2a44);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .af-field-control:focus {
+    outline: none;
+    border-color: var(--color-brand, #8b5cf6);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-brand, #8b5cf6) 25%, transparent);
+  }
+
+  :global([data-theme='dark']) .af-field-control {
+    border-color: var(--color-dark-border, #2a2545);
+    background: var(--color-dark-surface, #17132a);
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+</style>

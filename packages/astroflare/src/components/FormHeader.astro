@@ -1,0 +1,53 @@
+---
+/**
+ * Form heading block. Renders an `<h1>` when `isRootHeading`, otherwise an `<h2>`,
+ * with an optional subtitle. Generic/theme-token styled.
+ */
+interface Props {
+  title: string;
+  subtitle?: string;
+  /** Render the title as the page `<h1>` rather than an `<h2>`. */
+  isRootHeading?: boolean;
+  class?: string;
+}
+
+const { title, subtitle, isRootHeading = false, class: className = '' } = Astro.props;
+---
+
+<header class:list={['af-form-header', className]}>
+  {
+    isRootHeading ? (
+      <h1 class='af-form-title'>{title}</h1>
+    ) : (
+      <h2 class='af-form-title'>{title}</h2>
+    )
+  }
+  {subtitle && <p class='af-form-subtitle'>{subtitle}</p>}
+</header>
+
+<style>
+  .af-form-header {
+    margin-bottom: 2rem;
+  }
+
+  .af-form-title {
+    font-size: clamp(1.875rem, 4vw, 3rem);
+    font-weight: 700;
+    margin: 1rem 0 1.5rem;
+    color: var(--color-light-text-heading, #1c1830);
+  }
+
+  :global([data-theme='dark']) .af-form-title {
+    color: var(--color-dark-text-heading, #f4f2fb);
+  }
+
+  .af-form-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-light-text-subtle, #6b6580);
+  }
+
+  :global([data-theme='dark']) .af-form-subtitle {
+    color: var(--color-dark-text-subtle, #a5a1b8);
+  }
+</style>

@@ -16,6 +16,10 @@ interface Props {
   closeButtonClass?: string;
   /** Scrollable inner wrapper around the default slot. */
   contentClass?: string;
+  /** Id of an element inside the modal that names it (→ `aria-labelledby`). */
+  labelledBy?: string;
+  /** Accessible name when no visible heading exists (→ `aria-label`). Ignored if `labelledBy` set. */
+  label?: string;
 }
 
 const {
@@ -25,11 +29,18 @@ const {
   panelClass = '',
   closeButtonClass = 'absolute top-3 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100',
   contentClass = 'relative overflow-y-auto max-h-[calc(100dvh-2rem)]',
+  labelledBy,
+  label,
 } = Astro.props;
 ---
 
 <app-modal>
-  <dialog id={id} class:list={[backdropClass]}>
+  <dialog
+    id={id}
+    class:list={[backdropClass]}
+    aria-labelledby={labelledBy}
+    aria-label={labelledBy ? undefined : label}
+  >
     <div class='flex min-h-full items-center justify-center p-0 md:p-4'>
       <div
         class:list={[
@@ -37,7 +48,6 @@ const {
           className,
           panelClass,
         ]}
-        role='dialog'
       >
         <button class:list={[closeButtonClass]} type='button' aria-label='Close modal'>
           <svg

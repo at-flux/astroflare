@@ -1,0 +1,111 @@
+---
+/**
+ * Radio-button group wrapped in a `<fieldset>`/`<legend>` so the group name is
+ * announced with each option. Generic/theme-token styled; override via `class`
+ * / `legendClass` / `optionClass`.
+ */
+interface Props {
+  /** Group label (rendered as the `<legend>`). */
+  label: string;
+  /** Shared radio `name`. */
+  name: string;
+  options: Array<{ value: string; label: string; id?: string }>;
+  required?: boolean;
+  /** Hint linked to the fieldset via aria-describedby. */
+  helpText?: string;
+  class?: string;
+  legendClass?: string;
+  optionClass?: string;
+}
+
+const {
+  label,
+  name,
+  options,
+  required = false,
+  helpText,
+  class: className = '',
+  legendClass = '',
+  optionClass = '',
+} = Astro.props;
+
+const helpId = helpText ? `${name}-help` : undefined;
+const optionId = (o: { value: string; id?: string }) => o.id ?? `${name}-${o.value}`;
+---
+
+<fieldset class:list={['af-group', className]} aria-describedby={helpId}>
+  <legend class:list={['af-group-legend', legendClass]}>
+    {label}
+    {required && <span aria-hidden='true' class='af-group-required'>*</span>}
+  </legend>
+
+  {helpText && <p id={helpId} class='af-group-help'>{helpText}</p>}
+
+  <div class='af-group-options'>
+    {
+      options.map((option) => (
+        <div class:list={['af-group-option', optionClass]}>
+          <input
+            type='radio'
+            id={optionId(option)}
+            name={name}
+            value={option.value}
+            required={required}
+          />
+          <label for={optionId(option)}>{option.label}</label>
+        </div>
+      ))
+    }
+  </div>
+</fieldset>
+
+<style>
+  .af-group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .af-group-legend {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-light-text-body, #2f2a44);
+  }
+
+  :global([data-theme='dark']) .af-group-legend {
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+
+  .af-group-required {
+    color: var(--color-danger, #dc2626);
+  }
+
+  .af-group-help {
+    font-size: 0.75rem;
+    color: var(--color-light-text-subtle, #6b6580);
+  }
+
+  :global([data-theme='dark']) .af-group-help {
+    color: var(--color-dark-text-subtle, #a5a1b8);
+  }
+
+  .af-group-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .af-group-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-light-text-body, #2f2a44);
+  }
+
+  :global([data-theme='dark']) .af-group-option {
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+</style>

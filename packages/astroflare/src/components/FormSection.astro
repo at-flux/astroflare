@@ -1,0 +1,54 @@
+---
+/**
+ * Titled form section — a surface card with an `<h3>` heading and stacked slot
+ * content. Generic/theme-token styled; override with `class` / `titleClass`.
+ */
+interface Props {
+  /** Section heading. */
+  title: string;
+  class?: string;
+  titleClass?: string;
+}
+
+const { title, class: className = '', titleClass = '' } = Astro.props;
+---
+
+<section class:list={['af-section', className]}>
+  <h3 class:list={['af-section-title', titleClass]}>{title}</h3>
+  <div class='af-section-body'>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .af-section {
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--color-light-border, #e8e4f0);
+    background: color-mix(in oklab, var(--color-brand, #8b5cf6) 6%, transparent);
+  }
+
+  :global([data-theme='dark']) .af-section {
+    border-color: var(--color-dark-border, #2a2545);
+  }
+
+  .af-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-light-border, #e8e4f0);
+    color: var(--color-light-text-heading, #1c1830);
+  }
+
+  :global([data-theme='dark']) .af-section-title {
+    border-bottom-color: var(--color-dark-border, #2a2545);
+    color: var(--color-dark-text-heading, #f4f2fb);
+  }
+
+  .af-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+</style>
