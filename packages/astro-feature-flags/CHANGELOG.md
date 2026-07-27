@@ -1,3 +1,10 @@
+## @at-flux/astro-feature-flags [1.0.2](https://github.com/at-flux/astroflare/compare/@at-flux/astro-feature-flags@1.0.1...@at-flux/astro-feature-flags@1.0.2) (2026-07-27)
+
+
+### Bug Fixes
+
+* **astro-feature-flags:** persist dev-chrome style across view transitions ([be3f2c6](https://github.com/at-flux/astroflare/commit/be3f2c62af00a9ba60beec6cf2a2928bc10c0ae6))
+
 ## @at-flux/astro-feature-flags [1.0.1](https://github.com/at-flux/astroflare/compare/@at-flux/astro-feature-flags@1.0.0...@at-flux/astro-feature-flags@1.0.1) (2026-04-14)
 
 
