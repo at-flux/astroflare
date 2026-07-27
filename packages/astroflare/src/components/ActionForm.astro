@@ -1,0 +1,49 @@
+---
+/**
+ * Astro Action form root. Wraps a `<form>` together with its success / error /
+ * busy roles and drives the shared submit runtime via `data-action-form-*` roles on
+ * descendants (so the success view may sit as a sibling of the form). See
+ * `runtime/action-form.ts` for the role contract.
+ */
+interface Props {
+  /** Action name; `actionUrl` defaults to `/_actions/<name>/`. */
+  action?: string;
+  /** Explicit endpoint (overrides `action`), e.g. `/_actions/contact/`. */
+  actionUrl?: string;
+  /** Fallback message shown when the submit fails. */
+  errorMessage?: string;
+  /** Classes applied to the root wrapper. */
+  class?: string;
+  /** Optional root id. */
+  id?: string;
+}
+
+const {
+  action,
+  actionUrl = action ? `/_actions/${action}/` : undefined,
+  errorMessage,
+  class: className = '',
+  id,
+} = Astro.props;
+
+if (!actionUrl) {
+  throw new Error('ActionForm requires an `action` or `actionUrl` prop.');
+}
+---
+
+<div
+  id={id}
+  class={className}
+  data-action-form
+  data-action-url={actionUrl}
+  data-error-message={errorMessage}
+>
+  <slot />
+</div>
+
+<script>
+  import { initActionFormRoots } from '../runtime/action-form';
+
+  initActionFormRoots();
+  document.addEventListener('astro:page-load', () => initActionFormRoots());
+</script>

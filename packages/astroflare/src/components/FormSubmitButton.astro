@@ -1,0 +1,76 @@
+---
+/**
+ * Submit button for `ActionForm`. Owns the `data-action-form-submit` role, swaps its
+ * label between idle/busy via a `[data-action-form-label]` span (never `textContent`
+ * on the button, which would destroy the spinner), and shows an inline spinner while
+ * the form is in flight. Generic/theme-token styled — override with `class`.
+ */
+interface Props {
+  /** Idle label text. */
+  label: string;
+  /** Label shown while submitting. Defaults to `label`. */
+  busyLabel?: string;
+  /** Extra classes merged after the base button styles. */
+  class?: string;
+  /** Optional id. */
+  id?: string;
+}
+
+const { label, busyLabel = label, class: className = '', id } = Astro.props;
+---
+
+<button
+  type='submit'
+  id={id}
+  data-action-form-submit
+  data-label-idle={label}
+  data-label-busy={busyLabel}
+  class:list={['af-submit', className]}
+>
+  <span data-action-form-spinner class='af-spinner' aria-hidden='true' hidden></span>
+  <span data-action-form-label>{label}</span>
+</button>
+
+<style>
+  .af-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: 0;
+    border-radius: 9999px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--color-on-brand, #ffffff);
+    background: var(--color-brand, #8b5cf6);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .af-submit:hover:not(:disabled) {
+    opacity: 0.95;
+    transform: translateY(-1px);
+  }
+
+  .af-submit:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .af-spinner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid color-mix(in oklab, currentColor 35%, transparent);
+    border-top-color: currentColor;
+    animation: af-spin 0.7s linear infinite;
+  }
+
+  @keyframes af-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
