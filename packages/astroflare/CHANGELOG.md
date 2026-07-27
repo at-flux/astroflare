@@ -1,3 +1,13 @@
+## @at-flux/astroflare [1.0.15](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.14...@at-flux/astroflare@1.0.15) (2026-07-27)
+
+
+### Features
+
+* **action-form:** gate submit on native validity + stamp timestamps ([535c5b8](https://github.com/at-flux/astroflare/commit/535c5b82179458868631d1d66105668fa42160c4))
+* **forms:** generic form field/layout primitives ([67ff494](https://github.com/at-flux/astroflare/commit/67ff49422c739ed5724af356e49e2d12f696a734))
+* **forms:** shared Astro Action form submit runtime ([3dce1d9](https://github.com/at-flux/astroflare/commit/3dce1d93f2f2c4b4a95aa339ae397faa7fa9106e))
+* **modal:** accessible name + real button trigger ([c66c1d9](https://github.com/at-flux/astroflare/commit/c66c1d99e771978c610f923a58fa30cfc7e9a7fb))
+
 ## @at-flux/astroflare [1.0.14](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.13...@at-flux/astroflare@1.0.14) (2026-07-21)
 
 
