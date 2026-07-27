@@ -1,42 +1,62 @@
 ---
 /**
- * Headless modal trigger. Clicking opens a <dialog> by ID.
+ * Modal trigger. Clicking opens a `<dialog>` by ID via `showModal()`.
+ *
+ * - `as="button"` (default): renders a real `<button>` host — keyboard-accessible,
+ *   slot in a label/icon. Use this for plain triggers.
+ * - `as="wrapper"`: renders a non-interactive host wrapping slotted content that is
+ *   itself already interactive (e.g. an `<a>`/`<button>`), to avoid nested buttons.
+ *
+ * Clicks are handled by a single delegated, idempotent document listener keyed on
+ * `[data-modal-id]`, so triggers keep working across ClientRouter swaps.
  */
 interface Props {
   /** Target dialog id to open via `showModal()`. */
   modalId: string;
+  /** Host element kind. Defaults to `button`. */
+  as?: 'button' | 'wrapper';
   /** Classes applied to the host trigger element. */
   class?: string;
 }
 
-const { modalId, class: className = '' } = Astro.props;
+const { modalId, as = 'button', class: className = '' } = Astro.props;
 ---
 
-<modal-trigger data-modal-id={modalId} class={className}>
-  <slot />
-</modal-trigger>
+{
+  as === 'button' ? (
+    <button type='button' data-modal-id={modalId} class={className}>
+      <slot />
+    </button>
+  ) : (
+    <modal-trigger data-modal-id={modalId} class={className}>
+      <slot />
+    </modal-trigger>
+  )
+}
 
 <script>
-  class ModalTrigger extends HTMLElement {
-    connectedCallback() {
-      this.addEventListener('click', this.onClick);
-    }
+  const openFromTarget = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return;
+    const host = target.closest<HTMLElement>('[data-modal-id]');
+    const id = host?.getAttribute('data-modal-id');
+    if (!id) return;
+    const dialog = document.getElementById(id);
+    if (dialog instanceof HTMLDialogElement) dialog.showModal();
+  };
 
-    disconnectedCallback() {
-      this.removeEventListener('click', this.onClick);
-    }
-
-    onClick = () => {
-      const id = this.getAttribute('data-modal-id');
-      if (!id) return;
-      const dialog = document.getElementById(id);
-      if (dialog instanceof HTMLDialogElement) {
-        dialog.showModal();
-      }
-    };
+  const STATE_KEY = '__astroflareModalTriggerBound__';
+  interface TriggerWindow extends Window {
+    [STATE_KEY]?: boolean;
+  }
+  const w = window as unknown as TriggerWindow;
+  if (!w[STATE_KEY]) {
+    document.addEventListener('click', (event) => openFromTarget(event.target));
+    w[STATE_KEY] = true;
   }
 
+  // Keep the `wrapper` custom element defined for backwards-compatible markup; it is
+  // inert (clicks handled by the delegated listener above).
   if (!customElements.get('modal-trigger')) {
-    customElements.define('modal-trigger', ModalTrigger);
+    customElements.define('modal-trigger', class extends HTMLElement {});
   }
 </script>
