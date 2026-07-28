@@ -32,7 +32,8 @@ const { label, busyLabel = label, class: className = '', id } = Astro.props;
 </button>
 
 <style>
-  .af-submit {
+@layer base {
+  :where(.af-submit) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -49,17 +50,17 @@ const { label, busyLabel = label, class: className = '', id } = Astro.props;
       transform 0.2s ease;
   }
 
-  .af-submit:hover:not(:disabled) {
+  :where(.af-submit:hover:not(:disabled)) {
     opacity: 0.95;
     transform: translateY(-1px);
   }
 
-  .af-submit:disabled {
+  :where(.af-submit:disabled) {
     opacity: 0.6;
     cursor: progress;
   }
 
-  .af-spinner {
+  :where(.af-spinner) {
     width: 1rem;
     height: 1rem;
     border-radius: 50%;
@@ -73,4 +74,5 @@ const { label, busyLabel = label, class: className = '', id } = Astro.props;
       transform: rotate(360deg);
     }
   }
+}
 </style>

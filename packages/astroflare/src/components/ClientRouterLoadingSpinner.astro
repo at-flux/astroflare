@@ -46,19 +46,25 @@ import LoadingSpinner from './LoadingSpinner.astro';
 </style>
 
 <script is:inline>
-  document.addEventListener('astro:before-preparation', () => {
-    const d = document.querySelector('#loading');
-    if (d) d.showModal();
-  });
+  // Guard: this inline script may be re-evaluated across ClientRouter swaps, but the
+  // listeners live on the persistent `document`. Bind them once to avoid stacking.
+  if (!window.__astroflareLoadingSpinnerBound__) {
+    window.__astroflareLoadingSpinnerBound__ = true;
 
-  document.addEventListener('astro:page-load', () => {
-    const d = document.querySelector('#loading');
-    if (d) {
-      d.classList.add('fade-out');
-      setTimeout(() => {
-        d.close();
-        d.classList.remove('fade-out');
-      }, 150);
-    }
-  });
+    document.addEventListener('astro:before-preparation', () => {
+      const d = document.querySelector('#loading');
+      if (d) d.showModal();
+    });
+
+    document.addEventListener('astro:page-load', () => {
+      const d = document.querySelector('#loading');
+      if (d) {
+        d.classList.add('fade-out');
+        setTimeout(() => {
+          d.close();
+          d.classList.remove('fade-out');
+        }, 150);
+      }
+    });
+  }
 </script>
