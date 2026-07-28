@@ -107,36 +107,37 @@ const helpId = helpText ? `${id}-help` : undefined;
 </div>
 
 <style>
-  .af-field {
+@layer base {
+  :where(.af-field) {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .af-field-label {
+  :where(.af-field-label) {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-light-text-body, #2f2a44);
   }
 
-  :global([data-theme='dark']) .af-field-label {
+  :global(:where([data-theme='dark'])) :where(.af-field-label) {
     color: var(--color-dark-text-body, #e0dfe6);
   }
 
-  .af-field-required {
+  :where(.af-field-required) {
     color: var(--color-danger, #dc2626);
   }
 
-  .af-field-help {
+  :where(.af-field-help) {
     font-size: 0.75rem;
     color: var(--color-light-text-subtle, #6b6580);
   }
 
-  :global([data-theme='dark']) .af-field-help {
+  :global(:where([data-theme='dark'])) :where(.af-field-help) {
     color: var(--color-dark-text-subtle, #a5a1b8);
   }
 
-  .af-field-control {
+  :where(.af-field-control) {
     width: 100%;
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
@@ -148,15 +149,16 @@ const helpId = helpText ? `${id}-help` : undefined;
       box-shadow 0.2s ease;
   }
 
-  .af-field-control:focus {
+  :where(.af-field-control:focus) {
     outline: none;
     border-color: var(--color-brand, #8b5cf6);
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-brand, #8b5cf6) 25%, transparent);
   }
 
-  :global([data-theme='dark']) .af-field-control {
+  :global(:where([data-theme='dark'])) :where(.af-field-control) {
     border-color: var(--color-dark-border, #2a2545);
     background: var(--color-dark-surface, #17132a);
     color: var(--color-dark-text-body, #e0dfe6);
   }
+}
 </style>
