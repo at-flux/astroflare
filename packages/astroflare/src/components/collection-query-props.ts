@@ -60,4 +60,5 @@ export interface CollectionQueryClientProps extends CollectionQueryBaseProps {
   useServer?: false;
 }
 
-export type CollectionQueryProps = CollectionQueryServerProps | CollectionQueryClientProps;
+export type CollectionQueryProps =
+  CollectionQueryServerProps | CollectionQueryClientProps;

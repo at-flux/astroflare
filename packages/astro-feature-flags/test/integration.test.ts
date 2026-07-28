@@ -65,7 +65,7 @@ describe("integration exports", () => {
     expect(head).toMatch(/const toPrefix\s*=\s*\(/);
     expect(bootstrap).toContain("hasDisabledInCombo");
     expect(bootstrap).toContain("if (hasDisabledInCombo)");
-    expect(bootstrap).toContain("allTokens.join(\" \")");
+    expect(bootstrap).toContain('allTokens.join(" ")');
     expect(bootstrap).toContain("if (hasCombo) {");
   });
 
@@ -153,9 +153,7 @@ describe("integration exports", () => {
     expect(css).toContain("position: absolute");
     expect(css).toContain("right: 0.35rem");
     expect(css).toContain("translateY(calc(-1 * 80%))");
-    expect(css).toContain(
-      ".aff-route-frame",
-    );
+    expect(css).toContain(".aff-route-frame");
     expect(css).toContain("position: fixed");
     expect(css).toContain("data-ff-enabled-");
     expect(css).toContain(
@@ -325,9 +323,7 @@ describe("integration exports", () => {
         routeFlags: {},
       }),
     );
-    expect(css).toContain(
-      ".aff-route-frame",
-    );
+    expect(css).toContain(".aff-route-frame");
     expect(css).toContain('[data-ns~="wip"]');
     expect(css).toContain('[data-ns~="beta"]');
     expect(css).toContain(

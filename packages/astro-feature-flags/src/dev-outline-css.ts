@@ -67,7 +67,9 @@ function normalizeCssOptions(
     ...(css?.outlineColorByToken ?? {}),
   };
   const badgeLabelWip =
-    css?.badgeLabelWip ?? css?.badgeLabelDev ?? defaultDevOutlineCssOptions.badgeLabelWip;
+    css?.badgeLabelWip ??
+    css?.badgeLabelDev ??
+    defaultDevOutlineCssOptions.badgeLabelWip;
   return {
     ...defaultDevOutlineCssOptions,
     ...(css ?? {}),
@@ -111,7 +113,9 @@ export function createFeatureFlagStyles(
     return {
       token,
       baseSelectors,
-      selOutline: baseSelectors.map((s) => `${s}:not([${nsAttr}*=" "])`).join(", "),
+      selOutline: baseSelectors
+        .map((s) => `${s}:not([${nsAttr}*=" "])`)
+        .join(", "),
       selIs: `:is(${baseSelectors.join(", ")})`,
     };
   };

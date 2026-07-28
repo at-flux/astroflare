@@ -75,12 +75,18 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
   root.dataset.afInit = "true";
 
   const config = getConfig(root);
-  const cards = Array.from(root.querySelectorAll<HTMLElement>(config.cardSelector));
-  const filters = Array.from(root.querySelectorAll<HTMLButtonElement>(config.filterSelector));
+  const cards = Array.from(
+    root.querySelectorAll<HTMLElement>(config.cardSelector),
+  );
+  const filters = Array.from(
+    root.querySelectorAll<HTMLButtonElement>(config.filterSelector),
+  );
   const pagination = root.querySelector<HTMLElement>(config.paginationSelector);
 
   let page = 1;
-  let activeFilter = filters.find((button) => button.classList.contains(config.activeClass))?.dataset.filter ?? "all";
+  let activeFilter =
+    filters.find((button) => button.classList.contains(config.activeClass))
+      ?.dataset.filter ?? "all";
 
   const filterCards = (): HTMLElement[] =>
     cards.filter((card) => {
@@ -94,7 +100,11 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     pagination.innerHTML = "";
     if (totalPages <= 1) return;
 
-    const pages = getClientPageSequence(totalPages, page, config.maxPageButtons);
+    const pages = getClientPageSequence(
+      totalPages,
+      page,
+      config.maxPageButtons,
+    );
     for (const entry of pages) {
       if (entry === "…") {
         const ellipsis = document.createElement("span");
@@ -109,7 +119,10 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
       button.type = "button";
       button.dataset.page = String(entry);
       button.textContent = String(entry);
-      button.className = [config.pageButtonClass, entry === page ? config.activeClass : ""]
+      button.className = [
+        config.pageButtonClass,
+        entry === page ? config.activeClass : "",
+      ]
         .filter(Boolean)
         .join(" ");
       button.addEventListener("click", () => {
@@ -142,7 +155,9 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     button.addEventListener("click", () => {
       activeFilter = button.dataset.filter ?? "all";
       page = 1;
-      filters.forEach((item) => item.classList.toggle(config.activeClass, item === button));
+      filters.forEach((item) =>
+        item.classList.toggle(config.activeClass, item === button),
+      );
       render();
     });
   });
@@ -150,7 +165,11 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
   render();
 };
 
-export const initCollectionQueryRoots = (scope: ParentNode = document): void => {
-  const roots = Array.from(scope.querySelectorAll<HTMLElement>("collection-query[data-af-query]"));
+export const initCollectionQueryRoots = (
+  scope: ParentNode = document,
+): void => {
+  const roots = Array.from(
+    scope.querySelectorAll<HTMLElement>("collection-query[data-af-query]"),
+  );
   roots.forEach((root) => initCollectionQueryElement(root));
 };

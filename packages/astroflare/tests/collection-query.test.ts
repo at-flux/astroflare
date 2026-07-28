@@ -120,7 +120,11 @@ describe("collection query helpers", () => {
   it("drops invalid date filters while preserving valid tokens", () => {
     const params = new URLSearchParams(
       `filters=${encodeURIComponent(
-        JSON.stringify({ date_from: "bad-value", date_to: "2026_04_27", tag: "Website" }),
+        JSON.stringify({
+          date_from: "bad-value",
+          date_to: "2026_04_27",
+          tag: "Website",
+        }),
       )}`,
     );
     const query = parseCollectionQuery(params);
@@ -131,9 +135,13 @@ describe("collection query helpers", () => {
   });
 
   it("reconciles conflicting page and offset (offset wins and is aligned)", () => {
-    const q = parseCollectionQuery(new URLSearchParams("page=2&size=2&offset=0"));
+    const q = parseCollectionQuery(
+      new URLSearchParams("page=2&size=2&offset=0"),
+    );
     expect(q).toEqual({ page: 1, size: 2, offset: 0, filters: {} });
-    const q2 = parseCollectionQuery(new URLSearchParams("page=1&size=2&offset=2"));
+    const q2 = parseCollectionQuery(
+      new URLSearchParams("page=1&size=2&offset=2"),
+    );
     expect(q2).toEqual({ page: 2, size: 2, offset: 2, filters: {} });
   });
 
@@ -147,7 +155,17 @@ describe("collection query helpers", () => {
   });
 
   it("builds windowed page sequences with ellipsis", () => {
-    expect(buildPageSequence(10, 5, 7)).toEqual([1, "…", 3, 4, 5, 6, 7, "…", 10]);
+    expect(buildPageSequence(10, 5, 7)).toEqual([
+      1,
+      "…",
+      3,
+      4,
+      5,
+      6,
+      7,
+      "…",
+      10,
+    ]);
   });
 
   it("matches records against multiple filters", () => {
@@ -173,10 +191,7 @@ describe("collection query helpers", () => {
       ),
     ).toBe(true);
     expect(
-      matchesCollectionFilters(
-        { tag: ["website"] },
-        { tag: "WEB COMPONENTS" },
-      ),
+      matchesCollectionFilters({ tag: ["website"] }, { tag: "WEB COMPONENTS" }),
     ).toBe(false);
   });
 
@@ -201,11 +216,9 @@ describe("collection query helpers", () => {
   });
 
   it("parses and labels multi-value filter lists", () => {
-    expect(parseFilterValueList(" Website, TypeScript ,, web components ")).toEqual([
-      "website",
-      "typescript",
-      "web_components",
-    ]);
+    expect(
+      parseFilterValueList(" Website, TypeScript ,, web components "),
+    ).toEqual(["website", "typescript", "web_components"]);
     expect(formatFilterValueListLabel("website,typescript")).toBe(
       "WEBSITE, TYPESCRIPT",
     );
@@ -219,6 +232,8 @@ describe("collection query helpers", () => {
       headers: { referer: "https://x.test/blog/?size=4" },
     });
     expect(resolveIslandSearchString(undefined, r)).toBe("?size=4");
-    expect(resolveIslandSearchString("", new Request("https://x.test/"))).toBe("");
+    expect(resolveIslandSearchString("", new Request("https://x.test/"))).toBe(
+      "",
+    );
   });
 });

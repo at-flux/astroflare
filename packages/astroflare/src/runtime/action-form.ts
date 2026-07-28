@@ -63,7 +63,10 @@ const showError = (root: HTMLElement, message: string): void => {
     error.hidden = false;
   }
   root.dispatchEvent(
-    new CustomEvent("action-form:error", { bubbles: true, detail: { message } }),
+    new CustomEvent("action-form:error", {
+      bubbles: true,
+      detail: { message },
+    }),
   );
 };
 
@@ -81,7 +84,8 @@ const onSubmit = async (
   if (!url) return;
 
   // Native constraint validation (required fields, email format, checked consent).
-  if (typeof form.reportValidity === "function" && !form.reportValidity()) return;
+  if (typeof form.reportValidity === "function" && !form.reportValidity())
+    return;
 
   // Stamp submit-time timestamps (e.g. consent timestamps).
   form
@@ -94,12 +98,18 @@ const onSubmit = async (
   if (errorRegion) errorRegion.hidden = true;
 
   const fail = () =>
-    showError(root, root.dataset.errorMessage ?? "Something went wrong. Please try again.");
+    showError(
+      root,
+      root.dataset.errorMessage ?? "Something went wrong. Please try again.",
+    );
 
   setBusy(root, true);
   let succeeded = false;
   try {
-    const response = await fetch(url, { method: "POST", body: new FormData(form) });
+    const response = await fetch(url, {
+      method: "POST",
+      body: new FormData(form),
+    });
     const result = await response.json().catch(() => null);
     if (response.ok && readSuccess(result)) {
       succeeded = true;

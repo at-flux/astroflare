@@ -79,7 +79,10 @@ export const parseCollectionQuery = (
       filters = Object.fromEntries(
         Object.entries(parsed)
           .filter(([, value]) => typeof value === "string")
-          .map(([key, value]) => [key, normalizeFilterValue(key, String(value))])
+          .map(([key, value]) => [
+            key,
+            normalizeFilterValue(key, String(value)),
+          ])
           .filter(([, value]) => value.length > 0),
       );
     } catch {
@@ -178,7 +181,9 @@ export const buildPageSequence = (
  * `Referer` request header so `parseCollectionQuery` still matches the main document URL.
  */
 /** "Showing …" for collection footers: avoids "3—3" when one item; uses en dash for ranges. */
-export const formatCollectionRangeLabel = (slice: Pick<PaginationSlice<unknown>, "start" | "end" | "totalItems">): string => {
+export const formatCollectionRangeLabel = (
+  slice: Pick<PaginationSlice<unknown>, "start" | "end" | "totalItems">,
+): string => {
   if (slice.totalItems === 0) {
     return "Showing 0 of 0";
   }
