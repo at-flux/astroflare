@@ -33,7 +33,8 @@ const { title, subtitle, hasDescription = false, class: className = '' } = Astro
 </div>
 
 <style>
-  .af-layout {
+@layer base {
+  :where(.af-layout) {
     max-width: 56rem;
     margin-inline: auto;
     display: flex;
@@ -41,30 +42,31 @@ const { title, subtitle, hasDescription = false, class: className = '' } = Astro
     gap: 3rem;
   }
 
-  .af-layout-title {
+  :where(.af-layout-title) {
     font-size: clamp(1.875rem, 4vw, 2.25rem);
     font-weight: 700;
     margin-bottom: 2rem;
     color: var(--color-light-text-heading, #1c1830);
   }
 
-  :global([data-theme='dark']) .af-layout-title {
+  :global(:where([data-theme='dark'])) :where(.af-layout-title) {
     color: var(--color-dark-text-heading, #f4f2fb);
   }
 
-  .af-layout-subtitle {
+  :where(.af-layout-subtitle) {
     font-size: 1.25rem;
     color: var(--color-light-text-subtle, #6b6580);
   }
 
-  :global([data-theme='dark']) .af-layout-subtitle {
+  :global(:where([data-theme='dark'])) :where(.af-layout-subtitle) {
     color: var(--color-dark-text-subtle, #a5a1b8);
   }
 
-  .af-layout-description {
+  :where(.af-layout-description) {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     margin-top: 1.5rem;
   }
+}
 </style>

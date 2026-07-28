@@ -21,18 +21,19 @@ const { title, class: className = '', titleClass = '' } = Astro.props;
 </section>
 
 <style>
-  .af-section {
+@layer base {
+  :where(.af-section) {
     border-radius: 0.5rem;
     padding: 1.5rem;
     border: 1px solid var(--color-light-border, #e8e4f0);
     background: color-mix(in oklab, var(--color-brand, #8b5cf6) 6%, transparent);
   }
 
-  :global([data-theme='dark']) .af-section {
+  :global(:where([data-theme='dark'])) :where(.af-section) {
     border-color: var(--color-dark-border, #2a2545);
   }
 
-  .af-section-title {
+  :where(.af-section-title) {
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 1.5rem;
@@ -41,14 +42,15 @@ const { title, class: className = '', titleClass = '' } = Astro.props;
     color: var(--color-light-text-heading, #1c1830);
   }
 
-  :global([data-theme='dark']) .af-section-title {
+  :global(:where([data-theme='dark'])) :where(.af-section-title) {
     border-bottom-color: var(--color-dark-border, #2a2545);
     color: var(--color-dark-text-heading, #f4f2fb);
   }
 
-  .af-section-body {
+  :where(.af-section-body) {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
+}
 </style>

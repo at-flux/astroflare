@@ -60,7 +60,8 @@ const optionId = (o: { value: string; id?: string }) => o.id ?? `${name}-${o.val
 </fieldset>
 
 <style>
-  .af-group {
+@layer base {
+  :where(.af-group) {
     border: 0;
     margin: 0;
     padding: 0;
@@ -69,43 +70,44 @@ const optionId = (o: { value: string; id?: string }) => o.id ?? `${name}-${o.val
     gap: 0.5rem;
   }
 
-  .af-group-legend {
+  :where(.af-group-legend) {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-light-text-body, #2f2a44);
   }
 
-  :global([data-theme='dark']) .af-group-legend {
+  :global(:where([data-theme='dark'])) :where(.af-group-legend) {
     color: var(--color-dark-text-body, #e0dfe6);
   }
 
-  .af-group-required {
+  :where(.af-group-required) {
     color: var(--color-danger, #dc2626);
   }
 
-  .af-group-help {
+  :where(.af-group-help) {
     font-size: 0.75rem;
     color: var(--color-light-text-subtle, #6b6580);
   }
 
-  :global([data-theme='dark']) .af-group-help {
+  :global(:where([data-theme='dark'])) :where(.af-group-help) {
     color: var(--color-dark-text-subtle, #a5a1b8);
   }
 
-  .af-group-options {
+  :where(.af-group-options) {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .af-group-option {
+  :where(.af-group-option) {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     color: var(--color-light-text-body, #2f2a44);
   }
 
-  :global([data-theme='dark']) .af-group-option {
+  :global(:where([data-theme='dark'])) :where(.af-group-option) {
     color: var(--color-dark-text-body, #e0dfe6);
   }
+}
 </style>
