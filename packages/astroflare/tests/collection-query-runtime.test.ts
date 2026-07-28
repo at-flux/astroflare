@@ -31,7 +31,11 @@ describe("collection query runtime", () => {
     expect(cards[1].style.display).toBe("");
     expect(cards[2].style.display).toBe("none");
 
-    const pagerButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-pagination] button[data-page]'));
+    const pagerButtons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>(
+        "[data-pagination] button[data-page]",
+      ),
+    );
     expect(pagerButtons).toHaveLength(2);
     expect(pagerButtons[0].className).toContain("af-pager-pill");
     expect(pagerButtons[0].className).toContain("is-active");
@@ -58,14 +62,17 @@ describe("collection query runtime", () => {
 
     const pagination = root.querySelector("[data-pagination]");
     expect(pagination?.textContent).toContain("…");
-    expect(root.querySelectorAll('[data-pagination] button[data-page]').length).toBeLessThan(7);
+    expect(
+      root.querySelectorAll("[data-pagination] button[data-page]").length,
+    ).toBeLessThan(7);
   });
 
   it("filters cards and updates active filter class", () => {
     const root = createRoot();
     initCollectionQueryElement(root);
 
-    const aiButton = root.querySelector<HTMLButtonElement>('[data-filter="ai"]');
+    const aiButton =
+      root.querySelector<HTMLButtonElement>('[data-filter="ai"]');
     aiButton?.click();
 
     const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-card]"));

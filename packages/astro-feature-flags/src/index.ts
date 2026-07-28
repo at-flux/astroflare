@@ -80,13 +80,14 @@ function withDefaultEnvironments(
       ? { ...options.environments }
       : {};
   delete raw.dev;
-  const environments: NonNullable<ResolveFeatureRuntimeOptions["environments"]> =
-    {
-      dev: {
-        when: mode !== "production",
-      },
-      ...raw,
-    };
+  const environments: NonNullable<
+    ResolveFeatureRuntimeOptions["environments"]
+  > = {
+    dev: {
+      when: mode !== "production",
+    },
+    ...raw,
+  };
   if (Object.keys(environments).length < 2) {
     environments.prod = environments.prod ?? {
       when: mode === "production",
@@ -130,7 +131,9 @@ export function createVirtualModuleSource(
       Object.fromEntries(flagNames.map((name) => [name, toToken(name)])),
       runtime.namespace,
     );
-  const affRoutePatternToPrefix = routePrefixJsHelper("affRoutePatternToPrefix");
+  const affRoutePatternToPrefix = routePrefixJsHelper(
+    "affRoutePatternToPrefix",
+  );
 
   return `${affRoutePatternToPrefix}
 
