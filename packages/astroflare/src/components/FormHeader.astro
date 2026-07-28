@@ -26,28 +26,30 @@ const { title, subtitle, isRootHeading = false, class: className = '' } = Astro.
 </header>
 
 <style>
-  .af-form-header {
+@layer base {
+  :where(.af-form-header) {
     margin-bottom: 2rem;
   }
 
-  .af-form-title {
+  :where(.af-form-title) {
     font-size: clamp(1.875rem, 4vw, 3rem);
     font-weight: 700;
     margin: 1rem 0 1.5rem;
     color: var(--color-light-text-heading, #1c1830);
   }
 
-  :global([data-theme='dark']) .af-form-title {
+  :global(:where([data-theme='dark'])) :where(.af-form-title) {
     color: var(--color-dark-text-heading, #f4f2fb);
   }
 
-  .af-form-subtitle {
+  :where(.af-form-subtitle) {
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
     color: var(--color-light-text-subtle, #6b6580);
   }
 
-  :global([data-theme='dark']) .af-form-subtitle {
+  :global(:where([data-theme='dark'])) :where(.af-form-subtitle) {
     color: var(--color-dark-text-subtle, #a5a1b8);
   }
+}
 </style>
