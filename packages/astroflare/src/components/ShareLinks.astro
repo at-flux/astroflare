@@ -1,0 +1,231 @@
+---
+/**
+ * Generic "share this" row. Pass one entry per network you want, each with an
+ * optional explicit `href`; present entries render as icon buttons in the exact
+ * order given. Order + URL-building + label defaults live in
+ * `./share-links.ts` (unit-tested there).
+ *
+ * Networks: `bluesky`, `facebook`, `x`, `linkedin`, `instagram` (needs an
+ * explicit `href` — no share-by-URL intent), and `copy` (a clipboard button
+ * that survives Astro `ClientRouter` swaps via a custom element).
+ *
+ * Theme-agnostic: base styles sit in `@layer base` so `linkClass` / `class`
+ * override them without `!important`.
+ */
+import { resolveShareLinks, type ShareLinkInput } from './share-links.ts';
+
+interface Props {
+  /** Networks to render, in order. */
+  links: ShareLinkInput[];
+  /** Absolute URL being shared. Defaults to the current page URL. */
+  url?: string;
+  /** Title / message passed to networks that support it (x, bluesky). */
+  text?: string;
+  /** Optional leading heading (e.g. "Share this post"). Omitted when unset. */
+  heading?: string;
+  /** Classes on the wrapping `<div>`. */
+  class?: string;
+  /** Classes on the heading. */
+  headingClass?: string;
+  /** Classes merged onto each icon anchor/button. */
+  linkClass?: string;
+}
+
+const {
+  links,
+  url = Astro.url.href,
+  text,
+  heading,
+  class: className = '',
+  headingClass = '',
+  linkClass = '',
+} = Astro.props;
+
+const resolved = resolveShareLinks(links, { url, text });
+---
+
+<div class:list={['af-share', className]}>
+  {heading && <span class:list={['af-share-heading', headingClass]}>{heading}</span>}
+
+  {
+    resolved.map((item) =>
+      item.kind === 'copy' ? (
+        <af-copy-link data-url={url} data-copied-label='Link copied'>
+          <button
+            type='button'
+            class:list={['af-share-link', linkClass]}
+            aria-label={item.label}
+            title={item.label}
+          >
+            <span class='af-share-tooltip' aria-hidden='true'>
+              {item.label}
+            </span>
+            <svg
+              class='af-share-icon'
+              width='20'
+              height='20'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              stroke-width='2'
+              stroke-linecap='round'
+              stroke-linejoin='round'
+              aria-hidden='true'
+            >
+              <path d='M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.808a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101' />
+            </svg>
+          </button>
+        </af-copy-link>
+      ) : (
+        <a
+          href={item.href}
+          target='_blank'
+          rel='noopener noreferrer'
+          class:list={['af-share-link', linkClass]}
+          aria-label={item.label}
+          title={item.label}
+          data-network={item.network}
+        >
+          <span class='af-share-tooltip' aria-hidden='true'>
+            {item.label}
+          </span>
+          {item.network === 'bluesky' && (
+            <svg class='af-share-icon' width='20' height='20' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+              <path d='M6.335 5.144c2.44 1.83 5.064 5.54 6.03 7.53.966-1.99 3.59-5.7 6.03-7.53 1.76-1.32 4.612-2.34 4.612.912 0 .65-.373 5.457-.592 6.237-.762 2.712-3.53 3.404-5.99 2.985 4.302.732 5.396 3.157 3.032 5.582-4.49 4.605-6.453-1.156-6.956-2.632-.092-.27-.135-.397-.136-.288-.001-.11-.044.017-.136.288-.503 1.476-2.465 7.237-6.956 2.632-2.363-2.425-1.27-4.85 3.032-5.582-2.46.42-5.228-.273-5.99-2.985C1.51 11.513 1.137 6.706 1.137 6.056c0-3.252 2.853-2.232 4.612-.912z' />
+            </svg>
+          )}
+          {item.network === 'facebook' && (
+            <svg class='af-share-icon' width='20' height='20' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+              <path d='M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm2.15 7.625h-1.875c-.96 0-1.15.45-1.15 1.13v1.5h3l-.39 3h-2.61v7h-3v-7h-2v-3h2v-2.25c0-2.84 1.73-4.38 4.26-4.38h2.54v3.125z' />
+            </svg>
+          )}
+          {item.network === 'x' && (
+            <svg class='af-share-icon' width='20' height='20' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+              <path d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.21-6.89L4.99 21.75H1.68l7.73-8.83L1.254 2.25H8.08l4.713 6.23L18.244 2.25zM17.292 19.75h2.134L7.794 4.25H5.46L17.292 19.75z' />
+            </svg>
+          )}
+          {item.network === 'linkedin' && (
+            <svg class='af-share-icon' width='20' height='20' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+              <path d='M20.447 20.452h-3.554v-7.294c0-1.637-.615-2.75-2.312-2.75-1.25 0-1.99.867-2.31 1.718-.118.3-.158.7-.158 1.18v7.296h-3.554s.04-9.69 0-10.66h3.554v1.51c.47-.738 1.367-1.794 3.25-1.794 2.37 0 4.18 1.546 4.18 4.879v7.065zM5.053 6.762a2.91 2.91 0 01-2.91-2.91c0-1.607 1.303-2.909 2.91-2.909s2.909 1.302 2.909 2.909c0 1.607-1.302 2.91-2.909 2.91zm-1.777 13.69h3.554V9.792H3.276v10.66z' />
+            </svg>
+          )}
+          {item.network === 'instagram' && (
+            <svg class='af-share-icon' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
+              <rect x='2' y='2' width='20' height='20' rx='5' ry='5' />
+              <circle cx='12' cy='12' r='5' />
+              <circle cx='17.5' cy='6.5' r='1.5' fill='currentColor' stroke='none' />
+            </svg>
+          )}
+        </a>
+      ),
+    )
+  }
+</div>
+
+<script>
+  // Custom element so copy-to-clipboard survives ClientRouter swaps: the class
+  // registers once and connectedCallback re-binds on every inserted instance.
+  class AfCopyLink extends HTMLElement {
+    connectedCallback() {
+      const button = this.querySelector('button');
+      const tooltip = this.querySelector<HTMLElement>('.af-share-tooltip');
+      if (!button || this.dataset.bound) return;
+      this.dataset.bound = 'true';
+
+      const idleLabel = button.getAttribute('aria-label') ?? 'Copy link';
+      const copiedLabel = this.dataset.copiedLabel ?? 'Link copied';
+      let resetTimer: ReturnType<typeof setTimeout> | undefined;
+
+      button.addEventListener('click', async () => {
+        const url = this.dataset.url ?? window.location.href;
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          return; // clipboard blocked (e.g. insecure context) — no-op
+        }
+        button.setAttribute('aria-label', copiedLabel);
+        button.setAttribute('title', copiedLabel);
+        if (tooltip) tooltip.textContent = copiedLabel;
+        this.dataset.copied = 'true';
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          button.setAttribute('aria-label', idleLabel);
+          button.setAttribute('title', idleLabel);
+          if (tooltip) tooltip.textContent = idleLabel;
+          delete this.dataset.copied;
+        }, 2000);
+      });
+    }
+  }
+
+  if (!customElements.get('af-copy-link')) {
+    customElements.define('af-copy-link', AfCopyLink);
+  }
+</script>
+
+<style>
+  @layer base {
+    :where(.af-share) {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    :where(.af-share-heading) {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-light-text-body, #2f2a44);
+    }
+
+    :global(:where([data-theme='dark'])) :where(.af-share-heading) {
+      color: var(--color-dark-text-body, #e0dfe6);
+    }
+
+    :where(.af-share-link) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 0.5rem;
+      border: 0;
+      border-radius: 0.5rem;
+      background: transparent;
+      color: var(--color-light-text-subtle, #6b6580);
+      cursor: pointer;
+      transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+    }
+
+    :global(:where([data-theme='dark'])) :where(.af-share-link) {
+      color: var(--color-dark-text-subtle, #a5a1b8);
+    }
+
+    :where(.af-share-link):hover {
+      color: var(--color-brand, #8b5cf6);
+    }
+
+    /* Icon-only tooltip on hover/focus. */
+    :where(.af-share-tooltip) {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      background: var(--color-dark-surface, #1f2937);
+      color: #fff;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    :where(.af-share-link):hover :where(.af-share-tooltip),
+    :where(.af-share-link):focus-visible :where(.af-share-tooltip) {
+      opacity: 1;
+    }
+  }
+</style>
