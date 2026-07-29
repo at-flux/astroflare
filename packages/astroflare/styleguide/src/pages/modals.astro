@@ -2,6 +2,7 @@
 import "../../src/styles/global.css";
 import Modal from "../../../src/components/Modal.astro";
 import ModalTrigger from "../../../src/components/ModalTrigger.astro";
+import LazyContent from "../../../src/components/LazyContent.astro";
 import Section from "../../../src/components/Section.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 
@@ -26,6 +27,24 @@ const nav = [
       <Section contentOnly>
         <h3>Demo modal</h3>
         <p>Single canonical trigger pattern for this styleguide.</p>
+      </Section>
+    </Modal>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Lazy modal content</h2>
+    <p class="sg-muted">
+      <code>LazyContent</code> fetches an HTML fragment / Astro partial route the
+      first time its ancestor <code>&lt;dialog&gt;</code> opens, so a heavy static
+      body (long policy, docs) stops shipping inline on every page. Interactive
+      islands should stay inline — partial routes emit no hoisted client scripts.
+    </p>
+    <ModalTrigger modalId="styleguide-lazy-modal">
+      <button type="button">Open lazy modal</button>
+    </ModalTrigger>
+    <Modal id="styleguide-lazy-modal">
+      <Section contentOnly>
+        <LazyContent src="/fragments/demo/" />
       </Section>
     </Modal>
   </section>
