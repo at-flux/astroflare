@@ -14,6 +14,10 @@ interface Props {
   class?: string;
   legendClass?: string;
   optionClass?: string;
+  /** Classes on each checkbox `<input>` (for theming the control itself). */
+  inputClass?: string;
+  /** Classes on the help text. */
+  helpClass?: string;
 }
 
 const {
@@ -24,22 +28,39 @@ const {
   class: className = '',
   legendClass = '',
   optionClass = '',
+  inputClass = '',
+  helpClass = '',
 } = Astro.props;
 
-const helpId = helpText ? `${name}-help` : undefined;
+// Rich help: a `help` slot lets callers pass multiline / coloured markup that a
+// single `helpText` string can't express. Either is linked via aria-describedby.
+const hasHelpSlot = Astro.slots.has('help');
+const helpId = helpText || hasHelpSlot ? `${name}-help` : undefined;
 const optionId = (o: { value: string; id?: string }) => o.id ?? `${name}-${o.value}`;
 ---
 
 <fieldset class:list={['af-group', className]} aria-describedby={helpId}>
   <legend class:list={['af-group-legend', legendClass]}>{label}</legend>
 
-  {helpText && <p id={helpId} class='af-group-help'>{helpText}</p>}
+  {
+    (helpText || hasHelpSlot) && (
+      <div id={helpId} class:list={['af-group-help', helpClass]}>
+        {hasHelpSlot ? <slot name='help' /> : helpText}
+      </div>
+    )
+  }
 
   <div class='af-group-options'>
     {
       options.map((option) => (
         <div class:list={['af-group-option', optionClass]}>
-          <input type='checkbox' id={optionId(option)} name={name} value={option.value} />
+          <input
+            type='checkbox'
+            id={optionId(option)}
+            name={name}
+            value={option.value}
+            class:list={[inputClass]}
+          />
           <label for={optionId(option)}>{option.label}</label>
         </div>
       ))

@@ -60,7 +60,15 @@ const {
 } = Astro.props;
 
 const isTextarea = typeof rows === 'number' && rows > 1;
-const helpId = helpText ? `${id}-help` : undefined;
+// Rich help: a `help` slot lets callers pass multiline / coloured markup (e.g. a
+// highlighted safety note) that a single `helpText` string can't express. Either
+// source is wired to the control via `aria-describedby`.
+const hasHelpSlot = Astro.slots.has('help');
+const helpId = helpText || hasHelpSlot ? `${id}-help` : undefined;
+// A textarea's value is its text content, and `<textarea>` preserves the
+// whitespace between its tags — so the control is rendered with `set:text`
+// (below) rather than a wrapped `{value}`, which would otherwise inject the
+// template's indentation as the field value and suppress the placeholder.
 ---
 
 <div class:list={['af-field', className]}>
@@ -69,7 +77,13 @@ const helpId = helpText ? `${id}-help` : undefined;
     {required && <span aria-hidden='true' class='af-field-required'>*</span>}
   </label>
 
-  {helpText && <p id={helpId} class:list={['af-field-help', helpClass]}>{helpText}</p>}
+  {
+    (helpText || hasHelpSlot) && (
+      <div id={helpId} class:list={['af-field-help', helpClass]}>
+        {hasHelpSlot ? <slot name='help' /> : helpText}
+      </div>
+    )
+  }
 
   {
     isTextarea ? (
@@ -82,9 +96,8 @@ const helpId = helpText ? `${id}-help` : undefined;
         autocomplete={autocomplete}
         aria-describedby={helpId}
         class:list={['af-field-control', inputClass]}
-      >
-        {value}
-      </textarea>
+        set:text={value ?? ''}
+      />
     ) : (
       <input
         id={id}
