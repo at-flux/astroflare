@@ -23,6 +23,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
+    "typecheck": "pnpm --filter './packages/*' run typecheck",
+    "verify": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "release": "multi-semantic-release",
     "publish:astroflare": "pnpm --filter @at-flux/astroflare publish",
     "publish:dom": "pnpm --filter @at-flux/dom publish",
