@@ -1,3 +1,20 @@
+## @at-flux/astroflare [1.0.17](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.16...@at-flux/astroflare@1.0.17) (2026-07-30)
+
+
+### Bug Fixes
+
+* **modal:** restore backdrop and remove double scrollbar ([a254cf8](https://github.com/at-flux/astroflare/commit/a254cf887990ff756209397c1e6345d8835fe15d))
+
+
+### Features
+
+* add LazyContent fetch-on-demand component ([6ca7193](https://github.com/at-flux/astroflare/commit/6ca7193336478374939d6848ec3c9381c614d3c6))
+* add shared ConfirmationSection component ([35b69a9](https://github.com/at-flux/astroflare/commit/35b69a9e97550913ea0124361778710d8ff845df))
+* add ShareLinks component with tests ([f61b7ff](https://github.com/at-flux/astroflare/commit/f61b7ff54bad29073207e90457854989c9d4c96a))
+* **deps:** migrate to Astro 7, Vite 8, Vitest 4, TypeScript 7 ([8b8626d](https://github.com/at-flux/astroflare/commit/8b8626dff2d6f593095875e290bb02c90f7cc44a))
+* **form-field:** add radio type and rich help text ([f21a82c](https://github.com/at-flux/astroflare/commit/f21a82c0ac046412e7c53f172f7dcab041766e54))
+* **styles:** ship Tailwind [@source](https://github.com/source) registration for consumers ([6ed277d](https://github.com/at-flux/astroflare/commit/6ed277dad05c0700190c774f643adc5b04e974d0))
+
 ## @at-flux/astroflare [1.0.16](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.15...@at-flux/astroflare@1.0.16) (2026-07-28)
 
 ### Bug Fixes
