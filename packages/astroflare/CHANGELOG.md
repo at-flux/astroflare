@@ -1,3 +1,10 @@
+## @at-flux/astroflare [1.0.16](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.15...@at-flux/astroflare@1.0.16) (2026-07-28)
+
+### Bug Fixes
+
+- **forms:** make form primitive base styles fully overridable ([f597a32](https://github.com/at-flux/astroflare/commit/f597a32907a046a7b2621245b6356c94eeaad86f))
+- **spinner:** bind ClientRouter listeners once ([a593ed3](https://github.com/at-flux/astroflare/commit/a593ed37e0f1560617de507c960919c59091280e))
+
 ## @at-flux/astroflare [1.0.15](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.14...@at-flux/astroflare@1.0.15) (2026-07-27)
 
 ### Features
