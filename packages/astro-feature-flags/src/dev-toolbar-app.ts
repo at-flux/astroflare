@@ -79,11 +79,9 @@ function loadState(tokens: string[], namespace: string): AffState {
     if (!raw) return next;
     const parsed = JSON.parse(raw) as Record<string, unknown>;
     const outline = (parsed.outline ?? parsed.chrome) as
-      | Record<string, boolean>
-      | undefined;
+      Record<string, boolean> | undefined;
     const enabled = (parsed.enabled ?? parsed.render) as
-      | Record<string, boolean>
-      | undefined;
+      Record<string, boolean> | undefined;
     const badge = parsed.badge as Record<string, boolean> | undefined;
     const colors = parsed.colors as Record<string, string> | undefined;
     if (outline) Object.assign(next.outline, outline);

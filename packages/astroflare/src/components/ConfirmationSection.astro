@@ -1,0 +1,145 @@
+---
+/**
+ * A titled information block followed by a single required confirmation
+ * checkbox — the shape shared by "deposit policy", "data protection", and
+ * similar consent gates that differ only by their accent colour. Generic and
+ * theme-agnostic: pass the accent surface via `class` and control theming via
+ * the `*Class` props. Base styles live in `@layer base` so they are overridable
+ * without `!important`.
+ *
+ * Slots:
+ *   - default: the rich info body (paragraphs, lists, etc).
+ *   - `label`: the checkbox's visible label (may contain links).
+ */
+interface Props {
+  /** Section heading. */
+  title: string;
+  /** Checkbox `name` (the Action schema keys off this). */
+  name: string;
+  /** Submitted value when checked. */
+  value?: string;
+  required?: boolean;
+  /** Control id (defaults to `confirm-<name>`). */
+  id?: string;
+  /** Extra, visually-hidden description linked via aria-describedby. */
+  srHelpText?: string;
+  /** Accent surface classes on the outer section. */
+  class?: string;
+  /** Classes on the `<h3>` title. */
+  titleClass?: string;
+  /** Classes on the info body wrapper. */
+  bodyClass?: string;
+  /** Classes on the checkbox `<input>`. */
+  inputClass?: string;
+  /** Classes on the `<label>`. */
+  labelClass?: string;
+}
+
+const {
+  title,
+  name,
+  value = 'Yes',
+  required = false,
+  id = `confirm-${name}`,
+  srHelpText,
+  class: className = '',
+  titleClass = '',
+  bodyClass = '',
+  inputClass = '',
+  labelClass = '',
+} = Astro.props;
+
+const helpId = srHelpText ? `${id}-help` : undefined;
+---
+
+<section class:list={['af-confirm', className]}>
+  <h3 class:list={['af-confirm-title', titleClass]}>{title}</h3>
+
+  <div class:list={['af-confirm-body', bodyClass]}>
+    <slot />
+  </div>
+
+  <div class='af-confirm-control'>
+    <input
+      type='checkbox'
+      id={id}
+      name={name}
+      value={value}
+      required={required}
+      aria-describedby={helpId}
+      class:list={['af-confirm-input', inputClass]}
+    />
+    <label for={id} class:list={['af-confirm-label', labelClass]}>
+      <slot name='label' />
+      {required && <span aria-hidden='true' class='af-confirm-required'>*</span>}
+    </label>
+  </div>
+
+  {srHelpText && <p id={helpId} class='af-confirm-sr-help'>{srHelpText}</p>}
+</section>
+
+<style>
+@layer base {
+  :where(.af-confirm) {
+    border: 1px solid var(--color-light-border, #e8e4f0);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+  }
+
+  :where(.af-confirm-title) {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-light-text-body, #2f2a44);
+  }
+
+  :where(.af-confirm-body) {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    color: var(--color-light-text-subtle, #6b6580);
+  }
+
+  :where(.af-confirm-control) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  :where(.af-confirm-input) {
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  :where(.af-confirm-label) {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--color-light-text-body, #2f2a44);
+  }
+
+  :where(.af-confirm-required) {
+    color: var(--color-danger, #dc2626);
+  }
+
+  :global(:where([data-theme='dark'])) :where(.af-confirm-title),
+  :global(:where([data-theme='dark'])) :where(.af-confirm-label) {
+    color: var(--color-dark-text-body, #e0dfe6);
+  }
+
+  :global(:where([data-theme='dark'])) :where(.af-confirm-body) {
+    color: var(--color-dark-text-subtle, #a5a1b8);
+  }
+
+  /* Visually hidden but exposed to assistive tech (aria-describedby target). */
+  :where(.af-confirm-sr-help) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+</style>

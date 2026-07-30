@@ -246,7 +246,9 @@ function normalizeDeclarativeConfig(
   };
 }
 
-function assertEnvironmentShape(environments: Record<string, NormalizedEnvEntry>) {
+function assertEnvironmentShape(
+  environments: Record<string, NormalizedEnvEntry>,
+) {
   const keys = Object.keys(environments);
   if (!environments.dev) {
     throw new Error(
@@ -260,7 +262,9 @@ function assertEnvironmentShape(environments: Record<string, NormalizedEnvEntry>
   }
 }
 
-function countActiveWhen(environments: Record<string, NormalizedEnvEntry>): number {
+function countActiveWhen(
+  environments: Record<string, NormalizedEnvEntry>,
+): number {
   return Object.values(environments).filter((e) => e.when === true).length;
 }
 
@@ -305,13 +309,11 @@ function resolveActiveEnvironmentName(
   throw new Error("astro-feature-flags: internal error resolving environment.");
 }
 
-function readBaseMergedRaw(options: ResolveFeatureRuntimeOptions): Record<string, unknown> {
+function readBaseMergedRaw(
+  options: ResolveFeatureRuntimeOptions,
+): Record<string, unknown> {
   const configRoot = options.configRoot ?? process.cwd();
-  const {
-    tokenNamespace = "ff",
-    flags = {},
-    environments = {},
-  } = options;
+  const { tokenNamespace = "ff", flags = {}, environments = {} } = options;
   const inlineRaw: Record<string, unknown> = {
     tokenNamespace,
     flags,
@@ -320,7 +322,10 @@ function readBaseMergedRaw(options: ResolveFeatureRuntimeOptions): Record<string
   let merged = { ...inlineRaw };
   if (options.jsonConfigPath) {
     const p = resolvePath(options.jsonConfigPath, configRoot);
-    merged = mergeRecords(merged as Record<string, unknown>, readJsonIfExists(p));
+    merged = mergeRecords(
+      merged as Record<string, unknown>,
+      readJsonIfExists(p),
+    );
   }
   return merged;
 }
@@ -433,7 +438,8 @@ export function resolveFeatureFlagsByEnvironment(
   const mode = options.mode ?? process.env.NODE_ENV ?? "development";
   const normalized = normalizeDeclarativeConfig(baseRaw, mode);
   const envKeys = Object.keys(normalized.environments);
-  const proc = options.env ?? (process.env as Record<string, string | undefined>);
+  const proc =
+    options.env ?? (process.env as Record<string, string | undefined>);
   const out: Record<string, FeatureFlagMap> = {};
   for (const envName of envKeys) {
     const cfg = loadFeatureConfig({ ...options, forceEnvironment: envName });
@@ -474,7 +480,8 @@ export interface ResolvedFeatureRuntime {
 export function resolveFeatureRuntime(
   options: ResolveFeatureRuntimeOptions = {},
 ): ResolvedFeatureRuntime {
-  const env = options.env ?? (process.env as Record<string, string | undefined>);
+  const env =
+    options.env ?? (process.env as Record<string, string | undefined>);
   const config = loadFeatureConfig(options);
   const isDevLayer = config.activeEnvironment === "dev";
   const resolvedFlags = isDevLayer

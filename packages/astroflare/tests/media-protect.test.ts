@@ -36,8 +36,14 @@ describe("media protect runtime", () => {
     `;
     initMediaProtectRoots();
 
-    const protectedEvent = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
-    const openEvent = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    const protectedEvent = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+    });
+    const openEvent = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+    });
 
     document.getElementById("protected-image")?.dispatchEvent(protectedEvent);
     document.getElementById("open-image")?.dispatchEvent(openEvent);

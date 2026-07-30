@@ -1,0 +1,19 @@
+/**
+ * Tailwind source registration for astroflare's own components.
+ *
+ * Tailwind v4 auto-detection skips `node_modules`, so utilities used *inside*
+ * astroflare's shipped components (Modal backdrop, close-button layout,
+ * CollectionQuery pills/pager, ImageSuspense frame, …) are never generated in a
+ * consuming app's build unless that app explicitly scans this package.
+ *
+ * Import this file from your app's Tailwind entry:
+ *
+ *   @import '@at-flux/astroflare/styles/source.css';
+ *
+ * Tailwind resolves `@source` relative to the file it appears in, and this file
+ * ships inside the package (`files` includes `src/styles` + `src/components`),
+ * so `../` points at the package's own `src/` on disk wherever the package is
+ * installed — under a pnpm symlink, a hoisted `node_modules`, or a workspace
+ * link. No consumer-side `../../node_modules/...` path to break on publish.
+ */
+@source "../";

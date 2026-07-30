@@ -1,0 +1,163 @@
+---
+/**
+ * Fetch-on-demand content holder. Renders nothing but a loading state until it
+ * is asked to fetch `src` (an HTML fragment / Astro partial route), then swaps
+ * the response `innerHTML` into place. Heavy modal bodies (long policies, big
+ * forms) can live behind this so they stop shipping inline on every page and
+ * only load the first time their modal opens.
+ *
+ * Trigger (`when`):
+ *  - `dialog-open` (default): fetch the first time the nearest ancestor
+ *    `<dialog>` opens (native `<dialog>` toggles its `open` attribute). With no
+ *    dialog ancestor it falls back to fetching immediately.
+ *  - `visible`: fetch when the element first scrolls into view.
+ *  - `immediate`: fetch as soon as it connects.
+ *
+ * Loading and error UI are overridable via the `loading` / `error` slots; the
+ * defaults are theme-agnostic (they inherit `currentColor`). On a failed fetch
+ * the error slot shows and the next trigger retries.
+ */
+interface Props {
+  /** Fragment / partial URL to fetch. */
+  src: string;
+  /** When to fetch. Default `dialog-open`. */
+  when?: 'dialog-open' | 'visible' | 'immediate';
+  /** Classes on the host element. */
+  class?: string;
+}
+
+const { src, when = 'dialog-open', class: className } = Astro.props;
+---
+
+<af-lazy-content data-src={src} data-when={when} class:list={[className]}>
+  <div data-lazy-loading role='status'>
+    <slot name='loading'>
+      <div class='af-lazy-spinner-wrap'>
+        <span class='af-lazy-spinner' aria-hidden='true'></span>
+        <p class='af-lazy-loading-text'>Loading…</p>
+      </div>
+    </slot>
+  </div>
+  <div data-lazy-error hidden>
+    <slot name='error'>
+      <p class='af-lazy-error-text'>Couldn't load this content.</p>
+    </slot>
+  </div>
+  <div data-lazy-content></div>
+</af-lazy-content>
+
+<style>
+  @layer base {
+    .af-lazy-spinner-wrap {
+      text-align: center;
+      padding: 5rem 0;
+      color: currentColor;
+    }
+    .af-lazy-spinner {
+      display: inline-block;
+      width: 2rem;
+      height: 2rem;
+      border: 2px solid color-mix(in oklab, currentColor 30%, transparent);
+      border-top-color: currentColor;
+      border-radius: 9999px;
+      animation: af-lazy-spin 0.8s linear infinite;
+    }
+    .af-lazy-loading-text {
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+    .af-lazy-error-text {
+      text-align: center;
+      padding: 5rem 0;
+      color: currentColor;
+    }
+    @keyframes af-lazy-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .af-lazy-spinner {
+        animation-duration: 0.01ms;
+      }
+    }
+  }
+</style>
+
+<script>
+  class AfLazyContent extends HTMLElement {
+    private loaded = false;
+    private observer: MutationObserver | null = null;
+    private io: IntersectionObserver | null = null;
+
+    connectedCallback() {
+      const when = this.dataset.when ?? 'dialog-open';
+
+      if (when === 'immediate') {
+        void this.load();
+        return;
+      }
+
+      if (when === 'visible') {
+        this.io = new IntersectionObserver((entries) => {
+          if (entries.some((e) => e.isIntersecting)) void this.load();
+        });
+        this.io.observe(this);
+        return;
+      }
+
+      // dialog-open
+      const dialog = this.closest('dialog');
+      if (!dialog) {
+        // No dialog ancestor — fetch immediately as a fallback.
+        void this.load();
+        return;
+      }
+      this.observer = new MutationObserver(() => {
+        if (dialog.open) void this.load();
+      });
+      this.observer.observe(dialog, { attributes: true, attributeFilter: ['open'] });
+      if (dialog.open) void this.load();
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect();
+      this.observer = null;
+      this.io?.disconnect();
+      this.io = null;
+    }
+
+    private async load() {
+      if (this.loaded) return;
+      this.loaded = true;
+
+      const src = this.dataset.src;
+      const loading = this.querySelector<HTMLElement>('[data-lazy-loading]');
+      const error = this.querySelector<HTMLElement>('[data-lazy-error]');
+      const content = this.querySelector<HTMLElement>('[data-lazy-content]');
+      if (!src || !content) return;
+
+      // Stop observing once the fetch is under way — one successful load is
+      // terminal; a failure resets `loaded` below to allow a retry.
+      this.io?.disconnect();
+      this.io = null;
+
+      try {
+        const res = await fetch(src);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        content.innerHTML = await res.text();
+        loading?.setAttribute('hidden', '');
+        error?.setAttribute('hidden', '');
+      } catch (err) {
+        console.error('af-lazy-content: failed to load', src, err);
+        this.loaded = false; // allow a retry on the next trigger
+        loading?.setAttribute('hidden', '');
+        error?.removeAttribute('hidden');
+      }
+    }
+  }
+
+  if (!customElements.get('af-lazy-content')) {
+    customElements.define('af-lazy-content', AfLazyContent);
+  }
+</script>

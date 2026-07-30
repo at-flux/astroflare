@@ -40,14 +40,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check
-        run: pnpm --filter './packages/*' run typecheck
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Build packages
-        run: pnpm build
+      # Single gate: prettier (format:check) + lint + typecheck + tests + build.
+      # A prettier or lint failure fails the job.
+      - name: Verify
+        run: pnpm run verify
 
       - name: Pack astroflare tarball
         run: |

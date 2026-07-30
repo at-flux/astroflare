@@ -24,10 +24,10 @@ Feature flags for Astro with a declarative config:
 
 ## Terminology (short)
 
-| Term | Meaning |
-| ---- | ------- |
-| **Astro dev** | Local `astro dev` — the built-in dev layer is active; all flags on at resolve time; dev toolbar only affects the browser. |
-| **Non-dev build** | `astro build` / preview / deploy with a shipped layer (`prod`, `staging`, …): `environments.<key>.flags` drives SSR, HTML culling, and route pruning. |
+| Term                              | Meaning                                                                                                                                                                                              |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Astro dev**                     | Local `astro dev` — the built-in dev layer is active; all flags on at resolve time; dev toolbar only affects the browser.                                                                            |
+| **Non-dev build**                 | `astro build` / preview / deploy with a shipped layer (`prod`, `staging`, …): `environments.<key>.flags` drives SSR, HTML culling, and route pruning.                                                |
 | **`isAstroDev`** (virtual module) | `import.meta.env.DEV` — Vite’s compile-time flag for components. Layer selection still comes from `environments` / `forceEnvironment`; use `isAstroDev` when you need Astro’s literal dev detection. |
 
 You cannot add an environment key named **`dev`** — that name is reserved and merged automatically (including its `when`; you do not set it in config).
@@ -180,18 +180,18 @@ The dev toolbar changes client-side preview state only.
 
 ### Top-level options
 
-| Option             | Type                                | Default         | Notes                                                                 |
-| ------------------ | ----------------------------------- | --------------- | --------------------------------------------------------------------- |
-| `configRoot`       | `string`                            | `process.cwd()` | Resolves relative `jsonConfigPath` values (root + per-environment).   |
-| `jsonConfigPath`   | `string`                            | unset           | Optional **root** JSON file merged after inline config (see merge order for per-environment files). |
-| `forceEnvironment` | `string`                          | unset           | Pin the active layer (skips `when` / `AFF_ENVIRONMENT` validation).   |
-| `mode`             | `string`                            | `NODE_ENV`      | Optional advanced override for runtime resolution (mainly tests/tooling). Most apps should omit this and rely on `NODE_ENV` + `environments.when`. |
-| `env`              | `Record<string, string \| undefined>` | `process.env` | `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` (not applied in `dev` layer). |
-| `tokenNamespace`   | `string`                            | `'ff'`          | CSS var namespace (`--ff-c-*`).                                       |
-| `flags`            | `Record<string, FlagConfig>`        | `{}`            | Flag declarations.                                                    |
-| `environments`     | `Record<string, EnvironmentConfig>`  | _(see below)_   | Declare non-`dev` layers only; reserved `dev` is injected. At least one other key; exactly one `when: true` unless forced. |
-| `css`              | `DevOutlineCssOptions`              | defaults        | Global badge/outline layout and styling.                              |
-| `staticMinify`     | `boolean`                           | `true`          | For static builds: route-prune disabled prefixes + cull gated HTML in `dist/`. Set `false` to keep emitted files untouched. |
+| Option             | Type                                  | Default         | Notes                                                                                                                                              |
+| ------------------ | ------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `configRoot`       | `string`                              | `process.cwd()` | Resolves relative `jsonConfigPath` values (root + per-environment).                                                                                |
+| `jsonConfigPath`   | `string`                              | unset           | Optional **root** JSON file merged after inline config (see merge order for per-environment files).                                                |
+| `forceEnvironment` | `string`                              | unset           | Pin the active layer (skips `when` / `AFF_ENVIRONMENT` validation).                                                                                |
+| `mode`             | `string`                              | `NODE_ENV`      | Optional advanced override for runtime resolution (mainly tests/tooling). Most apps should omit this and rely on `NODE_ENV` + `environments.when`. |
+| `env`              | `Record<string, string \| undefined>` | `process.env`   | `AFF_FEATURE_*` / `ASTRO_FEATURE_FLAGS` (not applied in `dev` layer).                                                                              |
+| `tokenNamespace`   | `string`                              | `'ff'`          | CSS var namespace (`--ff-c-*`).                                                                                                                    |
+| `flags`            | `Record<string, FlagConfig>`          | `{}`            | Flag declarations.                                                                                                                                 |
+| `environments`     | `Record<string, EnvironmentConfig>`   | _(see below)_   | Declare non-`dev` layers only; reserved `dev` is injected. At least one other key; exactly one `when: true` unless forced.                         |
+| `css`              | `DevOutlineCssOptions`                | defaults        | Global badge/outline layout and styling.                                                                                                           |
+| `staticMinify`     | `boolean`                             | `true`          | For static builds: route-prune disabled prefixes + cull gated HTML in `dist/`. Set `false` to keep emitted files untouched.                        |
 
 If you omit `environments`, the integration injects a minimal reserved `dev` plus **`prod`** tied to `NODE_ENV` (or `mode` only if you explicitly override it) so `astroFeatureFlags()` still runs in small demos.
 
@@ -210,10 +210,10 @@ The key **`dev`** is reserved: do not list it under `environments`. The integrat
 
 ### `EnvironmentConfig`
 
-| Field            | Type                      | Default | Notes                                                                 |
-| ---------------- | ------------------------- | ------- | --------------------------------------------------------------------- |
-| `when`           | `boolean`                 | unset   | Exactly one environment must have `when: true` (unless forced).       |
-| `flags`          | `Record<string, boolean>` | `{}`    | For non-`dev` layers: booleans per flag. Ignored for reserved `dev`. |
+| Field            | Type                      | Default | Notes                                                                                        |
+| ---------------- | ------------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `when`           | `boolean`                 | unset   | Exactly one environment must have `when: true` (unless forced).                              |
+| `flags`          | `Record<string, boolean>` | `{}`    | For non-`dev` layers: booleans per flag. Ignored for reserved `dev`.                         |
 | `jsonConfigPath` | `string`                  | unset   | Optional JSON merged when this environment is the active layer (not used on reserved `dev`). |
 
 Merge order:
@@ -227,12 +227,12 @@ Layer select override: `AFF_ENVIRONMENT=prod`. **`forceEnvironment`** on the int
 
 ### DevOutlineCssOptions
 
-| Field                                             | Default                | Meaning                                                                                                                                                                                                  |
-| ------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `elementBadgeHorizontalAlign`                     | `'end'`                | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                                                                                                                                         |
-| `elementBadgeHorizontalPercent`                   | _(unset)_              | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.                                                                                                                        |
-| `elementBadgeVerticalShiftPercent`                | `80`                   | Vertical shift as **% of the pill height** (default keeps most of the label above the element).                                                                                                          |
-| `elementBadgeVerticalAnchor`                      | `'top'`                | `'top'` or `'bottom'`.                                                                                                                                                                                   |
+| Field                              | Default   | Meaning                                                                                         |
+| ---------------------------------- | --------- | ----------------------------------------------------------------------------------------------- |
+| `elementBadgeHorizontalAlign`      | `'end'`   | `'start'` \| `'center'` \| `'end'` — LTR: **`end`** = top-right.                                |
+| `elementBadgeHorizontalPercent`    | _(unset)_ | 0–100: horizontal anchor with pill centred (`translateX(-50%)`); overrides align.               |
+| `elementBadgeVerticalShiftPercent` | `80`      | Vertical shift as **% of the pill height** (default keeps most of the label above the element). |
+| `elementBadgeVerticalAnchor`       | `'top'`   | `'top'` or `'bottom'`.                                                                          |
 
 Per-element badge overrides (markup):
 
@@ -250,12 +250,12 @@ If your editor misses virtual module types, add one reference in `src/env.d.ts`.
 
 ## Dev toolbar
 
-| Control     | Effect                                                 |
-| ----------- | ------------------------------------------------------ |
+| Control     | Effect                                                                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- |
 | **Enabled** | Off → hide nodes carrying that token in `data-ff` (including combined hosts/pages when any member token is Off). |
-| **Outline** | Toggle outlines only (element and route frame). For combined hosts this is a non-layout-shifting overlay ring. |
-| **Badges**  | Toggle badges only (element pills + route pill).       |
-| **Colour**  | `--<namespace>-c-<token>` (persisted).                 |
+| **Outline** | Toggle outlines only (element and route frame). For combined hosts this is a non-layout-shifting overlay ring.   |
+| **Badges**  | Toggle badges only (element pills + route pill).                                                                 |
+| **Colour**  | `--<namespace>-c-<token>` (persisted).                                                                           |
 
 ## Virtual module
 
