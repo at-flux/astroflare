@@ -1,3 +1,10 @@
+## @at-flux/astro-feature-flags [1.0.3](https://github.com/at-flux/astroflare/compare/@at-flux/astro-feature-flags@1.0.2...@at-flux/astro-feature-flags@1.0.3) (2026-07-30)
+
+
+### Features
+
+* **deps:** migrate to Astro 7, Vite 8, Vitest 4, TypeScript 7 ([8b8626d](https://github.com/at-flux/astroflare/commit/8b8626dff2d6f593095875e290bb02c90f7cc44a))
+
 ## @at-flux/astro-feature-flags [1.0.2](https://github.com/at-flux/astroflare/compare/@at-flux/astro-feature-flags@1.0.1...@at-flux/astro-feature-flags@1.0.2) (2026-07-27)
 
 ### Bug Fixes
