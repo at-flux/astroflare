@@ -43,7 +43,10 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
     ensureFeatureFlagStyles();
 
     const affPath = () => {
-      let p = typeof location !== "undefined" && location.pathname ? location.pathname : "/";
+      let p =
+        typeof location !== "undefined" && location.pathname
+          ? location.pathname
+          : "/";
       if (!p.endsWith("/")) p += "/";
       return p;
     };
@@ -82,7 +85,8 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
       for (let i = 0; i < names.length; i++) {
         const tk = M[names[i]];
         if (!tk) continue;
-        if (root.getAttribute(`data-ff-enabled-${tk}`) === "off") disabled.push(tk);
+        if (root.getAttribute(`data-ff-enabled-${tk}`) === "off")
+          disabled.push(tk);
       }
       const id = "aff-route-disabled-overlay";
       let el = document.getElementById(id);
@@ -113,7 +117,10 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
 
     const affApply = () => {
       ensureFeatureFlagStyles();
-      document.documentElement.setAttribute("data-ff-route", affTokens(affPath()).join(" "));
+      document.documentElement.setAttribute(
+        "data-ff-route",
+        affTokens(affPath()).join(" "),
+      );
       affSyncDisabledOverlay();
     };
 
@@ -122,7 +129,10 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
       const obs = new MutationObserver((muts) => {
         for (let i = 0; i < muts.length; i++) {
           const a = muts[i] && muts[i].attributeName;
-          if (a === "data-ff-route" || (a && a.indexOf("data-ff-enabled-") === 0)) {
+          if (
+            a === "data-ff-route" ||
+            (a && a.indexOf("data-ff-enabled-") === 0)
+          ) {
             affSyncDisabledOverlay();
             break;
           }
@@ -155,7 +165,8 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
   const K = `${N}.dev.v1`;
 
   const root = document.documentElement;
-  const isEnabled = (tk: string) => root.getAttribute(`data-ff-enabled-${tk}`) !== "off";
+  const isEnabled = (tk: string) =>
+    root.getAttribute(`data-ff-enabled-${tk}`) !== "off";
   const currentTokenColor = (
     tk: string,
     cols: Record<string, string>,
@@ -194,7 +205,8 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
   const applyCombo = (el: HTMLElement, cols: Record<string, string>) => {
     const allTokens = comboTokens(el);
     const hasCombo = allTokens.length >= 2;
-    const hasDisabledInCombo = hasCombo && allTokens.some((tk) => !isEnabled(tk));
+    const hasDisabledInCombo =
+      hasCombo && allTokens.some((tk) => !isEnabled(tk));
     const visual = allTokens.filter((tk) => isEnabled(tk));
     if (hasDisabledInCombo) {
       // Fail-closed for combos: if any member token is disabled, hide the whole element.
@@ -225,15 +237,24 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
     el.setAttribute("data-ff-label", visual.join(" | "));
     const strong = visual.map((tk) => currentTokenColor(tk, cols));
     const soft = strong.map((c) => `color-mix(in oklab, white 86%, ${c} 14%)`);
-    el.style.setProperty("--ff-combo-gradient", `linear-gradient(90deg, ${strong.join(", ")})`);
-    el.style.setProperty("--ff-combo-gradient-soft", `linear-gradient(90deg, ${soft.join(", ")})`);
+    el.style.setProperty(
+      "--ff-combo-gradient",
+      `linear-gradient(90deg, ${strong.join(", ")})`,
+    );
+    el.style.setProperty(
+      "--ff-combo-gradient-soft",
+      `linear-gradient(90deg, ${soft.join(", ")})`,
+    );
     el.style.setProperty("--ff-combo-outline", strong[0] || "#64748b");
     el.style.setProperty("--ff-combo-text", strong[0] || "#111827");
     el.style.setProperty(
       "--ff-combo-badge-border",
       `color-mix(in oklab, ${strong[0] || "#64748b"} 35%, transparent)`,
     );
-    el.style.setProperty("--ff-combo-badge-gradient", `linear-gradient(90deg, ${soft.join(", ")})`);
+    el.style.setProperty(
+      "--ff-combo-badge-gradient",
+      `linear-gradient(90deg, ${soft.join(", ")})`,
+    );
   };
 
   const routeTokensForPath = (path: string): string[] => {
@@ -359,10 +380,21 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
       const toks = routeTokensForPath(p).filter((tk) => isEnabled(tk));
       if (toks.length) {
         const strong = toks.map((tk) => currentTokenColor(tk, cols));
-        const soft = strong.map((c) => `color-mix(in oklab, white 86%, ${c} 14%)`);
-        root.style.setProperty(`--${N}-route-gradient`, `linear-gradient(90deg, ${soft.join(", ")})`);
-        root.style.setProperty("--ff-route-outline-gradient", `linear-gradient(90deg, ${strong.join(", ")})`);
-        root.style.setProperty("--ff-route-badge-gradient", `linear-gradient(90deg, ${soft.join(", ")})`);
+        const soft = strong.map(
+          (c) => `color-mix(in oklab, white 86%, ${c} 14%)`,
+        );
+        root.style.setProperty(
+          `--${N}-route-gradient`,
+          `linear-gradient(90deg, ${soft.join(", ")})`,
+        );
+        root.style.setProperty(
+          "--ff-route-outline-gradient",
+          `linear-gradient(90deg, ${strong.join(", ")})`,
+        );
+        root.style.setProperty(
+          "--ff-route-badge-gradient",
+          `linear-gradient(90deg, ${soft.join(", ")})`,
+        );
         root.style.setProperty(
           "--ff-route-badge-border",
           `color-mix(in oklab, ${strong[0] || "#64748b"} 35%, transparent)`,
@@ -383,7 +415,9 @@ export function affDevBootstrapRuntime(payload: BootstrapPayload): void {
 
     affAfterNav();
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", affAfterNav, { once: true });
+      document.addEventListener("DOMContentLoaded", affAfterNav, {
+        once: true,
+      });
     }
     document.addEventListener("astro:page-load", affAfterNav);
     document.addEventListener("astro:after-swap", affAfterNav);

@@ -17,6 +17,7 @@ pnpm publish --access public
 ```
 
 Notes:
+
 - The package is created on npm by this first successful publish.
 - If you get `404 Not Found` on `PUT .../@at-flux%2f<package>`, the token/user usually does not have publish rights for the org/scope.
 
@@ -33,12 +34,14 @@ npmjs.com → package **Settings** → **Trusted publishing** → **GitHub Actio
 Then CI publishes without `NODE_AUTH_TOKEN` using OIDC.
 
 Requirements:
+
 - npm CLI **>= 11.5.1**
 - Node **>= 22.14** (repo uses Node 24)
 
 ## Repo release notes
 
 This monorepo uses **`@qiwi/multi-semantic-release`**:
+
 - per-package versions/changelogs/tags
 - only packages with releasable commits are published
 

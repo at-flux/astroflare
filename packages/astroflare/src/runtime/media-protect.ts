@@ -11,7 +11,10 @@ declare global {
 
 const STATE_KEY = "__astroflareMediaProtectHandlerState__";
 
-const shouldPrevent = (target: EventTarget | null, mode: "drag" | "contextMenu"): boolean => {
+const shouldPrevent = (
+  target: EventTarget | null,
+  mode: "drag" | "contextMenu",
+): boolean => {
   if (!(target instanceof Element)) return false;
   const root = target.closest<HTMLElement>("[data-media-protect-root]");
   if (!root) return false;

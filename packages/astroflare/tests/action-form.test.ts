@@ -54,7 +54,9 @@ describe("action form runtime", () => {
   it("shows the success view and dispatches success on a successful submit", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: async () => [["email"], true] }),
+      vi
+        .fn()
+        .mockResolvedValue({ ok: true, json: async () => [["email"], true] }),
     );
     const { root, form, submit, view, success } = els();
     const onSuccess = vi.fn();
@@ -73,7 +75,9 @@ describe("action form runtime", () => {
   it("re-enables the button and shows the error on an unsuccessful response", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: async () => [["email"], false] }),
+      vi
+        .fn()
+        .mockResolvedValue({ ok: true, json: async () => [["email"], false] }),
     );
     const { form, submit, spinner, label, error, view } = els();
 

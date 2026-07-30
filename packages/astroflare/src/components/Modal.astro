@@ -25,7 +25,7 @@ interface Props {
 const {
   id,
   class: className = '',
-  backdropClass = 'backdrop:bg-black/80 bg-transparent p-0 w-full h-full max-w-none max-h-none',
+  backdropClass = 'backdrop:bg-black/80 bg-transparent p-0 w-full h-full max-w-none max-h-none overflow-hidden',
   panelClass = '',
   closeButtonClass = 'absolute top-3 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100',
   contentClass = 'relative overflow-y-auto max-h-[calc(100dvh-2rem)]',
@@ -75,13 +75,79 @@ const {
 </app-modal>
 
 <script>
+  // Body scroll-lock shared across every modal on the page. A native modal
+  // `<dialog>` (opened via `showModal()`) renders in the top layer but does NOT
+  // stop the page behind it from keeping its own scrollbar — so the viewport
+  // shows two scrollbars while a modal is open. Locking `overflow: hidden` on
+  // the root element removes the page scrollbar; a ref-count keeps nested/stacked
+  // modals correct, and padding compensation avoids the layout shift that hiding
+  // the scrollbar would otherwise cause.
+  const LOCK_KEY = '__astroflareModalScrollLock__';
+  interface LockWindow extends Window {
+    [LOCK_KEY]?: number;
+  }
+  const lockWin = window as unknown as LockWindow;
+
+  function lockScroll() {
+    const count = lockWin[LOCK_KEY] ?? 0;
+    if (count === 0) {
+      const root = document.documentElement;
+      const scrollbarWidth = window.innerWidth - root.clientWidth;
+      root.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) root.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    lockWin[LOCK_KEY] = count + 1;
+  }
+
+  function unlockScroll() {
+    const count = lockWin[LOCK_KEY] ?? 0;
+    if (count <= 1) {
+      const root = document.documentElement;
+      root.style.overflow = '';
+      root.style.paddingRight = '';
+      lockWin[LOCK_KEY] = 0;
+      return;
+    }
+    lockWin[LOCK_KEY] = count - 1;
+  }
+
   class AppModal extends HTMLElement {
+    private observer: MutationObserver | null = null;
+    private locked = false;
+
     connectedCallback() {
       const dialog = this.querySelector<HTMLDialogElement>('dialog');
       if (!dialog) return;
 
       const closeBtn = this.querySelector<HTMLButtonElement>('button[aria-label="Close modal"]');
       closeBtn?.addEventListener('click', () => dialog.close());
+
+      // `showModal()` / `close()` toggle the `open` attribute; mirror the lock to
+      // it so the scroll-lock tracks the dialog no matter who opens or closes it
+      // (trigger click, Esc, backdrop, programmatic).
+      const sync = () => {
+        if (dialog.open && !this.locked) {
+          this.locked = true;
+          lockScroll();
+        } else if (!dialog.open && this.locked) {
+          this.locked = false;
+          unlockScroll();
+        }
+      };
+      this.observer = new MutationObserver(sync);
+      this.observer.observe(dialog, { attributes: true, attributeFilter: ['open'] });
+      sync();
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect();
+      this.observer = null;
+      // Released here too so a ClientRouter navigation while a modal is open does
+      // not leave the page permanently scroll-locked.
+      if (this.locked) {
+        this.locked = false;
+        unlockScroll();
+      }
     }
   }
 

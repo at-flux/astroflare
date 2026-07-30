@@ -1,6 +1,7 @@
 ---
 import "../../src/styles/global.css";
 import IconButton from "../../../src/components/IconButton.astro";
+import ShareLinks from "../../../src/components/ShareLinks.astro";
 import ThemeToggle from "../../../src/components/ThemeToggle.astro";
 import ClientRouterLoadingSpinner from "../../../src/components/ClientRouterLoadingSpinner.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
@@ -23,6 +24,25 @@ const nav = [
       <IconButton label="Settings"><span aria-hidden="true">⚙</span></IconButton>
       <IconButton label="Search"><span aria-hidden="true">⌕</span></IconButton>
     </div>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Share links</h2>
+    <p class="sg-muted">
+      Pass one entry per network; present entries render in the given order. `copy` is a
+      ClientRouter-safe clipboard button; `instagram` needs an explicit href.
+    </p>
+    <ShareLinks
+      heading="Share this"
+      url="https://example.com/post/hello/"
+      text="Hello World"
+      links={[
+        { network: "bluesky" },
+        { network: "facebook" },
+        { network: "x" },
+        { network: "copy" },
+      ]}
+    />
   </section>
 
   <section class="sg-card sg-grid">
