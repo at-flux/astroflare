@@ -1,3 +1,7 @@
+/* The styleguide has no theme switch: it follows the system preference, which is
+   exactly the case astroflare's own components do not cover on their own. */
+@import "../../../src/styles/theme.css";
+
 :root {
   color-scheme: light dark;
   --sg-bg: #f5f6fa;
@@ -274,3 +278,4 @@ code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.9em;
 }
+
