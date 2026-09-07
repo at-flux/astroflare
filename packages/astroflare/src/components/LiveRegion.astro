@@ -1,0 +1,199 @@
+---
+/**
+ * LiveRegion — keep the query string, lose the page load.
+ *
+ * Wrap anything whose state lives in the URL — a pager, filter pills, a
+ * page-size select, a sort control — and the GET forms and links inside it stop
+ * navigating. Instead the region fetches the very same URL, takes its own
+ * markup out of the response and swaps it in place. The address bar still
+ * changes, so the URL stays shareable and the server stays the single source of
+ * truth; the document is never unloaded, so scroll position, focus and
+ * everything outside the region survive untouched.
+ *
+ * ```astro
+ * <LiveRegion id="results">
+ *   <CollectionQuery useServer {...query} />
+ *   <ResultsGrid items={page.items} />
+ *   <div slot="fallback" class="skeleton" />
+ * </LiveRegion>
+ * ```
+ *
+ * ### Suspense
+ * The `fallback` slot is what the reader sees mid-swap. It defaults to a
+ * spinner floated over the outgoing content, which is dimmed rather than
+ * removed — no layout jump, nothing to read that has vanished. Replace it with
+ * a skeleton, or set `suspense={false}` for a silent swap.
+ *
+ * As in `Suspense`, two timers stop it flickering: the fallback is not painted
+ * for the first `graceDelay` ms, so a fast swap never shows one, and once
+ * painted it stays for at least `minDisplay` ms so it cannot strobe.
+ *
+ * ### Server islands
+ * A `server:defer` island inside the region works, because swapped-in scripts
+ * are re-executed. It costs a second round trip, though, so the better pattern
+ * is to defer only on a cold load and render inline for the swap:
+ *
+ * ```astro
+ * ---
+ * import { isLiveRegionRequest } from '@at-flux/astroflare/core';
+ * const defer = !isLiveRegionRequest(Astro.request, 'results');
+ * ---
+ * ```
+ *
+ * ### Progressive enhancement
+ * The children are ordinary forms and links. If this script never loads they
+ * navigate, which is exactly the behaviour being replaced — so there is no
+ * no-JS branch to maintain.
+ *
+ * @example Two regions that refresh together
+ * <LiveRegion id="filters" group="catalogue">…</LiveRegion>
+ * <LiveRegion id="results" group="catalogue">…</LiveRegion>
+ */
+import LoadingSpinner from './LoadingSpinner.astro';
+
+interface Props {
+  /**
+   * Stable identity for this region. The runtime looks for the same
+   * `data-af-live` value in the fetched markup, so it must survive a re-render
+   * of the page.
+   */
+  id: string;
+  /** Regions sharing a group refresh together. Defaults to `id`. */
+  group?: string;
+  /** Show a pending state between swaps. */
+  suspense?: boolean;
+  /** ms before the fallback is painted. Fast swaps never paint one. */
+  graceDelay?: number;
+  /** ms a painted fallback stays, so it cannot strobe. */
+  minDisplay?: number;
+  /** Announced politely while a swap is in flight. */
+  announce?: string;
+  /** How the new URL is recorded. `none` swaps without touching history. */
+  history?: 'push' | 'replace' | 'none';
+  /** Intercept in-region links as well as GET forms. */
+  links?: boolean;
+  /** Re-run `<script>` tags in swapped markup (server islands need this). */
+  scripts?: boolean;
+  /** Turn interception off; every control falls back to plain navigation. */
+  enabled?: boolean;
+  /** Classes on the host element. */
+  class?: string;
+  /** Classes on the swappable content wrapper. */
+  contentClass?: string;
+}
+
+const {
+  id,
+  group,
+  suspense = true,
+  graceDelay = 120,
+  minDisplay = 220,
+  announce = 'Loading…',
+  history = 'push',
+  links = true,
+  scripts = true,
+  enabled = true,
+  class: className = '',
+  contentClass = '',
+} = Astro.props;
+---
+
+<af-live-region
+  class:list={['af-live-region', className]}
+  data-af-live={id}
+  data-group={group}
+  data-suspense={String(suspense)}
+  data-grace={String(graceDelay)}
+  data-min-display={String(minDisplay)}
+  data-history={history}
+  data-links={String(links)}
+  data-scripts={String(scripts)}
+  data-enabled={String(enabled)}
+  data-label={announce}
+>
+  {
+    suspense && (
+      <div class='af-live-region__fallback' data-af-ui aria-hidden='true'>
+        <slot name='fallback'>
+          <LoadingSpinner size='1.75rem' />
+        </slot>
+      </div>
+    )
+  }
+
+  {
+    announce && (
+      <span class='af-live-region__status' data-af-ui role='status' aria-live='polite' />
+    )
+  }
+
+  <div class:list={['af-live-region__content', contentClass]} data-af-live-content>
+    <slot />
+  </div>
+</af-live-region>
+
+<style is:global>
+  af-live-region.af-live-region {
+    display: block;
+    position: relative;
+  }
+
+  .af-live-region__content {
+    /* Only opacity and filter animate, so a swap never reflows the page. */
+    transition:
+      opacity 160ms ease,
+      filter 160ms ease;
+  }
+
+  /* The runtime parks focus here when the control that was clicked comes back
+     disabled. It is a programmatic focus, so it should not draw a ring. */
+  .af-live-region__content:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  af-live-region.af-live-region.is-waiting > .af-live-region__content {
+    opacity: 0.42;
+    filter: saturate(0.7);
+    pointer-events: none;
+  }
+
+  .af-live-region__fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+  }
+
+  af-live-region.af-live-region.is-waiting > .af-live-region__fallback {
+    opacity: 1;
+  }
+
+  .af-live-region__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .af-live-region__content,
+    .af-live-region__fallback {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { defineLiveRegion } from '../runtime/live-region';
+
+  defineLiveRegion();
+</script>
