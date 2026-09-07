@@ -14,7 +14,22 @@
   --color-dark-text-subtle: #a8b2ca;
   --color-dark-text-body: #e3e7f1;
   --color-dark-text-title: #f5f7ff;
-  --color-secondary: #7a77ff;
+  --color-secondary: #4b5563;
+  /* Components fall back to `--color-brand` for spinners, shimmers and tints.
+     The styleguide keeps it neutral on purpose. */
+  --color-brand: #6b7280;
+}
+
+/* Follow the system preference; an explicit `data-theme` still wins both ways. */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --sg-bg: #0e1017;
+    --sg-text: #e3e7f1;
+    --sg-surface: #171a25;
+    --sg-border: #2e3446;
+    --color-secondary: #9ca3af;
+    --color-brand: #9ca3af;
+  }
 }
 
 html[data-theme="dark"] {
@@ -32,7 +47,8 @@ html[data-theme="dark"] {
   --color-dark-text-subtle: #a8b2ca;
   --color-dark-text-body: #e3e7f1;
   --color-dark-text-title: #f5f7ff;
-  --color-secondary: #9d9bff;
+  --color-secondary: #9ca3af;
+  --color-brand: #9ca3af;
 }
 
 * {
@@ -41,7 +57,12 @@ html[data-theme="dark"] {
 
 body {
   margin: 0;
-  font-family: Inter, system-ui, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   background: var(--sg-bg);
   color: var(--sg-text);
 }
@@ -163,4 +184,93 @@ h2 {
 
 .sg-server-fallback {
   min-height: 9.5rem;
+}
+
+/* --- Suspense demo page ---------------------------------------------------- */
+
+.sg-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sg-anchor {
+  color: color-mix(in oklab, var(--sg-text) 45%, transparent);
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.sg-anchor:hover,
+.sg-anchor:focus-visible {
+  color: var(--color-secondary);
+}
+
+.sg-btn {
+  justify-self: start;
+  border: 1px solid var(--sg-border);
+  border-radius: 0.5rem;
+  background: var(--sg-surface);
+  color: var(--sg-text);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.sg-btn:hover,
+.sg-btn:focus-visible {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.sg-split {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.sg-split figure {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.sg-round {
+  border-radius: 0.8rem;
+}
+
+.sg-slot {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px dashed var(--sg-border);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+}
+
+.sg-slot img,
+.sg-split img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sg-spacer {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  border: 1px dashed var(--sg-border);
+  border-radius: 0.8rem;
+}
+
+.sg-fragment {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid var(--sg-border);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
 }

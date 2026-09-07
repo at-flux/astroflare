@@ -5,15 +5,7 @@ import ShareLinks from "../../../src/components/ShareLinks.astro";
 import ThemeToggle from "../../../src/components/ThemeToggle.astro";
 import ClientRouterLoadingSpinner from "../../../src/components/ClientRouterLoadingSpinner.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
-
-const nav = [
-  { href: "/", label: "Overview" },
-  { href: "/paging", label: "Paging" },
-  { href: "/summaries", label: "Summaries" },
-  { href: "/modals", label: "Modals" },
-  { href: "/controls", label: "Controls" },
-  { href: "/media", label: "Media" },
-];
+import { nav } from "../nav";
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>

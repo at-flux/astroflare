@@ -2,12 +2,15 @@
 /**
  * ImageSuspense — suspense wrapper for media that loads.
  *
- * Wraps any slotted `<img>`, `<picture>`, or Astro `<Image />` (which renders
- * an `<img>`). Shows a spinner (or shimmer skeleton) placeholder until the
- * image finishes loading, then fades the image in and the placeholder out.
- * Cached/already-complete images resolve instantly (no flash).
+ * A preset over {@link Suspense.astro}: the same gate → readiness → swap
+ * machine, fixed to the media case. Wraps any slotted `<img>`, `<picture>`, or
+ * Astro `<Image />` (which renders an `<img>`) and shows a spinner — or a
+ * shimmer skeleton — until the image finishes loading, then fades the image in
+ * and the placeholder out. Cached images resolve inside the grace window, so
+ * the placeholder is never painted at all.
  *
- * Exported as `ImageSuspense`; `ImageFade` is a kept alias of the same element.
+ * Exported as `ImageSuspense`; `ImageFade` is a kept alias of the same
+ * component.
  *
  * Lazy images work reliably even inside `server:defer` islands: a wrapper-level
  * IntersectionObserver drives the fetch, so images parsed from streamed island
@@ -26,18 +29,35 @@
  * whatever you put there is centred in the frame and faded out on load exactly
  * like the default.
  *
+ * ### How it maps onto Suspense
+ * | ImageSuspense    | Suspense                                       |
+ * | ---------------- | ---------------------------------------------- |
+ * | *(implicit)*     | `when="eager"`, `ready="auto"` (media readiness) |
+ * | *(implicit)*     | `frame` — media always clips and tints          |
+ * | `spinnerColor`   | `accent`                                        |
+ * | `class`, `rounded`, `aspectRatio`, `duration`, `background`, `skeleton` | same names |
+ * | `placeholder` slot | `placeholder` slot                            |
+ *
+ * Anything Suspense adds and this does not expose — `when="visible"`,
+ * `minHeight`, `timeout`, `loadingLabel`, an `error` slot — is available by
+ * using `Suspense` directly.
+ *
+ * The rendered host element is `<af-suspense>` (it was `<image-fade>` before
+ * the unification); the legacy `image-fade` class is kept on it as a styling
+ * hook.
+ *
  * @example
- * <ImageFade aspectRatio="16/9" rounded="rounded-2xl">
+ * <ImageSuspense aspectRatio="16/9" rounded="rounded-2xl">
  *   <Image src={hero} alt="…" />
- * </ImageFade>
+ * </ImageSuspense>
  *
  * @example Custom indicator
- * <ImageFade aspectRatio="16/9">
+ * <ImageSuspense aspectRatio="16/9">
  *   <LoadingSpinner slot="placeholder" dual size="3rem" color="var(--brand)" />
  *   <Image src={hero} alt="…" />
- * </ImageFade>
+ * </ImageSuspense>
  */
-import LoadingSpinner from './LoadingSpinner.astro';
+import Suspense from './Suspense.astro';
 
 interface Props {
   /** Extra classes merged onto the wrapper. */
@@ -65,135 +85,18 @@ const {
   background,
   skeleton = false,
 } = Astro.props;
-
-const style = [
-  aspectRatio ? `aspect-ratio:${aspectRatio}` : '',
-  spinnerColor ? `--if-accent:${spinnerColor}` : '',
-  background ? `--if-bg:${background}` : '',
-  `--if-duration:${duration}ms`,
-]
-  .filter(Boolean)
-  .join(';');
 ---
 
-<image-fade class:list={['image-fade', skeleton && 'is-skeleton', rounded, className]} style={style}>
-  <span class='image-fade__placeholder' aria-hidden='true'>
-    <slot name='placeholder'>
-      {!skeleton && <LoadingSpinner color={spinnerColor} />}
-    </slot>
-  </span>
+<Suspense
+  class={`image-fade ${className}`.trim()}
+  rounded={rounded}
+  aspectRatio={aspectRatio}
+  duration={duration}
+  accent={spinnerColor}
+  background={background}
+  skeleton={skeleton}
+  frame
+>
+  {Astro.slots.has('placeholder') && <slot name='placeholder' slot='placeholder' />}
   <slot />
-</image-fade>
-
-<style is:global>
-  image-fade.image-fade {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    background: var(
-      --if-bg,
-      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 8%, transparent)
-    );
-  }
-
-  /* Slotted image starts hidden, fades in once loaded.
-     Only opacity is owned here — sizing and `object-fit` stay with the caller
-     so consumer classes (`object-contain`, `object-fill`, …) are not overridden. */
-  image-fade.image-fade > img,
-  image-fade.image-fade > picture > img {
-    display: block;
-    opacity: 0;
-    transition: opacity var(--if-duration, 500ms) ease-out;
-  }
-  image-fade.image-fade.is-loaded > img,
-  image-fade.image-fade.is-loaded > picture > img {
-    opacity: 1;
-  }
-
-  .image-fade__placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 1;
-    transition: opacity var(--if-duration, 500ms) ease-out;
-    pointer-events: none;
-  }
-  image-fade.image-fade.is-loaded .image-fade__placeholder {
-    opacity: 0;
-  }
-
-  /* Skeleton variant: shimmer sweep instead of a spinner */
-  image-fade.image-fade.is-skeleton .image-fade__placeholder {
-    background: linear-gradient(
-      100deg,
-      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 6%, transparent) 30%,
-      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 16%, transparent) 50%,
-      color-mix(in oklab, var(--if-accent, var(--color-brand, #7c5cff)) 6%, transparent) 70%
-    );
-    background-size: 200% 100%;
-    animation: image-fade-shimmer 1.4s ease-in-out infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    image-fade.image-fade > img,
-    image-fade.image-fade > picture > img,
-    .image-fade__placeholder {
-      transition: none;
-    }
-    image-fade.image-fade.is-skeleton .image-fade__placeholder {
-      animation: none;
-    }
-  }
-</style>
-
-<script>
-  class ImageSuspense extends HTMLElement {
-    connectedCallback() {
-      const img = this.querySelector('img');
-      if (!img) {
-        this.classList.add('is-loaded');
-        return;
-      }
-      const done = () => this.classList.add('is-loaded');
-      // Already settled (cached success, or already-errored) — reveal now.
-      if (img.complete) {
-        done();
-        return;
-      }
-      img.addEventListener('load', done, { once: true });
-      // On error, still reveal (broken-image icon beats a permanent spinner)
-      img.addEventListener('error', done, { once: true });
-
-      // Drive lazy loading ourselves. Images parsed from streamed `server:defer`
-      // island HTML (or any innerHTML insertion) get a stuck native lazy state
-      // in Chromium: the intersection observer is never armed, so the fetch
-      // never starts and `load` never fires. A wrapper-level IntersectionObserver
-      // promotes the image to eager the moment its frame nears the viewport,
-      // which reliably kicks the fetch while preserving off-screen laziness.
-      if (img.loading === 'lazy') {
-        const kick = () => {
-          if (!img.complete) img.loading = 'eager';
-        };
-        if (typeof IntersectionObserver === 'function') {
-          const io = new IntersectionObserver(
-            (entries, obs) => {
-              if (entries.some(entry => entry.isIntersecting)) {
-                obs.disconnect();
-                kick();
-              }
-            },
-            { rootMargin: '200px' }
-          );
-          io.observe(this);
-        } else {
-          kick();
-        }
-      }
-    }
-  }
-  if (!customElements.get('image-fade')) {
-    customElements.define('image-fade', ImageSuspense);
-  }
-</script>
+</Suspense>

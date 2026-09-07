@@ -5,15 +5,7 @@ import ModalTrigger from "../../../src/components/ModalTrigger.astro";
 import LazyContent from "../../../src/components/LazyContent.astro";
 import Section from "../../../src/components/Section.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
-
-const nav = [
-  { href: "/", label: "Overview" },
-  { href: "/paging", label: "Paging" },
-  { href: "/summaries", label: "Summaries" },
-  { href: "/modals", label: "Modals" },
-  { href: "/controls", label: "Controls" },
-  { href: "/media", label: "Media" },
-];
+import { nav } from "../nav";
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>

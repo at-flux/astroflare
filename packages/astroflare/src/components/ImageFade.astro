@@ -5,7 +5,8 @@
  * The component was renamed to `ImageSuspense` (it suspends any loading media
  * behind a spinner, not only fades). This thin passthrough keeps existing
  * `ImageFade` imports working; prefer importing `ImageSuspense` directly in new
- * code. Same props, same rendered `<image-fade>` element.
+ * code. Same props, same output — which since the Suspense unification is an
+ * `<af-suspense class="image-fade …">` host, not an `<image-fade>` element.
  */
 import ImageSuspense from './ImageSuspense.astro';
 ---
