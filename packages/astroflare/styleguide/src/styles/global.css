@@ -279,3 +279,16 @@ code {
   font-size: 0.9em;
 }
 
+/* --- LiveRegion demo ------------------------------------------------------- */
+
+.sg-live-fallback {
+  border: 1px solid var(--sg-border);
+  border-radius: 999px;
+  background: var(--sg-surface);
+  color: color-mix(in oklab, var(--sg-text) 78%, transparent);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.14);
+}

@@ -3,10 +3,12 @@ import "../../src/styles/global.css";
 import CollectionQuery from "../../../src/components/CollectionQuery.astro";
 import DateRangeFilterControls from "../../../src/components/DateRangeFilterControls.astro";
 import DisclosurePanel from "../../../src/components/DisclosurePanel.astro";
+import LiveRegion from "../../../src/components/LiveRegion.astro";
 import ServerCollectionQueryResults from "../components/ServerCollectionQueryResults.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { nav } from "../nav";
 import { matchesCollectionFilters, paginateCollection, parseCollectionQuery } from "../../../src/collection-query";
+import { isLiveRegionRequest } from "../../../src/live-region";
 
 const cards = [
   { title: "Alpha release notes", tags: ["ops", "platform"] },
@@ -15,9 +17,13 @@ const cards = [
   { title: "Delta launch prep", tags: ["ops"] },
   { title: "Epsilon editorial flow", tags: ["content", "ux"] },
 ];
+/* The two demos share a URL, so the client one namespaces every param it owns
+   (`clientPageSize`) and leaves `page`/`size`/`offset`/`filters` to the server
+   one. */
 const clientSizeOptions = [1, 2, 3, 4, 5, 10];
-const clientSizeRaw = Number.parseInt(Astro.url.searchParams.get("clientSize") ?? "2", 10);
+const clientSizeRaw = Number.parseInt(Astro.url.searchParams.get("clientPageSize") ?? "2", 10);
 const clientSize = Number.isFinite(clientSizeRaw) ? Math.max(1, clientSizeRaw) : 2;
+const serverRegionId = "server-query";
 const serverSizeOptions = [1, 2, 3, 4, 5, 10];
 const serverQuery = parseCollectionQuery(Astro.url.searchParams, { defaultSize: 1 });
 const serverFilteredCards =
@@ -37,9 +43,10 @@ const serverActiveQuery = {
 const serverFilterTags = Array.from(new Set(cards.flatMap((card) => card.tags))).sort((a, b) =>
   a.localeCompare(b),
 );
-const serverFiltersValue =
-  Object.keys(serverActiveQuery.filters).length > 0 ? JSON.stringify(serverActiveQuery.filters) : "";
-const shouldDeferResults = Astro.url.search.length === 0;
+/* Defer on a cold load so the controls paint first. A live-region swap already
+   has its own fallback and swaps the markup itself, so serve it the real
+   content rather than an island placeholder and save the second round trip. */
+const shouldDeferResults = !isLiveRegionRequest(Astro.request, serverRegionId);
 const demoStickyParams = { filters_open: "1" };
 const demoBaseFilters = { tag: "platform" };
 const demoDatePresets = [
@@ -63,7 +70,7 @@ const demoDatePresets = [
     <p class="sg-muted">Entire dataset stays in the browser, including page-size controls.</p>
     <form method="get" class="sg-size-form">
       <label for="sg-client-size-select">Page size</label>
-      <select id="sg-client-size-select" name="clientSize" onchange="this.form.submit()">
+      <select id="sg-client-size-select" name="clientPageSize" onchange="this.form.submit()">
         {clientSizeOptions.map((size) => (
           <option value={String(size)} selected={clientSize === size}>{size}</option>
         ))}
@@ -87,41 +94,44 @@ const demoDatePresets = [
 
   <section class="sg-card sg-grid">
     <h2>Server query paging</h2>
-    <p class="sg-muted">Controls render immediately; only result content is deferred to reduce flicker.</p>
-    <form method="get" class="sg-size-form">
-      <label for="sg-server-size-select">Page size</label>
-      <select id="sg-server-size-select" name="size" onchange="this.form.submit()">
-        {serverSizeOptions.map((size) => (
-          <option value={String(size)} selected={serverActiveQuery.size === size}>{size}</option>
-        ))}
-      </select>
-      <input type="hidden" name="page" value="1" />
-      <input type="hidden" name="offset" value="0" />
-      {Astro.url.searchParams.get("clientSize") && (
-        <input type="hidden" name="clientSize" value={Astro.url.searchParams.get("clientSize") ?? ""} />
-      )}
-      {serverFiltersValue && <input type="hidden" name="filters" value={serverFiltersValue} />}
-    </form>
-    <CollectionQuery
-      useServer
-      pathname={Astro.url.pathname}
-      query={serverActiveQuery}
-      totalPages={serverPageData.totalPages}
-      currentPage={serverCurrentPage}
-      filters={serverFilterTags.map((tag) => ({ key: "tag", value: tag }))}
-    />
-    {shouldDeferResults ? (
-      <ServerCollectionQueryResults search={Astro.url.search} server:defer>
-        <div slot="fallback" class="sg-grid sg-server-results sg-server-fallback">
-          <div class="sg-controls-skeleton" aria-hidden="true"></div>
-          <div class="sg-grid sg-server-results">
-            <article class="sg-card sg-skeleton-card" aria-hidden="true"></article>
+    <p class="sg-muted">
+      State lives in the query string, but the controls never navigate: the region fetches the
+      same URL, swaps its own markup in, and the scroll position never moves.
+    </p>
+    {/* `CollectionQuery` renders its own page-size selector in server mode, so
+        this demo does not hand-roll a second one. It also needs `totalItems`:
+        the count defaults to 0, and at 0 the selector renders permanently
+        disabled behind an "Unavailable" tooltip.
+
+        Controls and results sit inside one `LiveRegion`, so a page change swaps
+        both together — the pager's active pill and the results always agree. */}
+    <LiveRegion id={serverRegionId} announce="Loading results…">
+      <CollectionQuery
+        useServer
+        pathname={Astro.url.pathname}
+        query={serverActiveQuery}
+        totalPages={serverPageData.totalPages}
+        currentPage={serverCurrentPage}
+        totalItems={serverFilteredCards.length}
+        sizeOptions={serverSizeOptions}
+        filters={serverFilterTags.map((tag) => ({ key: "tag", value: tag }))}
+      />
+      {shouldDeferResults ? (
+        <ServerCollectionQueryResults search={Astro.url.search} server:defer>
+          <div slot="fallback" class="sg-grid sg-server-results sg-server-fallback">
+            <div class="sg-controls-skeleton" aria-hidden="true"></div>
+            <div class="sg-grid sg-server-results">
+              <article class="sg-card sg-skeleton-card" aria-hidden="true"></article>
+            </div>
           </div>
-        </div>
-      </ServerCollectionQueryResults>
-    ) : (
-      <ServerCollectionQueryResults search={Astro.url.search} />
-    )}
+        </ServerCollectionQueryResults>
+      ) : (
+        <ServerCollectionQueryResults search={Astro.url.search} />
+      )}
+      {/* The `fallback` slot is the configurable half of the suspense: swap it
+          for a skeleton, or drop `suspense` for a silent swap. */}
+      <p slot="fallback" class="sg-live-fallback">Fetching page…</p>
+    </LiveRegion>
   </section>
 
   <section class="sg-card sg-grid">
