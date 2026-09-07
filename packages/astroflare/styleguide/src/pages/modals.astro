@@ -6,18 +6,41 @@ import LazyContent from "../../../src/components/LazyContent.astro";
 import Section from "../../../src/components/Section.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { nav } from "../nav";
+
+// This styleguide does not use Tailwind, and every `Modal` class default is a
+// Tailwind utility string. Passing plain-CSS class names here is both what a
+// non-Tailwind consumer has to do and what makes this demo represent the
+// component honestly instead of showing a bare `<dialog>`.
+const modalClasses = {
+  backdropClass: "sg-modal-dialog",
+  shellClass: "sg-modal-shell",
+  panelBaseClass: "sg-modal-panel",
+  contentClass: "sg-modal-content",
+  closeButtonClass: "sg-modal-close",
+} as const;
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
   <section class="sg-card sg-grid">
     <h2>Modal trigger pattern</h2>
-    <p class="sg-muted">Single canonical trigger + dialog flow.</p>
-    <ModalTrigger modalId="styleguide-modal">
-      <button type="button">Open modal</button>
-    </ModalTrigger>
-    <Modal id="styleguide-modal">
+    <p class="sg-muted">
+      Single canonical trigger + dialog flow. <code>ModalTrigger</code> renders the{" "}
+      <code>&lt;button&gt;</code> itself, so slot a label, not another button:{" "}
+      <code>&lt;button&gt;</code> inside <code>&lt;button&gt;</code> is invalid and the parser
+      splits it into an empty trigger and an inert label. Slot interactive content only with{" "}
+      <code>as="wrapper"</code>.
+    </p>
+    <p class="sg-muted">
+      Every class default on <code>Modal</code> is a Tailwind utility string, so a project
+      without Tailwind gets an unstyled <code>&lt;dialog&gt;</code>: no backdrop, no centring,
+      no panel width. Both demos below pass <code>backdropClass</code>,{" "}
+      <code>shellClass</code>, <code>panelBaseClass</code>, <code>contentClass</code> and{" "}
+      <code>closeButtonClass</code> as plain CSS class names.
+    </p>
+    <ModalTrigger modalId="styleguide-modal" class="sg-btn">Open modal</ModalTrigger>
+    <Modal id="styleguide-modal" labelledBy="styleguide-modal-title" {...modalClasses}>
       <Section contentOnly>
-        <h3>Demo modal</h3>
+        <h3 id="styleguide-modal-title">Demo modal</h3>
         <p>Single canonical trigger pattern for this styleguide.</p>
       </Section>
     </Modal>
@@ -31,13 +54,77 @@ import { nav } from "../nav";
       body (long policy, docs) stops shipping inline on every page. Interactive
       islands should stay inline — partial routes emit no hoisted client scripts.
     </p>
-    <ModalTrigger modalId="styleguide-lazy-modal">
-      <button type="button">Open lazy modal</button>
-    </ModalTrigger>
-    <Modal id="styleguide-lazy-modal">
+    <ModalTrigger modalId="styleguide-lazy-modal" class="sg-btn">Open lazy modal</ModalTrigger>
+    <Modal id="styleguide-lazy-modal" label="Lazy modal content demo" {...modalClasses}>
       <Section contentOnly>
         <LazyContent src="/fragments/demo/" />
       </Section>
     </Modal>
   </section>
 </GuideLayout>
+
+<style is:global>
+  .sg-modal-dialog {
+    /* A `<dialog>` defaults to `margin: auto` inside an `inset: 0` box, so a
+       full-height dialog overflows and the panel lands below centre. */
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    overflow: hidden;
+  }
+  .sg-modal-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+  }
+  .sg-modal-shell {
+    display: flex;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .sg-modal-panel {
+    position: relative;
+    width: min(38rem, 100%);
+    max-height: 100dvh;
+    overflow: hidden;
+    border-radius: 0.9rem;
+    border: 1px solid var(--sg-border);
+    background: var(--sg-surface);
+    outline: none;
+  }
+  .sg-modal-content {
+    position: relative;
+    /* `Section contentOnly` styles its padding with Tailwind utilities too, so
+       without Tailwind the panel has to supply its own. */
+    padding: 1.75rem;
+    overflow-y: auto;
+    max-height: calc(100dvh - 2rem);
+  }
+  .sg-modal-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 50;
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sg-border);
+    border-radius: 9999px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 150ms ease;
+  }
+  .sg-modal-close:hover {
+    opacity: 1;
+  }
+</style>
