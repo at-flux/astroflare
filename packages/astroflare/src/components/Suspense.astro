@@ -1,0 +1,366 @@
+---
+/**
+ * Suspense — show a placeholder until the real thing is ready.
+ *
+ * One primitive for every waiting problem a page has:
+ *
+ * 1. **Media that loads.** Wrap an `<img>`, `<picture>`, `<video>` or `<iframe>`
+ *    and the placeholder holds the frame until it settles. Reserve the box with
+ *    `aspectRatio` (or `minHeight`) and nothing shifts.
+ * 2. **Content that arrives late.** Gate on the viewport with `when="visible"`,
+ *    on a modal opening with `when="dialog-open"`, pull an HTML fragment with
+ *    `src`, or drive it yourself with `ready="manual"` and a `resolve()` call.
+ *
+ * The shape is always the same: a *gate* (when do we start), a *readiness
+ * signal* (when is the real thing ready), and a *swap* (placeholder out,
+ * content in). The state machine lives in `runtime/suspense.ts`.
+ *
+ * ### No flash, no strobe
+ * The placeholder is not painted for the first `graceDelay` ms. Content that is
+ * already there — a cached image whose `complete` is true on connect, a fragment
+ * served from memory — resolves inside that window and the placeholder is never
+ * seen at all. Once the placeholder *has* been painted it stays for at least
+ * `minDisplay` ms, so a slow-by-a-hair resource cannot make it strobe.
+ *
+ * ### Without JavaScript
+ * The pending state lives in the server markup, so there is no flash of content
+ * before the script runs. A `<noscript>` block reverses it, and a CSS rescue on
+ * `:not(:defined)` reveals the content anyway a few seconds later if the script
+ * fails to load. Slotted content is always in the DOM — it is faded, never
+ * removed — so it stays reachable and readable either way. (`src` mode has
+ * nothing to reveal without JS, so it renders a plain link to the fragment.)
+ *
+ * ### Accessibility
+ * The placeholder is `aria-hidden`, so nothing announces it as content. Pending
+ * content is `inert` while it is faded out, so focus never lands on something
+ * invisible, and it stops being inert on reveal — focus is never moved or lost,
+ * because the content is never re-parented. Pass `loadingLabel` for a polite
+ * live-region announcement; the text is written into the region only once the
+ * wait is real, so content that resolves inside the grace window announces
+ * nothing at all. Every transition and the skeleton shimmer are dropped under
+ * `prefers-reduced-motion`.
+ *
+ * ### The other waiting components are presets over this one
+ * - `ImageSuspense.astro` — `<Suspense frame>` with media readiness. Its
+ *   `spinnerColor` prop is this component's `accent`; the rest passes straight
+ *   through.
+ * - `LazyContent.astro` — `<Suspense src={src} when="dialog-open">` with its own
+ *   default placeholder and error markup, and its `loading` slot forwarded to
+ *   `placeholder`.
+ *
+ * @example Media, no layout shift
+ * <Suspense aspectRatio="16/9" rounded="rounded-2xl">
+ *   <img src={hero} alt="…" />
+ * </Suspense>
+ *
+ * @example Reveal a block when it scrolls into view
+ * <Suspense when="visible" minHeight="12rem" skeleton>
+ *   <article>…</article>
+ * </Suspense>
+ *
+ * @example Fetch a fragment on demand, with a failure state
+ * <Suspense src="/fragments/policy/" when="visible" timeout={8000}>
+ *   <p slot="error">That didn't load. Reload the page to try again.</p>
+ * </Suspense>
+ *
+ * @example Drive it yourself
+ * <Suspense id="chart" ready="manual" minHeight="14rem" skeleton />
+ * <script>
+ *   document.querySelector('#chart')?.dispatchEvent(new CustomEvent('af-suspense:resolve'));
+ * </script>
+ */
+import LoadingSpinner from './LoadingSpinner.astro';
+
+interface Props {
+  /**
+   * When to start resolving.
+   * - `eager` (default) — as soon as the element connects.
+   * - `visible` — when the element first comes within `rootMargin` of the viewport.
+   * - `dialog-open` — when the nearest ancestor `<dialog>` opens. Re-opening a
+   *   dialog whose content failed retries it. With no dialog ancestor, `eager`.
+   */
+  when?: 'eager' | 'visible' | 'dialog-open';
+  /**
+   * How readiness is decided once started.
+   * - `auto` (default) — wait for every `<img>`/`<video>`/`<iframe>` inside to
+   *   settle; ready immediately if there are none.
+   * - `manual` — stays pending until `resolve()` / `fail()` (or the matching
+   *   `af-suspense:resolve` / `af-suspense:fail` events).
+   *
+   * Ignored when `src` is set: a fragment is ready once it has been fetched and
+   * any media it brought with it has settled.
+   */
+  ready?: 'auto' | 'manual';
+  /** Fetch this HTML fragment when the gate opens and swap it in as the content. */
+  src?: string;
+  /** Margin around the viewport for `when="visible"` and for promoting lazy images. */
+  rootMargin?: string;
+  /** Once painted, hold the placeholder at least this long (ms). Stops it strobing. */
+  minDisplay?: number;
+  /** Don't paint the placeholder for this long (ms). Stops cached content flashing. */
+  graceDelay?: number;
+  /** Give up and enter the failed state after this long (ms). `0` disables it. */
+  timeout?: number;
+  /** CSS `aspect-ratio` to reserve the box, e.g. `"16/9"`, `"1"`. Implies `frame`. */
+  aspectRatio?: string;
+  /** CSS `min-height` holding the box open *while pending*, e.g. `"12rem"`. */
+  minHeight?: string;
+  /** Fade duration in ms. */
+  duration?: number;
+  /** Shimmer skeleton instead of the default spinner. */
+  skeleton?: boolean;
+  /** Accent for the default spinner, the skeleton shimmer, and the frame tint. */
+  accent?: string;
+  /** Frame background. Pass `"transparent"` for `object-contain` media. */
+  background?: string;
+  /** Clip and tint the box (`overflow: hidden` + accent tint). Implied by `aspectRatio`/`rounded`. */
+  frame?: boolean;
+  /** Radius class/utility applied to the host, e.g. `rounded-2xl`. Implies `frame`. */
+  rounded?: string;
+  /** Extra classes merged onto the host. */
+  class?: string;
+  /** Polite live-region text announced while pending. Omit for silent (media already has alt text). */
+  loadingLabel?: string;
+  /** Host element id — useful for driving `ready="manual"` from outside. */
+  id?: string;
+}
+
+const {
+  when = 'eager',
+  ready = 'auto',
+  src,
+  rootMargin = '200px',
+  minDisplay = 300,
+  graceDelay = 100,
+  timeout = 0,
+  aspectRatio,
+  minHeight,
+  duration = 500,
+  skeleton = false,
+  accent,
+  background,
+  frame,
+  rounded = '',
+  class: className = '',
+  loadingLabel,
+  id,
+} = Astro.props;
+
+// A remote fragment has no content to reserve space with, so give it a default
+// box that holds the placeholder open until the fragment lands.
+const resolvedMinHeight = minHeight ?? (src && !aspectRatio ? '8rem' : undefined);
+const framed = frame ?? Boolean(aspectRatio || rounded);
+const announce = loadingLabel ?? (src ? 'Loading…' : undefined);
+const hasError = Astro.slots.has('error');
+
+const style = [
+  aspectRatio ? `aspect-ratio:${aspectRatio}` : '',
+  resolvedMinHeight ? `--af-s-min:${resolvedMinHeight}` : '',
+  accent ? `--af-s-accent:${accent}` : '',
+  background ? `--af-s-bg:${background}` : '',
+  `--af-s-duration:${duration}ms`,
+]
+  .filter(Boolean)
+  .join(';');
+---
+
+<af-suspense
+  id={id}
+  class:list={[
+    'af-suspense',
+    'is-pending',
+    framed && 'af-suspense--frame',
+    skeleton && 'is-skeleton',
+    rounded,
+    className,
+  ]}
+  style={style}
+  data-when={when}
+  data-ready={ready}
+  data-src={src}
+  data-root-margin={rootMargin}
+  data-min-display={String(minDisplay)}
+  data-grace={String(graceDelay)}
+  data-timeout={String(timeout)}
+  data-label={announce}
+>
+  <div class='af-suspense__placeholder' data-af-ui aria-hidden='true'>
+    <slot name='placeholder'>
+      {!skeleton && <LoadingSpinner color={accent} />}
+    </slot>
+  </div>
+
+  {
+    hasError && (
+      <div class='af-suspense__error' data-af-ui role='alert'>
+        <slot name='error' />
+      </div>
+    )
+  }
+
+  {
+    /* Filled in by the runtime once the wait is real, emptied again on reveal —
+       a live region populated in the server markup may never be announced. */
+    announce && <span class='af-suspense__status' data-af-ui role='status' aria-live='polite' />
+  }
+
+  {src && <div class='af-suspense__remote' data-af-remote />}
+
+  <slot />
+
+  <noscript data-af-ui>
+    <style is:inline>
+      af-suspense.af-suspense > .af-suspense__placeholder,
+      af-suspense.af-suspense > .af-suspense__status {
+        display: none !important;
+      }
+      af-suspense.af-suspense.is-pending {
+        min-height: 0 !important;
+      }
+      af-suspense.af-suspense.is-pending > :not([data-af-ui]) {
+        opacity: 1 !important;
+      }
+    </style>
+    {src && <a href={src}>Open this content on its own page</a>}
+  </noscript>
+</af-suspense>
+
+<style is:global>
+  af-suspense.af-suspense {
+    position: relative;
+    display: block;
+    --af-s-tint: var(--af-s-accent, var(--color-brand, #7c5cff));
+  }
+
+  /* Hold the box open only while waiting: a fetched fragment shorter than its
+     placeholder should not inherit a floor it never asked for. `aspect-ratio`,
+     which is there to stop media shifting the page, is set inline and stays. */
+  af-suspense.af-suspense.is-pending {
+    min-height: var(--af-s-min, auto);
+  }
+
+  /* A framed box clips and tints — this is the media case, where the placeholder
+     and the image share one rounded rectangle. Plain content gets neither, so a
+     lazily revealed block is not boxed in or given a background it didn't ask for. */
+  af-suspense.af-suspense.af-suspense--frame {
+    overflow: hidden;
+    background: var(--af-s-bg, color-mix(in oklab, var(--af-s-tint) 8%, transparent));
+  }
+
+  /* Content is anything that is not our own chrome. Only opacity is owned here:
+     sizing and `object-fit` stay with the caller, so consumer classes
+     (`object-contain`, `w-full`, …) are never overridden. */
+  af-suspense.af-suspense > :not([data-af-ui]) {
+    transition: opacity var(--af-s-duration, 500ms) ease-out;
+  }
+  af-suspense.af-suspense.is-pending > :not([data-af-ui]) {
+    opacity: 0;
+  }
+  af-suspense.af-suspense > img,
+  af-suspense.af-suspense > picture > img,
+  af-suspense.af-suspense > video {
+    display: block;
+  }
+
+  .af-suspense__placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--af-s-duration, 500ms) ease-out;
+    pointer-events: none;
+  }
+  /* `is-waiting` is added only after `graceDelay`, so content that is already
+     ready swaps in without the placeholder ever being painted. */
+  af-suspense.af-suspense.is-waiting > .af-suspense__placeholder {
+    opacity: 1;
+  }
+
+  af-suspense.af-suspense.is-skeleton > .af-suspense__placeholder {
+    background: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--af-s-tint) 6%, transparent) 30%,
+      color-mix(in oklab, var(--af-s-tint) 16%, transparent) 50%,
+      color-mix(in oklab, var(--af-s-tint) 6%, transparent) 70%
+    );
+    background-size: 200% 100%;
+    animation: af-suspense-shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes af-suspense-shimmer {
+    from {
+      background-position: 150% 0;
+    }
+    to {
+      background-position: -50% 0;
+    }
+  }
+
+  /* In a framed box the failure sits over the media; in plain flow it takes the
+     space the content would have taken, so a long message is never clipped. */
+  .af-suspense__error {
+    display: block;
+    padding: 1rem;
+    text-align: center;
+    color: currentColor;
+  }
+  af-suspense.af-suspense.af-suspense--frame > .af-suspense__error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  af-suspense.af-suspense:not(.is-failed) > .af-suspense__error {
+    display: none;
+  }
+
+  .af-suspense__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border: 0;
+  }
+
+  /* Rescue: if the script never arrives the element is never defined, so reveal
+     the content anyway rather than leaving a permanently blank box, and drop the
+     reserved height nothing is going to fill. */
+  af-suspense.af-suspense:not(:defined).is-pending > :not([data-af-ui]) {
+    animation: af-suspense-rescue 1ms linear 4s forwards;
+  }
+  af-suspense.af-suspense:not(:defined).is-pending {
+    animation: af-suspense-unframe 1ms linear 4s forwards;
+  }
+  @keyframes af-suspense-rescue {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes af-suspense-unframe {
+    to {
+      min-height: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    af-suspense.af-suspense > :not([data-af-ui]),
+    .af-suspense__placeholder {
+      transition: none;
+    }
+    af-suspense.af-suspense.is-skeleton > .af-suspense__placeholder {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { defineSuspense } from '../runtime/suspense';
+
+  defineSuspense();
+</script>

@@ -3,15 +3,7 @@ import "../../src/styles/global.css";
 import MediaProtect from "../../../src/components/MediaProtect.astro";
 import InstagramProfileLink from "../../../src/components/InstagramProfileLink.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
-
-const nav = [
-  { href: "/", label: "Overview" },
-  { href: "/paging", label: "Paging" },
-  { href: "/summaries", label: "Summaries" },
-  { href: "/modals", label: "Modals" },
-  { href: "/controls", label: "Controls" },
-  { href: "/media", label: "Media" },
-];
+import { nav } from "../nav";
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>

@@ -5,16 +5,8 @@ import DateRangeFilterControls from "../../../src/components/DateRangeFilterCont
 import DisclosurePanel from "../../../src/components/DisclosurePanel.astro";
 import ServerCollectionQueryResults from "../components/ServerCollectionQueryResults.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
+import { nav } from "../nav";
 import { matchesCollectionFilters, paginateCollection, parseCollectionQuery } from "../../../src/collection-query";
-
-const nav = [
-  { href: "/", label: "Overview" },
-  { href: "/paging", label: "Paging" },
-  { href: "/summaries", label: "Summaries" },
-  { href: "/modals", label: "Modals" },
-  { href: "/controls", label: "Controls" },
-  { href: "/media", label: "Media" },
-];
 
 const cards = [
   { title: "Alpha release notes", tags: ["ops", "platform"] },

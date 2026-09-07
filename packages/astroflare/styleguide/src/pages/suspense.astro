@@ -1,0 +1,264 @@
+---
+import "../../src/styles/global.css";
+import Suspense from "../../../src/components/Suspense.astro";
+import ImageSuspense from "../../../src/components/ImageSuspense.astro";
+import LazyContent from "../../../src/components/LazyContent.astro";
+import GuideLayout from "../layouts/GuideLayout.astro";
+import { nav } from "../nav";
+
+/** Slow demo image. `delay` is server-side, and the route is sent `no-store`. */
+const image = (delay: number, label: string, hue = 220) =>
+  `/api/slow-image.svg?delay=${delay}&label=${encodeURIComponent(label)}&hue=${hue}`;
+
+const sections = [
+  { id: "plain", label: "Plain slow slot" },
+  { id: "grace", label: "graceDelay" },
+  { id: "min-display", label: "minDisplay" },
+  { id: "visible", label: 'when="visible"' },
+  { id: "fragment", label: "src fragment" },
+  { id: "fragment-error", label: "src failure" },
+  { id: "manual", label: 'ready="manual"' },
+  { id: "image", label: "vs ImageSuspense" },
+  { id: "lazy", label: "vs LazyContent" },
+];
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid" id="overview">
+    <h2>Suspense</h2>
+    <p class="sg-muted">
+      One primitive: a <strong>gate</strong> (when may we start), a <strong>readiness
+      signal</strong> (when is the real thing ready) and a <strong>swap</strong> (placeholder
+      out, content in). <code>ImageSuspense</code> and <code>LazyContent</code> are presets over
+      it — the last two sections put each next to the raw component.
+    </p>
+    <p class="sg-muted">
+      Every demo resolves once per page load. Use each section's <em>Replay</em> button to run it
+      again, or reload the page.
+    </p>
+    <nav class="sg-toc" aria-label="Demos on this page">
+      {sections.map((section) => (
+        <a class="sg-tab" href={`#${section.id}`}>{section.label}</a>
+      ))}
+    </nav>
+  </section>
+
+  <section class="sg-card sg-grid" id="plain">
+    <h2><a class="sg-anchor" href="#plain">#</a> Plain slow-resolving slot</h2>
+    <p class="sg-muted">
+      Default spinner placeholder. The slot holds a heading, a paragraph and one slow image;
+      readiness waits for every piece of media inside, so the whole block reveals at once.
+      <code>minHeight</code> keeps the box open while it waits.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#plain">Replay</button>
+    <Suspense minHeight="14rem" loadingLabel="Loading the example block">
+      <div class="sg-slot">
+        <h3>Fully loaded</h3>
+        <p class="sg-muted">Revealed only once the 2.5s image below had settled.</p>
+        <img src={image(2500, "2500ms", 220)} alt="" width="800" height="450" />
+      </div>
+    </Suspense>
+  </section>
+
+  <section class="sg-card sg-grid" id="grace">
+    <h2><a class="sg-anchor" href="#grace">#</a> graceDelay</h2>
+    <p class="sg-muted">
+      Both boxes hold the same image, which the server returns after 150ms. On the left the
+      placeholder is not painted until 400ms, so the image beats it and it is never seen. On the
+      right there is no grace and no minimum, so the placeholder paints and is torn down 150ms
+      later — the flash the prop exists to prevent.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#grace">Replay</button>
+    <div class="sg-split">
+      <figure>
+        <figcaption class="sg-muted">graceDelay=400 — no flash</figcaption>
+        <Suspense aspectRatio="16/9" graceDelay={400} minDisplay={0} class="sg-round">
+          <img src={image(150, "150ms", 150)} alt="" width="800" height="450" />
+        </Suspense>
+      </figure>
+      <figure>
+        <figcaption class="sg-muted">graceDelay=0, minDisplay=0 — flashes</figcaption>
+        <Suspense aspectRatio="16/9" graceDelay={0} minDisplay={0} class="sg-round">
+          <img src={image(150, "150ms", 20)} alt="" width="800" height="450" />
+        </Suspense>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sg-card sg-grid" id="min-display">
+    <h2><a class="sg-anchor" href="#min-display">#</a> minDisplay</h2>
+    <p class="sg-muted">
+      Both images take about 250ms. On the left the painted placeholder is held for 1500ms so it
+      can actually be read; on the right it is dismissed the moment the image lands, which reads
+      as a blink.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#min-display">Replay</button>
+    <div class="sg-split">
+      <figure>
+        <figcaption class="sg-muted">minDisplay=1500</figcaption>
+        <Suspense aspectRatio="16/9" graceDelay={0} minDisplay={1500} skeleton class="sg-round">
+          <img src={image(250, "250ms", 260)} alt="" width="800" height="450" />
+        </Suspense>
+      </figure>
+      <figure>
+        <figcaption class="sg-muted">minDisplay=0</figcaption>
+        <Suspense aspectRatio="16/9" graceDelay={0} minDisplay={0} skeleton class="sg-round">
+          <img src={image(250, "250ms", 300)} alt="" width="800" height="450" />
+        </Suspense>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sg-card sg-grid" id="visible">
+    <h2><a class="sg-anchor" href="#visible">#</a> when="visible"</h2>
+    <p class="sg-muted">
+      The gate stays shut until the box comes within <code>rootMargin</code> of the viewport —
+      set to 0px here, so it opens only when the frame is genuinely on screen. Scroll past the
+      spacer to trigger it. The image is <code>loading="lazy"</code>, so the browser holds the
+      request back too, and Suspense promotes it to eager as the gate opens (which is what rescues
+      lazy images inside streamed islands, where the native lazy state never arms).
+    </p>
+    <button class="sg-btn" type="button" data-replay="#visible">Replay</button>
+    <div class="sg-spacer">
+      <p class="sg-muted">↓ keep scrolling — the image below has not been requested yet</p>
+    </div>
+    <Suspense when="visible" rootMargin="0px" aspectRatio="16/9" skeleton class="sg-round">
+      <img
+        src={image(1200, "loaded on scroll", 190)}
+        alt=""
+        width="800"
+        height="450"
+        loading="lazy"
+      />
+    </Suspense>
+  </section>
+
+  <section class="sg-card sg-grid" id="fragment">
+    <h2><a class="sg-anchor" href="#fragment">#</a> src — fragment fetch</h2>
+    <p class="sg-muted">
+      <code>src</code> fetches an HTML fragment when the gate opens and writes it in. The markup
+      below shipped from <code>/fragments/slow/</code>, not with this page.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#fragment">Replay</button>
+    <Suspense src="/fragments/slow/?delay=1200" minHeight="9rem">
+      <p slot="error">That fragment didn't load. Reload the page to try again.</p>
+    </Suspense>
+  </section>
+
+  <section class="sg-card sg-grid" id="fragment-error">
+    <h2><a class="sg-anchor" href="#fragment-error">#</a> src — the error slot</h2>
+    <p class="sg-muted">
+      The same component pointed at a route that 404s. A non-OK response fails the suspense: the
+      placeholder goes, the <code>error</code> slot appears, and the console carries the reason.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#fragment-error">Replay</button>
+    <Suspense src="/fragments/does-not-exist/" minHeight="9rem" timeout={8000}>
+      <p slot="error">
+        Couldn't load that fragment. <a href="/fragments/slow/">Open the working one instead.</a>
+      </p>
+    </Suspense>
+  </section>
+
+  <section class="sg-card sg-grid" id="manual">
+    <h2><a class="sg-anchor" href="#manual">#</a> ready="manual"</h2>
+    <p class="sg-muted">
+      Nothing resolves this one but you. The buttons dispatch
+      <code>af-suspense:resolve</code> and <code>af-suspense:fail</code> on the host element.
+    </p>
+    <div class="sg-inline">
+      <button class="sg-btn" type="button" data-event="af-suspense:resolve" data-target="#manual-demo">
+        Resolve
+      </button>
+      <button class="sg-btn" type="button" data-event="af-suspense:fail" data-target="#manual-demo">
+        Fail
+      </button>
+      <button class="sg-btn" type="button" data-replay="#manual">Replay</button>
+    </div>
+    <Suspense id="manual-demo" ready="manual" minHeight="10rem" skeleton loadingLabel="Waiting for you">
+      <div class="sg-slot">
+        <h3>Resolved</h3>
+        <p class="sg-muted">
+          Revealed by an event, not by a network request. This is the hook for anything with its
+          own notion of ready — a chart that has finished measuring, a map tile set, a WASM module.
+        </p>
+      </div>
+      <p slot="error">Failed on request.</p>
+    </Suspense>
+  </section>
+
+  <section class="sg-card sg-grid" id="image">
+    <h2><a class="sg-anchor" href="#image">#</a> Suspense vs ImageSuspense</h2>
+    <p class="sg-muted">
+      The same image, the same wait. On the left, <code>Suspense</code> with
+      <code>frame</code>; on the right, <code>ImageSuspense</code>, which is exactly that preset
+      with <code>spinnerColor</code> renamed to <code>accent</code>. Both render an
+      <code>&lt;af-suspense&gt;</code> host.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#image">Replay</button>
+    <div class="sg-split">
+      <figure>
+        <figcaption class="sg-muted">&lt;Suspense aspectRatio="16/9" frame&gt;</figcaption>
+        <Suspense aspectRatio="16/9" frame class="sg-round" accent="#6b7280">
+          <img src={image(1800, "via Suspense", 210)} alt="" width="800" height="450" />
+        </Suspense>
+      </figure>
+      <figure>
+        <figcaption class="sg-muted">&lt;ImageSuspense aspectRatio="16/9"&gt;</figcaption>
+        <ImageSuspense aspectRatio="16/9" class="sg-round" spinnerColor="#6b7280">
+          <img src={image(1800, "via ImageSuspense", 210)} alt="" width="800" height="450" />
+        </ImageSuspense>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sg-card sg-grid" id="lazy">
+    <h2><a class="sg-anchor" href="#lazy">#</a> Suspense vs LazyContent</h2>
+    <p class="sg-muted">
+      The same fragment, fetched the same way. <code>LazyContent</code> is
+      <code>Suspense</code> with <code>src</code>, a default gate of <code>dialog-open</code> and
+      its own placeholder markup; its <code>loading</code> slot is this component's
+      <code>placeholder</code> slot. The dialog gate itself is demonstrated on the
+      <a href="/modals">Modals</a> page.
+    </p>
+    <button class="sg-btn" type="button" data-replay="#lazy">Replay</button>
+    <div class="sg-split">
+      <figure>
+        <figcaption class="sg-muted">&lt;Suspense src=… when="eager"&gt;</figcaption>
+        <Suspense src="/fragments/slow/?delay=1500" minHeight="12rem">
+          <p slot="error">Fragment unavailable.</p>
+        </Suspense>
+      </figure>
+      <figure>
+        <figcaption class="sg-muted">&lt;LazyContent src=… when="immediate"&gt;</figcaption>
+        <LazyContent src="/fragments/slow/?delay=1500" when="immediate" />
+      </figure>
+    </div>
+  </section>
+</GuideLayout>
+
+<script>
+  // Demo plumbing only — none of this ships with the component.
+  const hosts = (selector: string) =>
+    Array.from(
+      document.querySelectorAll<HTMLElement & { reset?: () => void }>(
+        `${selector} af-suspense`,
+      ),
+    );
+
+  document.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>("button");
+    if (!button) return;
+
+    const replay = button.dataset.replay;
+    if (replay) {
+      for (const host of hosts(replay)) host.reset?.();
+      return;
+    }
+
+    const { event: name, target } = button.dataset;
+    if (!name || !target) return;
+    document
+      .querySelector(target)
+      ?.dispatchEvent(new CustomEvent(name, { bubbles: false }));
+  });
+</script>
