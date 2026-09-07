@@ -82,7 +82,7 @@ const pagerItemsWithSticky = pagerItems.map((item) =>
           name="size"
           disabled={pageSizeDisabled}
           class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
-          onchange="this.form?.submit()"
+          onchange="if(this.form){this.form.requestSubmit?this.form.requestSubmit():this.form.submit()}"
         >
           {sanitizedSizeOptions.map((size) => (
             <option value={String(size)} selected={size === query.size}>
