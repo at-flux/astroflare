@@ -78,6 +78,7 @@ const normalizedItems = items.map((item) =>
             ))}
             <button
               type="submit"
+              aria-current={active === "all" ? "true" : undefined}
               class:list={["af-filter-pill", "af-filter-pill-all", active === "all" && "is-active"]}
             >
               {formatLabel(allLabel)}
@@ -89,6 +90,7 @@ const normalizedItems = items.map((item) =>
       <button
         type="button"
         data-filter="all"
+        aria-pressed={active === "all"}
         class:list={["af-filter-pill", "af-filter-pill-all", active === "all" && "is-active"]}
       >
         {formatLabel(allLabel)}
@@ -110,6 +112,7 @@ const normalizedItems = items.map((item) =>
               ))}
               <button
                 type="submit"
+                aria-current={isActive ? "true" : undefined}
                 class:list={["af-filter-pill", isActive && "is-active"]}
                 style={{
                   "--af-tag-bg": palette.bg,
@@ -127,6 +130,7 @@ const normalizedItems = items.map((item) =>
           type="button"
           disabled
           aria-disabled="true"
+          aria-pressed={isActive}
           title="Nothing to show with current filters. Reset or remove filters."
           class:list={["af-filter-pill", isActive && "is-active"]}
           style={{
@@ -141,6 +145,7 @@ const normalizedItems = items.map((item) =>
         <button
           type="button"
           data-filter={item.value}
+          aria-pressed={isActive}
           class:list={["af-filter-pill", isActive && "is-active"]}
           style={{
             "--af-tag-bg": palette.bg,
@@ -156,6 +161,14 @@ const normalizedItems = items.map((item) =>
 </div>
 
 <style>
+  /* Layout lives here as well as in the utility classes on the wrapper, so the
+     row is laid out correctly in a project that does not use Tailwind. */
+  .af-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
   .af-filter-pill {
     border-radius: 9999px;
     border: 1px solid var(--af-tag-border, var(--color-light-border));

@@ -11,21 +11,48 @@ interface Props {
 }
 
 const { text, position = "top", class: className = "", panelClass = "" } = Astro.props;
+
+// The trigger is slotted, so the `aria-describedby` wiring has to happen in the
+// browser (see the script below). The id is generated here so it is stable
+// between the server render and that pass.
+const panelId = `af-tooltip-${crypto.randomUUID().slice(0, 8)}`;
 ---
 
 <span class:list={["af-tooltip-root", className]} data-af-tooltip-root>
   <slot />
   <span
+    id={panelId}
     role="tooltip"
-    class="af-tooltip-panel"
-    class:list={[
-      panelClass,
-    ]}
+    class:list={["af-tooltip-panel", panelClass]}
     data-position={position}
   >
     {text}
   </span>
 </span>
+
+<script>
+  // Point the slotted trigger at its tooltip. Without this the panel carries
+  // `role="tooltip"` that nothing references, so a screen reader never reads it:
+  // the text is either announced as stray content or not at all.
+  const wire = () => {
+    document.querySelectorAll<HTMLElement>("[data-af-tooltip-root]").forEach((root) => {
+      const panel = root.querySelector<HTMLElement>(".af-tooltip-panel");
+      if (!panel?.id) return;
+      const trigger = root.querySelector<HTMLElement>(
+        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      const host = trigger ?? root;
+      if (host === root && !root.hasAttribute("tabindex")) root.tabIndex = 0;
+      const described = (host.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+      if (described.includes(panel.id)) return;
+      described.push(panel.id);
+      host.setAttribute("aria-describedby", described.join(" "));
+    });
+  };
+
+  wire();
+  document.addEventListener("astro:page-load", wire);
+</script>
 
 <style is:global>
   [data-af-tooltip-root] {
@@ -50,8 +77,14 @@ const { text, position = "top", class: className = "", panelClass = "" } = Astro
     line-height: 1.35;
     padding: 0.35rem 0.55rem;
     opacity: 0;
+    /* `visibility` as well as `opacity`, so the panel is out of the
+       accessibility tree while hidden instead of being read as part of the
+       trigger. `aria-describedby` still resolves its text on focus. */
+    visibility: hidden;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-    transition: opacity 150ms ease;
+    transition:
+      opacity 150ms ease,
+      visibility 150ms ease;
     white-space: normal;
   }
 
@@ -66,5 +99,6 @@ const { text, position = "top", class: className = "", panelClass = "" } = Astro
   [data-af-tooltip-root]:hover .af-tooltip-panel,
   [data-af-tooltip-root]:focus-within .af-tooltip-panel {
     opacity: 1;
+    visibility: visible;
   }
 </style>
