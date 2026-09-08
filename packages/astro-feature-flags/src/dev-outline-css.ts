@@ -99,6 +99,23 @@ function featureColorVar(token: string, namespace: string): string {
  * Dev-only styles: `data-ff="token"` (or space-separated tokens) gates outlines/badges.
  * `html[data-ff-route="<token>"]` (dev) adds a fixed top-right route badge (label only).
  * Toolbar toggles: `data-ff-enabled-*`, `data-ff-outline-*`, `data-ff-badge-*`, `--<namespace>-c-*`.
+ *
+ * The badge is an absolutely positioned `::before`, so its host has to be a
+ * containing block, and the host also wants rounding for the outline to follow.
+ * Both of those are the app's business, not ours: a flagged element that the app
+ * positions itself, or rounds itself, must keep doing so. Marking a flagged
+ * element must not move it.
+ *
+ * So `position` and `border-radius` are emitted inside `:where()`, which drops
+ * their specificity to zero. Any author rule at all wins — a Tailwind `absolute`
+ * utility, a plain `.hero { position: absolute }` — while an element the app
+ * never positioned still gets `relative` and anchors the badge correctly. A
+ * cascade layer would do the same job, but its priority depends on where the
+ * injected sheet lands relative to the app's own `@layer` statement, and this
+ * does not.
+ *
+ * Everything else here is dev chrome the app has no opinion about, and stays at
+ * its natural specificity.
  */
 export function createFeatureFlagStyles(
   runtime: ResolvedFeatureRuntime,
@@ -142,11 +159,13 @@ html {
 html:not([data-ff-outline-${token}="off"]) {
   --aff-outline-c-${token}: var(${v}, ${col});
 }
-${selOutline} {
+:where(${selOutline}) {
   position: relative;
+  border-radius: ${opts.borderRadius};
+}
+${selOutline} {
   outline: ${opts.outlineWidth} solid var(--aff-outline-c-${token});
   outline-offset: ${opts.outlineOffset};
-  border-radius: ${opts.borderRadius};
 }
 html:not([data-ff-badge-${token}="off"]) ${selIsSingleBadge}::before {
   box-sizing: border-box;
@@ -230,11 +249,13 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
 
   // Multi-token value on a single element: show combined badge text and a gradient outline.
   chunks.push(`
-[${nsAttr}*=" "] {
+:where([${nsAttr}*=" "]) {
   position: relative;
+  border-radius: ${opts.borderRadius};
+}
+[${nsAttr}*=" "] {
   outline: none !important;
   outline-offset: 0 !important;
-  border-radius: ${opts.borderRadius};
 }
 html [${nsAttr}*=" "]::after {
   content: "";
