@@ -44,6 +44,7 @@ import {
   createProductionGateStyles,
 } from "./dev-outline-css";
 import { applyProductionHtmlCullToDist } from "./production-html-cull";
+import { applySitemapPruneToDist } from "./sitemap-prune";
 import { buildAffDevHeadInline } from "./dev-head-inject";
 import { routePrefixJsHelper } from "./route-prefix-js";
 
@@ -52,11 +53,26 @@ export {
   cullProductionHtml,
   applyProductionHtmlCullToDist,
 } from "./production-html-cull";
+export type { SitemapPruneResult } from "./sitemap-prune";
+export {
+  applySitemapPruneToDist,
+  pruneSitemapIndexXml,
+  pruneSitemapXml,
+  sitemapUrlCount,
+} from "./sitemap-prune";
 
 export interface AstroFeatureFlagsOptions extends ResolveFeatureRuntimeOptions {
   css?: DevOutlineCssOptions;
   /** When false, keeps static build output untouched (no route pruning / HTML cull). */
   staticMinify?: boolean;
+  /**
+   * When false, leaves generated sitemaps alone. On by default: a pruned route that is
+   * still advertised in `sitemap-0.xml` is a 404 handed to every crawler that reads it.
+   *
+   * Needs this integration to sit **after** `@astrojs/sitemap` in `integrations`, because
+   * Astro runs `astro:build:done` in array order.
+   */
+  pruneSitemap?: boolean;
 }
 
 /** Prefer `prod` if present; else first non-`dev` key (sorted); else `"prod"`. */
@@ -304,7 +320,12 @@ export {
 export default function astroFeatureFlags(
   options: AstroFeatureFlagsOptions = {},
 ): any {
-  const { css, staticMinify = true, ...flagOpts } = options;
+  const {
+    css,
+    staticMinify = true,
+    pruneSitemap = true,
+    ...flagOpts
+  } = options;
   const opts = withDefaultEnvironments(flagOpts);
   const mode = opts.mode ?? process.env.NODE_ENV ?? "development";
 
@@ -313,15 +334,23 @@ export default function astroFeatureFlags(
     mode,
   });
 
+  /**
+   * Set in `astro:config:setup`, read in `astro:build:done`, so that a sitemap this
+   * pass never saw can be reported as an ordering mistake rather than silently skipped.
+   */
+  let sitemapIntegrationPresent = false;
+
   return {
     name: "astro-feature-flags",
     hooks: {
       "astro:config:setup": ({
+        config,
         updateConfig,
         addDevToolbarApp,
         command,
         injectScript,
       }: {
+        config?: { integrations?: { name?: string }[] };
         updateConfig: (config: unknown) => void;
         addDevToolbarApp?: (opts: {
           id: string;
@@ -332,6 +361,9 @@ export default function astroFeatureFlags(
         command?: string;
         injectScript?: (stage: string, content: string) => void;
       }) => {
+        sitemapIntegrationPresent = (config?.integrations ?? []).some(
+          (integration) => integration?.name === "@astrojs/sitemap",
+        );
         const flagNames = Object.keys(runtime.flags);
         const flagTokens = flagNames.map((name) => toToken(name));
         const flagsByEnvironment = resolveFeatureFlagsByEnvironment(opts);
@@ -403,7 +435,13 @@ export default function astroFeatureFlags(
           },
         });
       },
-      "astro:build:done": ({ dir }: { dir: URL }) => {
+      "astro:build:done": ({
+        dir,
+        logger,
+      }: {
+        dir: URL;
+        logger?: { warn: (message: string) => void };
+      }) => {
         if (runtime.isDev || !staticMinify) return;
         const outDir = fileURLToPath(dir);
         const prunePaths = routePathsToPrune({
@@ -414,6 +452,13 @@ export default function astroFeatureFlags(
           rmSync(join(outDir, routePath), { recursive: true, force: true });
         }
         applyProductionHtmlCullToDist(outDir, runtime);
+        if (!pruneSitemap) return;
+        const sitemaps = applySitemapPruneToDist(outDir, runtime);
+        if (!sitemaps.found && sitemapIntegrationPresent && prunePaths.length) {
+          logger?.warn(
+            "@astrojs/sitemap is configured but no sitemap was on disk yet, so pruned routes may still be listed. Move astroFeatureFlags() after sitemap() in `integrations`.",
+          );
+        }
       },
     },
   };
