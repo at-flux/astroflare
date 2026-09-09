@@ -1,0 +1,154 @@
+---
+/**
+ * A client-paged grid whose rows always come out full.
+ *
+ * Two things make a paged gallery feel broken, and neither is the paging. A grid
+ * that reflows to a three-column step leaves one tile stranded on its own row at
+ * that width; and a last page holding three of eight tiles is shorter than the
+ * others, so the page jumps under the reader's cursor as they page through. This
+ * component fixes the column steps (2 then 4 by default, never 3) and keeps
+ * filler cells in the markup to top the last page back up to full height.
+ *
+ * Paging is progressive enhancement, as in `CollectionQuery`: the server renders
+ * every tile, the filler cells render hidden, and the script hides pages two
+ * onwards once it runs. With JavaScript off the grid stays one long list.
+ *
+ * Images inside a hidden page are not fetched by browsers that support
+ * `loading="lazy"`, so mark gallery images that way and the later pages cost
+ * nothing until someone asks for them.
+ */
+import CollectionQuery from "./CollectionQuery.astro";
+import Pager from "./Pager.astro";
+import { resolvePagedGridLayout } from "../paged-grid";
+
+interface Props {
+  /** Column counts, narrowest first. Each must divide `perPage`. */
+  columns?: number[];
+  /** Rows per page at the widest column step. */
+  rows?: number;
+  /** Page size. Defaults to widest column step × `rows`. */
+  perPage?: number;
+  /** Keep every page the same height with filler cells. */
+  pad?: boolean;
+  /** CSS aspect ratio for the filler cells, matching the real tiles. */
+  placeholderAspect?: string;
+  gap?: string;
+  /** Class on the grid itself. */
+  gridClass?: string;
+  /** Class on the paging host. */
+  class?: string;
+  pagerClass?: string;
+  maxPageButtons?: number;
+}
+
+const {
+  columns = [2, 4],
+  rows = 2,
+  perPage,
+  pad = true,
+  placeholderAspect = "1 / 1",
+  gap = "1rem",
+  gridClass = "",
+  class: className = "",
+  pagerClass = "mt-6",
+  maxPageButtons = 7,
+} = Astro.props;
+
+const layout = resolvePagedGridLayout({ columns, rows, perPage });
+const [narrow, ...wider] = layout.columns;
+/* One filler per cell on a page: the worst case is a last page holding a single
+   tile, and the grid still has to be `perPage` cells tall. */
+const fillers = pad ? Array.from({ length: layout.perPage }, (_, index) => index) : [];
+---
+
+<CollectionQuery
+  perPage={layout.perPage}
+  padPage={pad}
+  maxPageButtons={maxPageButtons}
+  pagerClass={pagerClass}
+  class={className}
+>
+  {
+    Astro.slots.has("filters") && (
+      <Fragment slot="filters">
+        <slot name="filters" />
+      </Fragment>
+    )
+  }
+  <div
+    class:list={["af-paged-grid", gridClass]}
+    style={`--af-paged-grid-gap:${gap};--af-paged-grid-cols:${narrow};${wider
+      .map((step, index) => `--af-paged-grid-cols-${index + 1}:${step};`)
+      .join("")}--af-paged-grid-aspect:${placeholderAspect};`}
+  >
+    <slot />
+    {
+      fillers.map((index) => (
+        <div
+          data-card-placeholder
+          class="af-paged-grid-placeholder"
+          style="display:none"
+          aria-hidden="true"
+          data-placeholder-index={String(index)}
+        />
+      ))
+    }
+  </div>
+  {/* Astro registers a named slot from the markup, not from whether the guard
+      passes, so a conditional `<Fragment slot="pager">` would suppress
+      `CollectionQuery`'s own fallback pager and leave the grid with no controls.
+      Render the fallback here instead. */}
+  <Fragment slot="pager">
+    {
+      Astro.slots.has("pager") ? (
+        <slot name="pager" />
+      ) : (
+        <div class:list={["af-query-pager-row flex items-center justify-center", pagerClass]}>
+          <Pager />
+        </div>
+      )
+    }
+  </Fragment>
+</CollectionQuery>
+
+<style is:global>
+  /* Column steps are declared, not derived, so the grid can never land on a
+     count that leaves a stranded tile. The breakpoints match Tailwind's `md`
+     and `lg` so a host using Tailwind sees the same steps as the rest of its
+     layout, and a host that does not use it still gets them. */
+  .af-paged-grid {
+    display: grid;
+    gap: var(--af-paged-grid-gap, 1rem);
+    grid-template-columns: repeat(var(--af-paged-grid-cols, 2), minmax(0, 1fr));
+  }
+
+  @media (min-width: 48rem) {
+    .af-paged-grid {
+      grid-template-columns: repeat(
+        var(--af-paged-grid-cols-1, var(--af-paged-grid-cols, 2)),
+        minmax(0, 1fr)
+      );
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .af-paged-grid {
+      grid-template-columns: repeat(
+        var(
+          --af-paged-grid-cols-2,
+          var(--af-paged-grid-cols-1, var(--af-paged-grid-cols, 2))
+        ),
+        minmax(0, 1fr)
+      );
+    }
+  }
+
+  /* An outline of the cell that is not there yet: no shimmer, no spinner,
+     nothing that suggests something is on its way. */
+  .af-paged-grid-placeholder {
+    aspect-ratio: var(--af-paged-grid-aspect, 1 / 1);
+    border: 1px dashed currentColor;
+    border-radius: 0.5rem;
+    opacity: 0.18;
+  }
+</style>

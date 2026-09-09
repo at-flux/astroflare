@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import ThemeInit from "../../../src/components/ThemeInit.astro";
 
 interface NavItem {
   href: string;
@@ -22,6 +23,7 @@ const pathname = normalize(Astro.url.pathname);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{title}</title>
+    <ThemeInit />
     <ClientRouter />
   </head>
   <body>

@@ -1,0 +1,40 @@
+---
+/**
+ * Stamps `data-theme` on `<html>` before first paint.
+ *
+ * Every dark-mode rule in this package is written as `[data-theme='dark'] …`,
+ * so a host page that never sets the attribute gets the light palette on a dark
+ * background: unreadable borders, invisible icon buttons. Put this in the
+ * `<head>` of the layout, above any stylesheet, and the attribute is always
+ * there before the first rule is applied.
+ *
+ * The script is inline and synchronous on purpose. Deferring it would paint one
+ * frame of the wrong theme.
+ */
+interface Props {
+  /** Theme when nothing is stored: `system` follows `prefers-color-scheme`. */
+  default?: 'light' | 'dark' | 'system';
+  /** localStorage key shared with `ThemeToggle`. */
+  storageKey?: string;
+}
+
+const { default: fallback = 'system', storageKey = 'theme' } = Astro.props;
+---
+
+<script is:inline define:vars={{ fallback, storageKey }}>
+  (() => {
+    let stored = null;
+    try {
+      stored = localStorage.getItem(storageKey);
+    } catch {
+      // Private mode, blocked storage: fall through to the system preference.
+    }
+    const system =
+      typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    const theme =
+      stored === 'dark' || stored === 'light' ? stored : fallback === 'system' ? system : fallback;
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>

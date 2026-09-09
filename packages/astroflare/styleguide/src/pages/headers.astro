@@ -1,0 +1,75 @@
+---
+import "../../src/styles/global.css";
+import SectionHeader from "../../../src/components/SectionHeader.astro";
+import EmojiIcon from "../../../src/components/EmojiIcon.astro";
+import GuideLayout from "../layouts/GuideLayout.astro";
+import { nav } from "../nav";
+---
+
+<GuideLayout title="Astroflare Styleguide" nav={nav}>
+  <section class="sg-card sg-grid">
+    <h2>Section header</h2>
+    <p class="sg-muted">
+      Medallion, title, subtitle, tagline — any of which may be left out. Every
+      visible class is a prop, so the sizes below are the styleguide's, not the
+      component's.
+    </p>
+    <div class="sg-card">
+      <SectionHeader
+        emoji="🔥"
+        title="Components"
+        subtitle="What each one is for"
+        tagline="Every one of them ships with its own tests"
+        titleClass="sg-h-title"
+        subtitleClass="sg-h-sub"
+        taglineClass="sg-h-tag"
+      />
+    </div>
+    <div class="sg-card">
+      <SectionHeader as="h1" title="No medallion, no tagline" subtitle="Title and subtitle only" titleClass="sg-h-title" subtitleClass="sg-h-sub" />
+    </div>
+    <div class="sg-card">
+      <SectionHeader title="Markup in the subtitle" titleClass="sg-h-title" subtitleClass="sg-h-sub">
+        <img slot="icon" src="/api/slow-image.svg?delay=0&label=icon&hue=280" alt="" width="80" height="80" style="border-radius:9999px" />
+        <Fragment slot="subtitle">A subtitle with <strong>emphasis</strong> in it</Fragment>
+      </SectionHeader>
+    </div>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Emoji medallion</h2>
+    <p class="sg-muted">
+      Three sizes, drawn from <code>--af-emoji-accent</code> (falling back to
+      <code>--color-brand</code>). Decorative unless given a <code>label</code>.
+    </p>
+    <div class="sg-row">
+      <EmojiIcon emoji="🔒" size="sm" />
+      <EmojiIcon emoji="🔥" />
+      <EmojiIcon emoji="🌿" size="lg" label="Leaf" />
+      <EmojiIcon emoji="⚡" style="--af-emoji-accent:#e11d48" />
+    </div>
+  </section>
+</GuideLayout>
+
+<style is:global>
+  .sg-h-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+  .sg-h-sub {
+    margin: 0 0 0.25rem;
+    opacity: 0.85;
+  }
+  .sg-h-tag {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.7;
+  }
+  .sg-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+</style>

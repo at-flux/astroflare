@@ -27,6 +27,7 @@ const {
   showPageSize = true,
   pageSizeClass = "",
   perPage = 9,
+  padPage = false,
   class: className = "",
 } = Astro.props;
 
@@ -170,7 +171,7 @@ const pagerItemsWithSticky = pagerItems.map((item) =>
                 name="size"
                 class="select-none rounded-full border border-light-border bg-light-surface px-3 py-1.5 text-xs text-light-text-body dark:border-dark-border dark:bg-dark-surface dark:text-dark-text-body"
                 disabled={pageSizeDisabled}
-                onchange="this.form?.submit()"
+                onchange="if(this.form){this.form.requestSubmit?this.form.requestSubmit():this.form.submit()}"
               >
                 {sanitizedSizeOptions.map((size) => (
                   <option value={String(size)} selected={size === query.size}>
@@ -191,6 +192,7 @@ const pagerItemsWithSticky = pagerItems.map((item) =>
     class={className}
     data-af-query
     data-per-page={String(perPage)}
+    data-pad-page={padPage ? "true" : "false"}
     data-max-page-buttons={String(maxPageButtons)}
   >
     <slot
@@ -221,6 +223,13 @@ const pagerItemsWithSticky = pagerItems.map((item) =>
 }
 
 <style is:global>
+  /* Layout lives here as well as in the utility classes above, so the control
+     is laid out correctly in a project that does not use Tailwind. */
+  .af-page-size-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
   .af-page-size-label {
     user-select: none;
     -webkit-user-select: none;

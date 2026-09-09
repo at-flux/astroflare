@@ -40,9 +40,12 @@ import { forms } from "@at-flux/astroflare/core";
 - `ContactModalCta.astro` — Opinionated contact button (solid pill or text link) wrapped in `ModalTrigger`
 - `InstagramProfileLink.astro` — Small Instagram icon + `@handle` link with safe defaults
 - `Section.astro` — Page section with optional `narrow` and `contentOnly` (inner width wrapper without outer padding)
+- `SectionHeader.astro` — Medallion / title / subtitle / tagline block that opens a section or a page; every visible class is a prop
+- `EmojiIcon.astro` — One emoji in a round medallion, decorative unless given a `label`, tinted from `--af-emoji-accent`
 - `ThemeToggle.astro` — Dark/light mode toggle using `<theme-toggle>` web component
 - `IconButton.astro` — Accessible icon-only control that renders `<button>` or `<a>`
 - `ClientRouterLoadingSpinner.astro` — Loading spinner for Astro view transitions
+- `Suspense.astro` — One primitive for anything a page waits on: media that loads, a block gated on the viewport or on a modal opening, an HTML fragment fetched on demand, or a wait you resolve yourself
 - `Tooltip.astro` — Lightweight hover/focus tooltip wrapper for compact metadata summaries
 - `ListSummary.astro` — Generic inline list truncation with `+N` overflow and tooltip details
 - `TagSummary.astro` — Generic deterministic tag pill list with `+N` tooltip overflow
@@ -50,6 +53,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `FilterPills.astro` — Tag-colored filter chips with an `all` option and active-state styling
 - `Pager.astro` — Pagination UI primitive for both browser-only and link-driven query pagination
 - `CollectionQuery.astro` — Unified collection filtering/pagination component (client mode by default; URL-driven server mode with `useServer`)
+- `PagedGrid.astro` — Client-paged grid with declared column steps and filler cells, so every page is the same height and no row is part-filled
 - `CollectionFooterControls.astro` — Server-only row: optional `summary` slot, `Pager`, and page-size `<form>` (same query contract as `CollectionQuery` server mode)
 
 #### Component props reference
@@ -59,6 +63,8 @@ import { forms } from "@at-flux/astroflare/core";
 - `ContactModalCta.astro`: `modalId`, `label`, `variant`, `class`
 - `InstagramProfileLink.astro`: `handle`, `href`, `class`, `aria-label`
 - `Section.astro`: `id`, `class`, `narrow`, `contentOnly`
+- `SectionHeader.astro`: `title`, `titleId`, `subtitle`, `tagline`, `emoji`, `emojiSize`, `emojiLabel`, `as`, `titleClass`, `subtitleClass`, `taglineClass`, `iconWrapClass`, `class` — slots `icon`, `subtitle`, `tagline`
+- `EmojiIcon.astro`: `emoji`, `size`, `label`, `class`, passthrough attributes
 - `ThemeToggle.astro`: `class`
 - `IconButton.astro`: `label`, `href`, `class`, `id`, passthrough attributes
 - `Tooltip.astro`: `text`, `position`, `class`, `panelClass`
@@ -67,7 +73,9 @@ import { forms } from "@at-flux/astroflare/core";
 - `MediaProtect.astro`: `class`, `containerClass`, `drag`, `contextMenu`
 - `FilterPills.astro`: `items`, `includeAll`, `allLabel`, `allHref`, `active`, `itemCase`, `colorOverrides`, `class`
 - `Pager.astro`: `pageCount`, `activePage`, `items`, `class`
+- `Suspense.astro`: `when`, `ready`, `src`, `rootMargin`, `minDisplay`, `graceDelay`, `timeout`, `aspectRatio`, `minHeight`, `duration`, `skeleton`, `accent`, `background`, `frame`, `rounded`, `loadingLabel`, `id`, `class` — slots `placeholder` and `error`
 - `CollectionQuery.astro`: `useServer`, `pathname`, `query`, `totalPages`, `currentPage`, `filters`, `maxPageButtons`, `filtersClass`, `pagerClass`, `perPage`, `class`
+- `PagedGrid.astro`: `columns`, `rows`, `perPage`, `pad`, `placeholderAspect`, `gap`, `gridClass`, `pagerClass`, `maxPageButtons`, `class`
   - when `useServer` is `true`, `pathname`, `query`, `totalPages`, and `currentPage` are required
 - `CollectionFooterControls.astro`: `pathname`, `query`, `totalPages`, `currentPage`, `sizeOptions`, `maxPageButtons`, `class` — slot `summary` for “Showing X–Y of Z” text
 
@@ -113,6 +121,63 @@ Use named slots to replace the default filter/pager rendering:
 </CollectionQuery>
 ```
 
+### Paged grid
+
+A gallery paged in the browser, where the grid geometry is declared rather than
+derived:
+
+```astro
+<PagedGrid columns={[2, 4]} rows={2}>
+  {tiles.map((tile) => (
+    <a data-card href={tile.href}>
+      <img src={tile.src} alt={tile.alt} loading="lazy" />
+    </a>
+  ))}
+</PagedGrid>
+```
+
+- **Column steps, not `auto-fill`.** `[2, 4]` means two columns below `48rem` and
+  four above it, and never three, so no tile is left alone on a row. Each step
+  must divide the page size or the build fails with the arithmetic.
+- **Every page the same height.** A last page holding three of eight tiles is
+  topped up with outlined filler cells, so paging back and forth never moves the
+  content below the grid. `pad={false}` turns that off.
+- **Later pages cost nothing.** Hidden pages are `display: none`, and browsers do
+  not fetch a `loading="lazy"` image inside one, so mark gallery images that way.
+- **Paging is progressive enhancement.** Without JavaScript every tile renders
+  and the fillers stay hidden.
+
+### Waiting states
+
+`Suspense.astro` covers every case: wrap an `<img>` and it holds the frame until
+the image settles, add `when="visible"` and it gates on the viewport, add `src`
+and it fetches an HTML fragment on demand. The placeholder waits `graceDelay` ms
+before it paints, so anything already cached swaps in without a flash, and stays
+`minDisplay` ms once painted, so a resource that is slow by a hair cannot strobe.
+Slotted content is faded rather than removed, so it is still there without
+JavaScript.
+
+```astro
+<Suspense aspectRatio="16/9" rounded="rounded-2xl">
+  <Image src={hero} alt="…" />
+</Suspense>
+
+<Suspense src="/fragments/policy/" when="dialog-open" minHeight="12rem">
+  <p slot="error">That didn't load. Reload the page to try again.</p>
+</Suspense>
+```
+
+**Removed:** `ImageSuspense.astro`, its `ImageFade` alias, and
+`LazyContent.astro` were presets over `Suspense` exposing a subset of its props.
+Rewrite call sites this way:
+
+| Was                    | Write instead                                           |
+| ---------------------- | ------------------------------------------------------- |
+| `<ImageSuspense …>`    | `<Suspense frame …>`, `spinnerColor` → `accent`         |
+| `<LazyContent src=… >` | `<Suspense src=… when="dialog-open" minHeight="12rem">` |
+| `when="immediate"`     | `when="eager"`                                          |
+| `loading` slot         | `placeholder` slot                                      |
+
 ### Styles (CSS)
 
 - `styles/prose.css` — Markdown prose styling using CSS custom properties
@@ -122,6 +187,7 @@ Use named slots to replace the default filter/pager rendering:
 
 ### Utilities
 
+- `now()` / `nowMs()` / `setClock(source)` / `resetClock()` / `withClock(source, fn)` — one source of "now" for the package, so a test can pin the instant and a styleguide can preview a date-dependent component out of season. Used by the email footer stamp and the submit-time timestamp fields
 - `getTagPalette(tag, options?)` — Deterministic, readable tag color assignment with optional explicit overrides
 - `formatDisplayDate(date, config?)` — Consistent card/detail date formatting with locale override support
 - `parseCollectionQuery` + `paginateCollection` + `buildCollectionHref` + `buildPageSequence` + `matchesCollectionFilters` + `formatCollectionRangeLabel` + `resolveIslandSearchString` — URL-driven filtering and pagination (`filters` as stringified JSON). `resolveIslandSearchString` is for server islands (pass the page’s search from the page; fall back to `Referer`). `formatCollectionRangeLabel` is for “Showing result N of T” / “Showing results a–b of T” footers.

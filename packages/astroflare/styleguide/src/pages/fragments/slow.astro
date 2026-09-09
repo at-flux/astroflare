@@ -1,0 +1,21 @@
+---
+// Partial route fetched by the Suspense `src` demos: body-only markup, no
+// layout or head, exactly how a real fragment ships. `?delay=` (ms) makes the
+// wait long enough to watch.
+export const partial = true;
+
+const delay = Math.min(
+  Math.max(Number(Astro.url.searchParams.get("delay") ?? 900) || 0, 0),
+  10_000,
+);
+await new Promise((resolve) => setTimeout(resolve, delay));
+---
+
+<div class="sg-fragment">
+  <h3>Fragment loaded</h3>
+  <p class="sg-muted">
+    This markup was fetched from <code>/fragments/slow/?delay={delay}</code> after a
+    {delay}ms server delay and written into the suspense host. It never shipped with
+    the page.
+  </p>
+</div>

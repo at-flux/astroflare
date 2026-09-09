@@ -4,16 +4,9 @@ import Tooltip from "../../../src/components/Tooltip.astro";
 import ListSummary from "../../../src/components/ListSummary.astro";
 import TagSummary from "../../../src/components/TagSummary.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
+import { nav } from "../nav";
 
 const tags = ["alpha", "beta", "gamma", "delta", "omega", "zeta", "theta", "kappa"];
-const nav = [
-  { href: "/", label: "Overview" },
-  { href: "/paging", label: "Paging" },
-  { href: "/summaries", label: "Summaries" },
-  { href: "/modals", label: "Modals" },
-  { href: "/controls", label: "Controls" },
-  { href: "/media", label: "Media" },
-];
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>

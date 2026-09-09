@@ -1,8 +1,9 @@
 ---
 /**
  * Animated theme toggle web component.
- * Uses data-theme="dark"|"light" on <html>.
- * Persists to localStorage. Respects prefers-color-scheme on first visit.
+ * Uses data-theme="dark"|"light" on <html> and persists the choice to
+ * localStorage. Reading that value back on load is `ThemeInit`'s job: render it
+ * in the layout head, or the stored theme is lost on every navigation.
  * Sun/moon icons animate in/out with opacity and rotation transitions.
  */
 interface Props {
@@ -113,9 +114,14 @@ const { class: className = '' } = Astro.props;
     }
 
     toggle() {
-      const current = document.documentElement.getAttribute('data-theme');
+      const root = document.documentElement;
+      // Fall back to the system preference so the first click flips away from
+      // what the reader is actually looking at, even without `ThemeInit`.
+      const current =
+        root.getAttribute('data-theme') ??
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
+      root.setAttribute('data-theme', next);
       try {
         localStorage.setItem('theme', next);
       } catch {}

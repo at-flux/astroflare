@@ -1,0 +1,32 @@
+/**
+ * System-preference dark mode for astroflare components.
+ *
+ * Every component styles its dark state behind `[data-theme='dark']` on the
+ * root element, which is right for a site that owns an explicit theme switch
+ * (`ThemeToggle` writes that attribute). It leaves out the site that has no
+ * switch and simply follows the operating system: there is no `data-theme` on
+ * such a page, so the components keep their light colours on a dark ground and
+ * the icon buttons, share links and form hints all but disappear.
+ *
+ * Import this stylesheet on those sites. It repoints the `--color-light-*`
+ * tokens the base rules read at the matching `--color-dark-*` values whenever
+ * the system asks for dark and the page has not said otherwise, so the base
+ * rules resolve dark without a single component being touched. An explicit
+ * `data-theme` still wins in both directions: `light` opts out of this block,
+ * and `dark` is already handled by each component's own rules.
+ *
+ *     import '@at-flux/astroflare/styles/theme.css';
+ *
+ * A site that sets `data-theme` itself does not need it.
+ */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --color-light-border: var(--color-dark-border, #2a2545);
+    --color-light-surface: var(--color-dark-surface, #17132a);
+    --color-light-text-body: var(--color-dark-text-body, #e0dfe6);
+    --color-light-text-heading: var(--color-dark-text-heading, #f4f2fb);
+    --color-light-text-subtle: var(--color-dark-text-subtle, #a5a1b8);
+    --color-light-text-title: var(--color-dark-text-title, #f3f4f6);
+  }
+}

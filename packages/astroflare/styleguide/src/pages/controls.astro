@@ -5,15 +5,7 @@ import ShareLinks from "../../../src/components/ShareLinks.astro";
 import ThemeToggle from "../../../src/components/ThemeToggle.astro";
 import ClientRouterLoadingSpinner from "../../../src/components/ClientRouterLoadingSpinner.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
-
-const nav = [
-  { href: "/", label: "Overview" },
-  { href: "/paging", label: "Paging" },
-  { href: "/summaries", label: "Summaries" },
-  { href: "/modals", label: "Modals" },
-  { href: "/controls", label: "Controls" },
-  { href: "/media", label: "Media" },
-];
+import { nav } from "../nav";
 ---
 
 <GuideLayout title="Astroflare Styleguide" nav={nav}>
@@ -29,8 +21,8 @@ const nav = [
   <section class="sg-card sg-grid">
     <h2>Share links</h2>
     <p class="sg-muted">
-      Pass one entry per network; present entries render in the given order. `copy` is a
-      ClientRouter-safe clipboard button; `instagram` needs an explicit href.
+      Pass one entry per network; present entries render in the given order. <code>copy</code> is
+      a ClientRouter-safe clipboard button; <code>instagram</code> needs an explicit href.
     </p>
     <ShareLinks
       heading="Share this"
@@ -53,21 +45,19 @@ const nav = [
 
   <section class="sg-card sg-grid">
     <h2>Route loading spinner</h2>
-    <p class="sg-muted">Preview transition behavior using manual trigger buttons.</p>
+    <p class="sg-muted">Preview transition behaviour with a manual trigger.</p>
+    {/* A show-only trigger used to live here. Nothing on this page ever fires
+        `astro:page-load`, so the overlay it raised stayed up and blocked the
+        whole page — the cycle below shows the same spinner and puts it away. */}
     <div class="sg-inline">
-      <button type="button" id="sg-spinner-show">Show</button>
-      <button type="button" id="sg-spinner-cycle">Show + hide</button>
+      <button type="button" class="sg-btn" id="sg-spinner-cycle">Show + hide</button>
     </div>
     <ClientRouterLoadingSpinner />
   </section>
 </GuideLayout>
 
 <script>
-  const show = document.querySelector("#sg-spinner-show");
   const cycle = document.querySelector("#sg-spinner-cycle");
-  show?.addEventListener("click", () => {
-    document.dispatchEvent(new CustomEvent("astro:before-preparation"));
-  });
   cycle?.addEventListener("click", () => {
     document.dispatchEvent(new CustomEvent("astro:before-preparation"));
     window.setTimeout(() => {

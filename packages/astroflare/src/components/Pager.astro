@@ -6,6 +6,8 @@ interface Props {
   activePage?: number;
   /** Classes applied to the pagination wrapper. */
   class?: string;
+  /** Accessible name for the pagination landmark. */
+  label?: string;
   /** Optional explicit pager items for link-based server rendering. */
   items?: Array<
     | { page: number; label?: string; href?: string; active?: boolean; disabled?: boolean }
@@ -13,7 +15,7 @@ interface Props {
   >;
 }
 
-const { pageCount = 0, activePage = 1, class: className = "", items = [] } = Astro.props;
+const { pageCount = 0, activePage = 1, class: className = "", label = "Pagination", items = [] } = Astro.props;
 const fallbackPages = Array.from({ length: Math.max(0, pageCount) }, (_, index) => index + 1);
 const formPartsFromHref = (href: string): { action: string; fields: Array<{ name: string; value: string }> } => {
   const url = new URL(href, "https://astroflare.local");
@@ -24,7 +26,7 @@ const formPartsFromHref = (href: string): { action: string; fields: Array<{ name
 };
 ---
 
-<div class:list={["af-pager flex items-center justify-center gap-2", className]} data-pagination>
+<nav class:list={["af-pager flex items-center justify-center gap-2", className]} data-pagination aria-label={label}>
   {items.length > 0
     ? items.map((item) =>
         "ellipsis" in item ? (
@@ -40,6 +42,7 @@ const formPartsFromHref = (href: string): { action: string; fields: Array<{ name
                 <button
                   type="submit"
                   data-page={String(item.page)}
+                  aria-label={item.label ? undefined : `Page ${item.page}`}
                   class:list={["af-pager-pill", item.active && "is-active"]}
                 >
                   {item.label ?? item.page}
@@ -53,7 +56,9 @@ const formPartsFromHref = (href: string): { action: string; fields: Array<{ name
             data-page={String(item.page)}
             disabled={item.disabled ?? item.active}
             aria-disabled={item.disabled ?? item.active}
-            title={(item.disabled ?? item.active) ? "Unavailable ⛔" : undefined}
+            aria-current={item.active ? "page" : undefined}
+            aria-label={item.label ? undefined : `Page ${item.page}`}
+            title={item.active ? "Current page" : item.disabled ? "Unavailable ⛔" : undefined}
             class:list={["af-pager-pill", item.active && "is-active"]}
           >
             {item.label ?? item.page}
@@ -64,14 +69,24 @@ const formPartsFromHref = (href: string): { action: string; fields: Array<{ name
         <button
           type="button"
           data-page={String(page)}
+          aria-current={page === activePage ? "page" : undefined}
+          aria-label={`Page ${page}`}
           class:list={["af-pager-pill", page === activePage && "is-active"]}
         >
           {page}
         </button>
       ))}
-</div>
+</nav>
 
 <style is:global>
+  /* Layout lives here as well as in the utility classes above, so the pager is
+     laid out correctly in a project that does not use Tailwind. */
+  .af-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
   .af-pager .af-pager-pill {
     border-radius: 9999px;
     border: 1px solid var(--color-light-border);
