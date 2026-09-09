@@ -173,6 +173,50 @@ describe("<af-live-region>", () => {
     expect(swaps).toEqual(["swap"]);
   });
 
+  it("keeps the ClientRouter's scroll bookkeeping on the entry it pushes", async () => {
+    history.replaceState({ index: 4, scrollX: 0, scrollY: 555 }, "", "/paging");
+    window.scrollY = 120;
+    const stamped = vi.spyOn(history, "replaceState");
+    const host = mount(pagerForm(2));
+    respond(page(regionMarkup(pagerForm(1))));
+
+    (host.querySelector("button") as HTMLButtonElement).click();
+    await flush();
+
+    // A state of `{ afLive }` alone would read back as scrollY `undefined`,
+    // and the router sends the reader to the top of the page on `back`.
+    expect(history.state).toEqual({
+      index: 5,
+      scrollX: 0,
+      scrollY: 120,
+      afLive: "results",
+    });
+    // The entry being left keeps the position too, so `back` returns to it.
+    // The entry being left keeps the position too, so `back` returns to it.
+    expect(stamped).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 4, scrollY: 120 }),
+      "",
+    );
+  });
+
+  it("leaves the entry index alone when it replaces instead of pushes", async () => {
+    history.replaceState({ index: 4, scrollX: 0, scrollY: 555 }, "", "/paging");
+    window.scrollY = 120;
+    const host = mount(pagerForm(2));
+    host.dataset.history = "replace";
+    respond(page(regionMarkup(pagerForm(1))));
+
+    (host.querySelector("button") as HTMLButtonElement).click();
+    await flush();
+
+    expect(history.state).toEqual({
+      index: 4,
+      scrollX: 0,
+      scrollY: 120,
+      afLive: "results",
+    });
+  });
+
   it("leaves the pending classes behind once the swap lands", async () => {
     const host = mount(pagerForm(2));
     respond(page(regionMarkup(pagerForm(1))));
