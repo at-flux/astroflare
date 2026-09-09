@@ -1,3 +1,44 @@
+# @at-flux/astroflare [2.0.0](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.17...@at-flux/astroflare@2.0.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* **a11y:** name the collection controls, and lay them out without Tailwind ([735af34](https://github.com/at-flux/astroflare/commit/735af34dc7401300fd9ecf6679de0bd13c39545f))
+* **a11y:** warn in dev when a modal has no accessible name ([c560867](https://github.com/at-flux/astroflare/commit/c560867fd7be6edaa34a233e7d80e62ff30dcbef))
+* **forms:** submit the query controls so the submit event fires ([bf8e63a](https://github.com/at-flux/astroflare/commit/bf8e63a8577b408e7cd8ca79c1737cfcb938b247))
+* **live-region:** keep the reader's place through back and forward ([cb1a9dd](https://github.com/at-flux/astroflare/commit/cb1a9ddcb7134fcc6e6fc31181ca52b23244d4c4))
+* **styleguide:** drop the spinner trigger that could not put it away ([86a029b](https://github.com/at-flux/astroflare/commit/86a029b848b6cdc04dea1ce52aa7d0c8b8a0ec91))
+* **styleguide:** stop the server paging demo flashing, and unclash its params ([05253fb](https://github.com/at-flux/astroflare/commit/05253fb92338c571c059818f4a294745f534172f))
+
+
+* feat(suspense)!: remove ImageSuspense, ImageFade and LazyContent ([917aeff](https://github.com/at-flux/astroflare/commit/917aeffa3a6aa3e2e8caae6d875c267de146d70d))
+
+
+### Features
+
+* **clock:** read "now" through one place so it can be pinned ([c2e29a1](https://github.com/at-flux/astroflare/commit/c2e29a196aa2ccdd241b0cc07c255027bc16ea32))
+* **headers:** add the section header block and its emoji medallion ([3338d03](https://github.com/at-flux/astroflare/commit/3338d037cff0dfea2bfc61f82c5ad13359089da2))
+* **live-region:** swap URL-driven markup in place instead of navigating ([2537372](https://github.com/at-flux/astroflare/commit/2537372fb8452ec2f9b8387ea4f4d126386c1c8c))
+* **modal:** expose the shell and panel classes ([d8b6edf](https://github.com/at-flux/astroflare/commit/d8b6edf4db209b46db475f106bd0c380f08dc19a))
+* **paged-grid:** page a gallery without the grid changing shape ([1e4d523](https://github.com/at-flux/astroflare/commit/1e4d523f8acb8a6e8c244b4f1ab5972f04fc167e))
+* **suspense:** deprecate the preset components Suspense replaced ([a6cc53b](https://github.com/at-flux/astroflare/commit/a6cc53b5f9eb52d6e3d20d11c3acfcc2cb1cac9a))
+* **suspense:** unify image and lazy-content loading behind one primitive ([5c84207](https://github.com/at-flux/astroflare/commit/5c84207fd87342c531459b2b6dabb356d08c92f4))
+* **theme:** stamp the theme before first paint ([5110918](https://github.com/at-flux/astroflare/commit/51109183bd3af7b76f57d86763ffa81011b0b481))
+
+
+### BREAKING CHANGES
+
+* `components/ImageSuspense.astro`, `components/ImageFade.astro`
+and `components/LazyContent.astro` are gone. Use `components/Suspense.astro`:
+`<ImageSuspense …>` becomes `<Suspense frame …>` with `spinnerColor` renamed to
+`accent`, and `<LazyContent src=… >` becomes
+`<Suspense src=… when="dialog-open" minHeight="12rem">` with `when="immediate"`
+renamed to `when="eager"` and the `loading` slot renamed to `placeholder`.
+`LazyContent`'s default spinner and error line were markup rather than
+behaviour, so copy them into the `placeholder` and `error` slots to keep them.
+
+Claude-Session: https://claude.ai/code/session_018J4mRpiApegWgBBdtmJ2uW
+
 ## @at-flux/astroflare [1.0.17](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.16...@at-flux/astroflare@1.0.17) (2026-07-30)
 
 
