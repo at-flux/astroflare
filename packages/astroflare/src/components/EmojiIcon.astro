@@ -1,0 +1,73 @@
+---
+/**
+ * One glyph in a round medallion — the thing a page header opens with.
+ *
+ * The emoji is decorative by default, because the heading under it already says
+ * what the section is; a screen reader that announces "party popper" before the
+ * title is reading out the wallpaper. Pass `label` only when the glyph carries
+ * meaning nothing else on the page carries.
+ *
+ * The circle is drawn from `--af-emoji-accent` (falling back to `--color-brand`),
+ * so a site sets its palette once rather than per medallion. Everything else is
+ * a class away: `class` lands on the frame and overrides the size, colour, or
+ * the whole thing if a design wants a square.
+ *
+ * @example
+ * <EmojiIcon emoji="🔥" />
+ * <EmojiIcon emoji="🔒" size="lg" label="Locked" />
+ */
+interface Props {
+  emoji: string;
+  /** Frame and glyph size. `md` is what a page header wants. */
+  size?: 'sm' | 'md' | 'lg';
+  /** Accessible name. Without one the medallion is hidden from assistive tech. */
+  label?: string;
+  class?: string;
+  /** Anything else lands on the frame — `style`, `data-*`, an `id`. */
+  [key: string]: unknown;
+}
+
+const { emoji, size = 'md', label, class: className = '', ...rest } = Astro.props;
+---
+
+<span
+  class:list={['af-emoji-icon', `af-emoji-icon--${size}`, className]}
+  role={label ? 'img' : undefined}
+  {...rest}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+>
+  <span class='af-emoji-icon__glyph'>{emoji}</span>
+</span>
+
+<style is:global>
+  .af-emoji-icon {
+    --af-emoji-tint: var(--af-emoji-accent, var(--color-brand, #7c5cff));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--af-emoji-frame, 5rem);
+    height: var(--af-emoji-frame, 5rem);
+    border: 1px solid color-mix(in oklab, var(--af-emoji-tint) 30%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in oklab, var(--af-emoji-tint) 20%, transparent);
+    line-height: 1;
+  }
+
+  .af-emoji-icon--sm {
+    --af-emoji-frame: 3rem;
+    --af-emoji-glyph: 1.5rem;
+  }
+  .af-emoji-icon--md {
+    --af-emoji-frame: 5rem;
+    --af-emoji-glyph: 2.25rem;
+  }
+  .af-emoji-icon--lg {
+    --af-emoji-frame: 6rem;
+    --af-emoji-glyph: 3rem;
+  }
+
+  .af-emoji-icon__glyph {
+    font-size: var(--af-emoji-glyph, 2.25rem);
+  }
+</style>

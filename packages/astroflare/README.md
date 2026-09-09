@@ -40,6 +40,8 @@ import { forms } from "@at-flux/astroflare/core";
 - `ContactModalCta.astro` — Opinionated contact button (solid pill or text link) wrapped in `ModalTrigger`
 - `InstagramProfileLink.astro` — Small Instagram icon + `@handle` link with safe defaults
 - `Section.astro` — Page section with optional `narrow` and `contentOnly` (inner width wrapper without outer padding)
+- `SectionHeader.astro` — Medallion / title / subtitle / tagline block that opens a section or a page; every visible class is a prop
+- `EmojiIcon.astro` — One emoji in a round medallion, decorative unless given a `label`, tinted from `--af-emoji-accent`
 - `ThemeToggle.astro` — Dark/light mode toggle using `<theme-toggle>` web component
 - `IconButton.astro` — Accessible icon-only control that renders `<button>` or `<a>`
 - `ClientRouterLoadingSpinner.astro` — Loading spinner for Astro view transitions
@@ -61,6 +63,8 @@ import { forms } from "@at-flux/astroflare/core";
 - `ContactModalCta.astro`: `modalId`, `label`, `variant`, `class`
 - `InstagramProfileLink.astro`: `handle`, `href`, `class`, `aria-label`
 - `Section.astro`: `id`, `class`, `narrow`, `contentOnly`
+- `SectionHeader.astro`: `title`, `titleId`, `subtitle`, `tagline`, `emoji`, `emojiSize`, `emojiLabel`, `as`, `titleClass`, `subtitleClass`, `taglineClass`, `iconWrapClass`, `class` — slots `icon`, `subtitle`, `tagline`
+- `EmojiIcon.astro`: `emoji`, `size`, `label`, `class`, passthrough attributes
 - `ThemeToggle.astro`: `class`
 - `IconButton.astro`: `label`, `href`, `class`, `id`, passthrough attributes
 - `Tooltip.astro`: `text`, `position`, `class`, `panelClass`

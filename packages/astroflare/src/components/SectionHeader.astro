@@ -1,0 +1,109 @@
+---
+/**
+ * The heading block that opens a section: an optional medallion, a title, an
+ * optional subtitle and an optional third line.
+ *
+ * A page header and an in-page section header are the same four slots at
+ * different sizes, and written as raw markup they drift apart: one gains the
+ * medallion, the other keeps a colour nobody meant to keep. This owns the
+ * structure and the slot plumbing; every visible class is a prop, so a site
+ * passes its own scale in and nothing here has an opinion about the palette.
+ *
+ * Three ways to give it a medallion, in order of how often they are wanted:
+ * `emoji` for the usual glyph, the `icon` slot for anything else (an `<Image>`,
+ * an avatar), or neither, in which case nothing renders and the title sits at
+ * the top of the block.
+ *
+ * Subtitle and tagline are each a prop or a slot: the prop for a plain string,
+ * the slot when the line needs markup inside it.
+ *
+ * @example
+ * <SectionHeader
+ *   emoji="🔥"
+ *   title="Components"
+ *   subtitle="What each one is for"
+ *   titleClass="text-4xl font-bold"
+ * />
+ */
+import EmojiIcon from './EmojiIcon.astro';
+
+export interface Props {
+  title?: string;
+  /** `id` on the heading, for a dialog that labels itself with it. */
+  titleId?: string;
+  subtitle?: string;
+  /** The third line, under the subtitle. */
+  tagline?: string;
+  /** Shorthand for the `icon` slot: one emoji in the standard medallion. */
+  emoji?: string;
+  emojiSize?: 'sm' | 'md' | 'lg';
+  emojiLabel?: string;
+  /** Heading level. Sections are h2; a page's own header is h1. */
+  as?: 'h1' | 'h2' | 'h3';
+  titleClass?: string;
+  subtitleClass?: string;
+  taglineClass?: string;
+  iconWrapClass?: string;
+  class?: string;
+}
+
+const {
+  title,
+  titleId,
+  subtitle,
+  tagline,
+  emoji,
+  emojiSize = 'md',
+  emojiLabel,
+  as: Heading = 'h2',
+  titleClass = '',
+  subtitleClass = '',
+  taglineClass = '',
+  iconWrapClass = 'af-section-header__icon',
+  class: className = 'af-section-header',
+} = Astro.props;
+
+const hasIcon = Boolean(emoji) || Astro.slots.has('icon');
+const hasSubtitle = Boolean(subtitle) || Astro.slots.has('subtitle');
+const hasTagline = Boolean(tagline) || Astro.slots.has('tagline');
+---
+
+<div class={className}>
+  {
+    hasIcon && (
+      <div class={iconWrapClass}>
+        {emoji ? (
+          <EmojiIcon emoji={emoji} size={emojiSize} label={emojiLabel} />
+        ) : (
+          <slot name='icon' />
+        )}
+      </div>
+    )
+  }
+
+  {
+    title && (
+      <Heading id={titleId} class={titleClass}>
+        {title}
+      </Heading>
+    )
+  }
+
+  {hasSubtitle && <p class={subtitleClass}>{subtitle ?? <slot name='subtitle' />}</p>}
+
+  {hasTagline && <p class={taglineClass}>{tagline ?? <slot name='tagline' />}</p>}
+</div>
+
+<style is:global>
+  /* Centring and the gap under the medallion are the only layout opinions here,
+     and both are one class prop away from being replaced. */
+  .af-section-header {
+    text-align: center;
+  }
+
+  .af-section-header__icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+</style>
