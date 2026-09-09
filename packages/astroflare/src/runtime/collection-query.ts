@@ -2,6 +2,10 @@ export interface CollectionQueryRuntimeOptions {
   cardSelector: string;
   filterSelector: string;
   paginationSelector: string;
+  /** Filler cells kept in the DOM so a short last page stays the same height. */
+  placeholderSelector: string;
+  /** Show placeholders to top the visible page up to `perPage` cells. */
+  padPage: boolean;
   perPage: number;
   activeClass: string;
   tagSeparator: string;
@@ -14,6 +18,8 @@ const DEFAULTS: CollectionQueryRuntimeOptions = {
   cardSelector: "[data-card]",
   filterSelector: "[data-filter]",
   paginationSelector: "[data-pagination]",
+  placeholderSelector: "[data-card-placeholder]",
+  padPage: false,
   perPage: 9,
   activeClass: "is-active",
   tagSeparator: "|",
@@ -27,6 +33,8 @@ const getConfig = (root: HTMLElement): CollectionQueryRuntimeOptions => {
     cardSelector,
     filterSelector,
     paginationSelector,
+    placeholderSelector,
+    padPage,
     perPage,
     activeClass,
     tagSeparator,
@@ -39,6 +47,8 @@ const getConfig = (root: HTMLElement): CollectionQueryRuntimeOptions => {
     cardSelector: cardSelector ?? DEFAULTS.cardSelector,
     filterSelector: filterSelector ?? DEFAULTS.filterSelector,
     paginationSelector: paginationSelector ?? DEFAULTS.paginationSelector,
+    placeholderSelector: placeholderSelector ?? DEFAULTS.placeholderSelector,
+    padPage: padPage === undefined ? DEFAULTS.padPage : padPage !== "false",
     perPage: Number(perPage ?? DEFAULTS.perPage),
     activeClass: activeClass ?? DEFAULTS.activeClass,
     tagSeparator: tagSeparator ?? DEFAULTS.tagSeparator,
@@ -82,6 +92,9 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     root.querySelectorAll<HTMLButtonElement>(config.filterSelector),
   );
   const pagination = root.querySelector<HTMLElement>(config.paginationSelector);
+  const placeholders = config.padPage
+    ? Array.from(root.querySelectorAll<HTMLElement>(config.placeholderSelector))
+    : [];
 
   let page = 1;
   let activeFilter =
@@ -144,8 +157,18 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     cards.forEach((card) => {
       card.style.display = "none";
     });
-    filtered.slice(start, end).forEach((card) => {
+    const visible = filtered.slice(start, end);
+    visible.forEach((card) => {
       card.style.display = "";
+    });
+
+    /* A last page with three of eight tiles used to shrink the grid, which moved
+       everything below it and threw the scroll position off as soon as anyone
+       paged back. The filler cells are already in the markup; show just enough
+       of them to keep every page the same height. */
+    const missing = Math.max(0, config.perPage - visible.length);
+    placeholders.forEach((cell, index) => {
+      cell.style.display = index < missing ? "" : "none";
     });
 
     renderPagination(totalPages);

@@ -3,6 +3,7 @@ export * from "./forms/index";
 export * from "./tag-colors";
 export * from "./date-format";
 export * from "./collection-query";
+export * from "./paged-grid";
 export * from "./live-region";
 
 // Namespaced access for clearer call sites
