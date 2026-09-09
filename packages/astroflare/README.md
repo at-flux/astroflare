@@ -163,16 +163,16 @@ JavaScript.
 </Suspense>
 ```
 
-**Deprecated:** `ImageSuspense.astro`, its `ImageFade` alias, and
-`LazyContent.astro` are presets over `Suspense` that expose a subset of its
-props. They are removed in the next major.
+**Removed:** `ImageSuspense.astro`, its `ImageFade` alias, and
+`LazyContent.astro` were presets over `Suspense` exposing a subset of its props.
+Rewrite call sites this way:
 
-| Preset                       | Write instead                                          |
-| ---------------------------- | ------------------------------------------------------ |
-| `<ImageSuspense …>`          | `<Suspense frame …>`, `spinnerColor` → `accent`         |
-| `<LazyContent src=… >`       | `<Suspense src=… when="dialog-open" minHeight="12rem">` |
-| `when="immediate"`           | `when="eager"`                                          |
-| `loading` slot               | `placeholder` slot                                      |
+| Was                    | Write instead                                           |
+| ---------------------- | ------------------------------------------------------- |
+| `<ImageSuspense …>`    | `<Suspense frame …>`, `spinnerColor` → `accent`          |
+| `<LazyContent src=… >` | `<Suspense src=… when="dialog-open" minHeight="12rem">`  |
+| `when="immediate"`     | `when="eager"`                                           |
+| `loading` slot         | `placeholder` slot                                       |
 
 ### Styles (CSS)
 

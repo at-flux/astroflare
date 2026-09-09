@@ -2,7 +2,7 @@
 import "../../src/styles/global.css";
 import Modal from "../../../src/components/Modal.astro";
 import ModalTrigger from "../../../src/components/ModalTrigger.astro";
-import LazyContent from "../../../src/components/LazyContent.astro";
+import Suspense from "../../../src/components/Suspense.astro";
 import Section from "../../../src/components/Section.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { nav } from "../nav";
@@ -49,15 +49,18 @@ const modalClasses = {
   <section class="sg-card sg-grid">
     <h2>Lazy modal content</h2>
     <p class="sg-muted">
-      <code>LazyContent</code> fetches an HTML fragment / Astro partial route the
-      first time its ancestor <code>&lt;dialog&gt;</code> opens, so a heavy static
+      <code>Suspense</code> with <code>src</code> and the <code>dialog-open</code> gate fetches
+      an HTML fragment / Astro partial route the first time its ancestor
+      <code>&lt;dialog&gt;</code> opens, so a heavy static
       body (long policy, docs) stops shipping inline on every page. Interactive
       islands should stay inline — partial routes emit no hoisted client scripts.
     </p>
     <ModalTrigger modalId="styleguide-lazy-modal" class="sg-btn">Open lazy modal</ModalTrigger>
     <Modal id="styleguide-lazy-modal" label="Lazy modal content demo" {...modalClasses}>
       <Section contentOnly>
-        <LazyContent src="/fragments/demo/" />
+        <Suspense src="/fragments/demo/" when="dialog-open" minHeight="12rem">
+          <p slot="error">Couldn't load this content.</p>
+        </Suspense>
       </Section>
     </Modal>
   </section>
