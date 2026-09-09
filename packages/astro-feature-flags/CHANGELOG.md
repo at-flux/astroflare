@@ -1,3 +1,17 @@
+## @at-flux/astro-feature-flags [1.0.4](https://github.com/at-flux/astroflare/compare/@at-flux/astro-feature-flags@1.0.3...@at-flux/astro-feature-flags@1.0.4) (2026-09-09)
+
+
+### Bug Fixes
+
+* **a11y:** warn in dev when a modal has no accessible name ([c560867](https://github.com/at-flux/astroflare/commit/c560867fd7be6edaa34a233e7d80e62ff30dcbef))
+* **feature-flags:** let the app's own layout win over the dev chrome ([2f7e099](https://github.com/at-flux/astroflare/commit/2f7e099908272cfab86ec4467514f5c0ebe8ba67))
+* **flags:** stop the dev outline moving the element it marks ([6d0f5f4](https://github.com/at-flux/astroflare/commit/6d0f5f499c5720965b41918a8256628bdc9ca9dc))
+
+
+### Features
+
+* **flags:** take pruned routes out of the sitemap ([473c1b5](https://github.com/at-flux/astroflare/commit/473c1b5b33817c20b4acacfcec227e7900405140))
+
 ## @at-flux/astro-feature-flags [1.0.3](https://github.com/at-flux/astroflare/compare/@at-flux/astro-feature-flags@1.0.2...@at-flux/astro-feature-flags@1.0.3) (2026-07-30)
 
 
