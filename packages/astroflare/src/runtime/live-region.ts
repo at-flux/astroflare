@@ -403,6 +403,53 @@ export class AfLiveRegionElement extends HTMLElement {
 const groupFor = (origin: AfLiveRegionElement): AfLiveRegionElement[] =>
   Array.from(registry).filter((region) => region.group === origin.group);
 
+const historyState = (): Record<string, unknown> => {
+  const current = history.state;
+  return current && typeof current === "object"
+    ? (current as Record<string, unknown>)
+    : {};
+};
+
+/** Where the reader is now, in the shape the router records it. */
+const scrollState = (base: Record<string, unknown>) =>
+  "scrollY" in base || "scrollX" in base
+    ? { scrollX: window.scrollX, scrollY: window.scrollY }
+    : {};
+
+/**
+ * Our marker on top of whatever is already on the entry.
+ *
+ * Astro's `<ClientRouter />` keeps its own bookkeeping in `history.state` — an
+ * entry index and the scroll position to return the reader to. A state object
+ * holding only `afLive` throws that away, and the router then reads
+ * `undefined` for the scroll and sends the reader to the top of the page on
+ * `back`. Copy the entry forward instead, bumping the index for a push so the
+ * router still reads the traversal direction correctly.
+ *
+ * The swap never unloads the document, so the router's own scroll bookkeeping
+ * never runs for it. Stamp the current position onto both entries — the one
+ * being left and the one being pushed — or a later `back` lands at the top of
+ * a page the reader was halfway down.
+ */
+const liveState = (regionId: string, pushing: boolean) => {
+  const base = historyState();
+  const index = base.index;
+  return {
+    ...base,
+    ...scrollState(base),
+    ...(pushing && typeof index === "number" ? { index: index + 1 } : {}),
+    afLive: regionId,
+  };
+};
+
+/** Record where the reader is on the entry we are about to push away from. */
+const stampScroll = () => {
+  const base = historyState();
+  const scroll = scrollState(base);
+  if (Object.keys(scroll).length === 0) return;
+  history.replaceState({ ...base, ...scroll }, "");
+};
+
 const navigateRegion = async (
   url: URL,
   origin: AfLiveRegionElement,
@@ -411,10 +458,11 @@ const navigateRegion = async (
   const mode = origin.historyMode;
   const href = `${url.pathname}${url.search}${url.hash}`;
   if (mode === "push") {
-    history.pushState({ afLive: origin.regionId }, "", href);
+    stampScroll();
+    history.pushState(liveState(origin.regionId, true), "", href);
     ownsHistoryEntry = true;
   } else if (mode === "replace") {
-    history.replaceState({ afLive: origin.regionId }, "", href);
+    history.replaceState(liveState(origin.regionId, false), "", href);
     ownsHistoryEntry = true;
   }
   await swapGroup(url, groupFor(origin), focusKey, mode !== "none");
