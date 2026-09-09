@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { withClock } from "../src/clock";
 import {
   composeEmailAddress,
   generateFormResultHtml,
@@ -34,6 +35,18 @@ describe("forms utilities", () => {
     expect(html).toContain("Test");
     expect(html).toContain("Email");
     expect(html).toContain("user@example.com");
+  });
+
+  it("renderEmailTemplate stamps the footer from the clock", async () => {
+    const html = await withClock("2026-10-01T12:00:00Z", () =>
+      renderEmailTemplate({
+        title: "Enquiry",
+        contentHtml: "<p>Hi</p>",
+        brandName: "Example",
+      }),
+    );
+    // Midday UTC, so the date reads the same in every timezone the runner might be in.
+    expect(html).toContain("Example contact form on 01/10/2026");
   });
 
   it("renderEmailTemplate wraps content and title", async () => {

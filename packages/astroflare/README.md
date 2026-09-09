@@ -183,6 +183,7 @@ Rewrite call sites this way:
 
 ### Utilities
 
+- `now()` / `nowMs()` / `setClock(source)` / `resetClock()` / `withClock(source, fn)` — one source of "now" for the package, so a test can pin the instant and a styleguide can preview a date-dependent component out of season. Used by the email footer stamp and the submit-time timestamp fields
 - `getTagPalette(tag, options?)` — Deterministic, readable tag color assignment with optional explicit overrides
 - `formatDisplayDate(date, config?)` — Consistent card/detail date formatting with locale override support
 - `parseCollectionQuery` + `paginateCollection` + `buildCollectionHref` + `buildPageSequence` + `matchesCollectionFilters` + `formatCollectionRangeLabel` + `resolveIslandSearchString` — URL-driven filtering and pagination (`filters` as stringified JSON). `resolveIslandSearchString` is for server islands (pass the page’s search from the page; fall back to `Referer`). `formatCollectionRangeLabel` is for “Showing result N of T” / “Showing results a–b of T” footers.

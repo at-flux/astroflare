@@ -24,6 +24,8 @@
  * input is stamped with the current ISO time at submit (for consent timestamps).
  */
 
+import { now } from "../clock";
+
 const INIT_ATTR = "data-action-form-init";
 
 const q = <T extends Element>(root: ParentNode, sel: string): T | null =>
@@ -91,7 +93,7 @@ const onSubmit = async (
   form
     .querySelectorAll<HTMLInputElement>("[data-action-form-timestamp]")
     .forEach((input) => {
-      input.value = new Date().toISOString();
+      input.value = now().toISOString();
     });
 
   const errorRegion = q<HTMLElement>(root, "[data-action-form-error]");
