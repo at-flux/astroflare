@@ -4,6 +4,7 @@ import CollectionQuery from "../../../src/components/CollectionQuery.astro";
 import DateRangeFilterControls from "../../../src/components/DateRangeFilterControls.astro";
 import DisclosurePanel from "../../../src/components/DisclosurePanel.astro";
 import LiveRegion from "../../../src/components/LiveRegion.astro";
+import PagedGrid from "../../../src/components/PagedGrid.astro";
 import ServerCollectionQueryResults from "../components/ServerCollectionQueryResults.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { nav } from "../nav";
@@ -20,6 +21,7 @@ const cards = [
 /* The two demos share a URL, so the client one namespaces every param it owns
    (`clientPageSize`) and leaves `page`/`size`/`offset`/`filters` to the server
    one. */
+const gridTiles = Array.from({ length: 11 }, (_, index) => `Tile ${index + 1}`);
 const clientSizeOptions = [1, 2, 3, 4, 5, 10];
 const clientSizeRaw = Number.parseInt(Astro.url.searchParams.get("clientPageSize") ?? "2", 10);
 const clientSize = Number.isFinite(clientSizeRaw) ? Math.max(1, clientSizeRaw) : 2;
@@ -90,6 +92,22 @@ const demoDatePresets = [
         ))}
       </div>
     </CollectionQuery>
+  </section>
+
+  <section class="sg-card sg-grid">
+    <h2>Paged grid</h2>
+    <p class="sg-muted">
+      Eleven tiles, eight to a page, two columns then four — never three, so no tile is ever
+      stranded on a row of its own. Page two holds three tiles and five outlined fillers, so the
+      grid is the same height on both pages and nothing below it moves.
+    </p>
+    <PagedGrid columns={[2, 4]} rows={2} gap="0.75rem">
+      {gridTiles.map((tile) => (
+        <article data-card class="sg-card sg-tile">
+          <h3>{tile}</h3>
+        </article>
+      ))}
+    </PagedGrid>
   </section>
 
   <section class="sg-card sg-grid">

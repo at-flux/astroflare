@@ -91,3 +91,68 @@ describe("collection query runtime", () => {
     expect(root.innerHTML).toBe(firstMarkup);
   });
 });
+
+describe("collection query padding", () => {
+  const createPaddedRoot = (cardCount: number) => {
+    const cards = Array.from(
+      { length: cardCount },
+      (_, index) => `<div data-card data-tags="a">Card ${index + 1}</div>`,
+    ).join("");
+    const fillers = Array.from(
+      { length: 4 },
+      () => `<div data-card-placeholder style="display:none"></div>`,
+    ).join("");
+    document.body.innerHTML = `
+      <collection-query data-af-query data-per-page="4" data-pad-page="true">
+        <div data-card-grid>${cards}${fillers}</div>
+        <div data-pagination></div>
+      </collection-query>
+    `;
+    return document.querySelector("collection-query") as HTMLElement;
+  };
+
+  const visibleFillers = (root: HTMLElement) =>
+    Array.from(
+      root.querySelectorAll<HTMLElement>("[data-card-placeholder]"),
+    ).filter((cell) => cell.style.display !== "none").length;
+
+  it("tops a short last page up to a full page of cells", () => {
+    const root = createPaddedRoot(6);
+    initCollectionQueryElement(root);
+    expect(visibleFillers(root)).toBe(0);
+
+    const [, second] = Array.from(
+      root.querySelectorAll<HTMLButtonElement>(
+        "[data-pagination] button[data-page]",
+      ),
+    );
+    second.click();
+    expect(visibleFillers(root)).toBe(2);
+  });
+
+  it("shows no fillers while every page is full", () => {
+    const root = createPaddedRoot(8);
+    initCollectionQueryElement(root);
+    expect(visibleFillers(root)).toBe(0);
+    const [, second] = Array.from(
+      root.querySelectorAll<HTMLButtonElement>(
+        "[data-pagination] button[data-page]",
+      ),
+    );
+    second.click();
+    expect(visibleFillers(root)).toBe(0);
+  });
+
+  it("leaves the fillers hidden when padding is off", () => {
+    const root = createPaddedRoot(6);
+    root.dataset.padPage = "false";
+    initCollectionQueryElement(root);
+    const [, second] = Array.from(
+      root.querySelectorAll<HTMLButtonElement>(
+        "[data-pagination] button[data-page]",
+      ),
+    );
+    second.click();
+    expect(visibleFillers(root)).toBe(0);
+  });
+});

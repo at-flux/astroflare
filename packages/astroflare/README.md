@@ -50,6 +50,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `FilterPills.astro` — Tag-colored filter chips with an `all` option and active-state styling
 - `Pager.astro` — Pagination UI primitive for both browser-only and link-driven query pagination
 - `CollectionQuery.astro` — Unified collection filtering/pagination component (client mode by default; URL-driven server mode with `useServer`)
+- `PagedGrid.astro` — Client-paged grid with declared column steps and filler cells, so every page is the same height and no row is part-filled
 - `CollectionFooterControls.astro` — Server-only row: optional `summary` slot, `Pager`, and page-size `<form>` (same query contract as `CollectionQuery` server mode)
 
 #### Component props reference
@@ -68,6 +69,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `FilterPills.astro`: `items`, `includeAll`, `allLabel`, `allHref`, `active`, `itemCase`, `colorOverrides`, `class`
 - `Pager.astro`: `pageCount`, `activePage`, `items`, `class`
 - `CollectionQuery.astro`: `useServer`, `pathname`, `query`, `totalPages`, `currentPage`, `filters`, `maxPageButtons`, `filtersClass`, `pagerClass`, `perPage`, `class`
+- `PagedGrid.astro`: `columns`, `rows`, `perPage`, `pad`, `placeholderAspect`, `gap`, `gridClass`, `pagerClass`, `maxPageButtons`, `class`
   - when `useServer` is `true`, `pathname`, `query`, `totalPages`, and `currentPage` are required
 - `CollectionFooterControls.astro`: `pathname`, `query`, `totalPages`, `currentPage`, `sizeOptions`, `maxPageButtons`, `class` — slot `summary` for “Showing X–Y of Z” text
 
@@ -112,6 +114,32 @@ Use named slots to replace the default filter/pager rendering:
   </div>
 </CollectionQuery>
 ```
+
+### Paged grid
+
+A gallery paged in the browser, where the grid geometry is declared rather than
+derived:
+
+```astro
+<PagedGrid columns={[2, 4]} rows={2}>
+  {tiles.map((tile) => (
+    <a data-card href={tile.href}>
+      <img src={tile.src} alt={tile.alt} loading="lazy" />
+    </a>
+  ))}
+</PagedGrid>
+```
+
+- **Column steps, not `auto-fill`.** `[2, 4]` means two columns below `48rem` and
+  four above it, and never three, so no tile is left alone on a row. Each step
+  must divide the page size or the build fails with the arithmetic.
+- **Every page the same height.** A last page holding three of eight tiles is
+  topped up with outlined filler cells, so paging back and forth never moves the
+  content below the grid. `pad={false}` turns that off.
+- **Later pages cost nothing.** Hidden pages are `display: none`, and browsers do
+  not fetch a `loading="lazy"` image inside one, so mark gallery images that way.
+- **Paging is progressive enhancement.** Without JavaScript every tile renders
+  and the fillers stay hidden.
 
 ### Styles (CSS)
 

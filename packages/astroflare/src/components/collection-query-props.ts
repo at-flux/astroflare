@@ -33,6 +33,12 @@ interface CollectionQueryBaseProps {
   pageSizeClass?: string;
   /** Visible cards per page in client mode. */
   perPage?: number;
+  /**
+   * Client mode: show `[data-card-placeholder]` filler cells so a short last page
+   * keeps the same height as a full one. Placeholders must render with an inline
+   * `display: none` so they stay hidden without JavaScript.
+   */
+  padPage?: boolean;
   /** Classes applied to the host wrapper element in client mode. */
   class?: string;
 }

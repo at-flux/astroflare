@@ -27,6 +27,7 @@ const {
   showPageSize = true,
   pageSizeClass = "",
   perPage = 9,
+  padPage = false,
   class: className = "",
 } = Astro.props;
 
@@ -191,6 +192,7 @@ const pagerItemsWithSticky = pagerItems.map((item) =>
     class={className}
     data-af-query
     data-per-page={String(perPage)}
+    data-pad-page={padPage ? "true" : "false"}
     data-max-page-buttons={String(maxPageButtons)}
   >
     <slot
