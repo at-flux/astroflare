@@ -1,8 +1,6 @@
 ---
 import "../../src/styles/global.css";
 import Suspense from "../../../src/components/Suspense.astro";
-import ImageSuspense from "../../../src/components/ImageSuspense.astro";
-import LazyContent from "../../../src/components/LazyContent.astro";
 import GuideLayout from "../layouts/GuideLayout.astro";
 import { nav } from "../nav";
 
@@ -18,8 +16,7 @@ const sections = [
   { id: "fragment", label: "src fragment" },
   { id: "fragment-error", label: "src failure" },
   { id: "manual", label: 'ready="manual"' },
-  { id: "image", label: "vs ImageSuspense" },
-  { id: "lazy", label: "vs LazyContent" },
+  { id: "image", label: "Framed media" },
 ];
 ---
 
@@ -29,8 +26,8 @@ const sections = [
     <p class="sg-muted">
       One primitive: a <strong>gate</strong> (when may we start), a <strong>readiness
       signal</strong> (when is the real thing ready) and a <strong>swap</strong> (placeholder
-      out, content in). <code>ImageSuspense</code> and <code>LazyContent</code> are presets over
-      it — the last two sections put each next to the raw component.
+      out, content in). Media that loads, a block gated on the viewport, a fragment fetched on
+      demand and a wait you resolve yourself are all the same three steps.
     </p>
     <p class="sg-muted">
       Every demo resolves once per page load. Use each section's <em>Replay</em> button to run it
@@ -187,50 +184,25 @@ const sections = [
   </section>
 
   <section class="sg-card sg-grid" id="image">
-    <h2><a class="sg-anchor" href="#image">#</a> Suspense vs ImageSuspense</h2>
+    <h2><a class="sg-anchor" href="#image">#</a> Framed media</h2>
     <p class="sg-muted">
-      The same image, the same wait. On the left, <code>Suspense</code> with
-      <code>frame</code>; on the right, <code>ImageSuspense</code>, which is exactly that preset
-      with <code>spinnerColor</code> renamed to <code>accent</code>. Both render an
-      <code>&lt;af-suspense&gt;</code> host.
+      <code>aspectRatio</code> reserves the box before the image arrives, so nothing below it
+      moves when it lands, and <code>frame</code> clips and tints that box so the placeholder and
+      the image share one rounded rectangle.
     </p>
     <button class="sg-btn" type="button" data-replay="#image">Replay</button>
     <div class="sg-split">
       <figure>
         <figcaption class="sg-muted">&lt;Suspense aspectRatio="16/9" frame&gt;</figcaption>
         <Suspense aspectRatio="16/9" frame class="sg-round" accent="#6b7280">
-          <img src={image(1800, "via Suspense", 210)} alt="" width="800" height="450" />
+          <img src={image(1800, "framed", 210)} alt="" width="800" height="450" />
         </Suspense>
       </figure>
       <figure>
-        <figcaption class="sg-muted">&lt;ImageSuspense aspectRatio="16/9"&gt;</figcaption>
-        <ImageSuspense aspectRatio="16/9" class="sg-round" spinnerColor="#6b7280">
-          <img src={image(1800, "via ImageSuspense", 210)} alt="" width="800" height="450" />
-        </ImageSuspense>
-      </figure>
-    </div>
-  </section>
-
-  <section class="sg-card sg-grid" id="lazy">
-    <h2><a class="sg-anchor" href="#lazy">#</a> Suspense vs LazyContent</h2>
-    <p class="sg-muted">
-      The same fragment, fetched the same way. <code>LazyContent</code> is
-      <code>Suspense</code> with <code>src</code>, a default gate of <code>dialog-open</code> and
-      its own placeholder markup; its <code>loading</code> slot is this component's
-      <code>placeholder</code> slot. The dialog gate itself is demonstrated on the
-      <a href="/modals">Modals</a> page.
-    </p>
-    <button class="sg-btn" type="button" data-replay="#lazy">Replay</button>
-    <div class="sg-split">
-      <figure>
-        <figcaption class="sg-muted">&lt;Suspense src=… when="eager"&gt;</figcaption>
-        <Suspense src="/fragments/slow/?delay=1500" minHeight="12rem">
-          <p slot="error">Fragment unavailable.</p>
+        <figcaption class="sg-muted">&lt;Suspense aspectRatio="16/9" frame skeleton&gt;</figcaption>
+        <Suspense aspectRatio="16/9" frame skeleton class="sg-round" accent="#6b7280">
+          <img src={image(1800, "skeleton", 320)} alt="" width="800" height="450" />
         </Suspense>
-      </figure>
-      <figure>
-        <figcaption class="sg-muted">&lt;LazyContent src=… when="immediate"&gt;</figcaption>
-        <LazyContent src="/fragments/slow/?delay=1500" when="immediate" />
       </figure>
     </div>
   </section>
