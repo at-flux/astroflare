@@ -79,8 +79,9 @@ describe("dev-outline-css does not fight the app's own layout", () => {
     const sheet = css();
     const zeroSpecificity = sheet.match(/:where\([\s\S]*?\) \{[^}]*\}/g) ?? [];
 
-    expect(zeroSpecificity.some((rule) => rule.includes("position: relative"))).
-      toBe(true);
+    expect(
+      zeroSpecificity.some((rule) => rule.includes("position: relative")),
+    ).toBe(true);
   });
 
   it("never sets `position` at a specificity an app utility cannot beat", () => {
