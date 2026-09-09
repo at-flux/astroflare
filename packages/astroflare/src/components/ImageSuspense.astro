@@ -2,6 +2,12 @@
 /**
  * ImageSuspense — suspense wrapper for media that loads.
  *
+ * @deprecated Use `Suspense.astro` directly. This component is a preset over it
+ * that exposes a strict subset of its props, so every call site can be rewritten
+ * mechanically: keep `class`, `rounded`, `aspectRatio`, `duration`, `background`
+ * and `skeleton` as they are, rename `spinnerColor` to `accent`, and add `frame`
+ * (implied here, explicit there). It is removed in the next major.
+ *
  * A preset over {@link Suspense.astro}: the same gate → readiness → swap
  * machine, fixed to the media case. Wraps any slotted `<img>`, `<picture>`, or
  * Astro `<Image />` (which renders an `<img>`) and shows a spinner — or a
