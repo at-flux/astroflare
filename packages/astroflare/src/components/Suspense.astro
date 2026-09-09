@@ -40,10 +40,12 @@
  * nothing at all. Every transition and the skeleton shimmer are dropped under
  * `prefers-reduced-motion`.
  *
- * ### The other waiting components are presets over this one
- * - `ImageSuspense.astro` — `<Suspense frame>` with media readiness. Its
- *   `spinnerColor` prop is this component's `accent`; the rest passes straight
- *   through.
+ * ### The other waiting components are deprecated presets over this one
+ * Both are removed in the next major; each is a thin preset with a strict subset
+ * of these props, and the mapping is on the component itself.
+ * - `ImageSuspense.astro` (and its `ImageFade` alias) — `<Suspense frame>` with
+ *   media readiness. Its `spinnerColor` prop is this component's `accent`; the
+ *   rest passes straight through.
  * - `LazyContent.astro` — `<Suspense src={src} when="dialog-open">` with its own
  *   default placeholder and error markup, and its `loading` slot forwarded to
  *   `placeholder`.

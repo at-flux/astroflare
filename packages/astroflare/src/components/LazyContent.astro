@@ -1,5 +1,12 @@
 ---
 /**
+ * @deprecated Use `Suspense.astro` directly: pass the same `src`, map
+ * `when="immediate"` to `when="eager"` (the other two gate names are unchanged),
+ * move the `loading` slot to `placeholder`, keep the `error` slot, and add
+ * `minHeight="12rem"` to hold the box open while it fetches. The default spinner
+ * and error line here are markup, not behaviour, so copy them into those slots if
+ * you want them. Removed in the next major.
+ *
  * Fetch-on-demand content holder. Renders nothing but a loading state until it
  * is asked to fetch `src` (an HTML fragment / Astro partial route), then swaps
  * the response into place. Heavy modal bodies (long policies, big forms) can

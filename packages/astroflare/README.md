@@ -43,6 +43,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `ThemeToggle.astro` — Dark/light mode toggle using `<theme-toggle>` web component
 - `IconButton.astro` — Accessible icon-only control that renders `<button>` or `<a>`
 - `ClientRouterLoadingSpinner.astro` — Loading spinner for Astro view transitions
+- `Suspense.astro` — One primitive for anything a page waits on: media that loads, a block gated on the viewport or on a modal opening, an HTML fragment fetched on demand, or a wait you resolve yourself
 - `Tooltip.astro` — Lightweight hover/focus tooltip wrapper for compact metadata summaries
 - `ListSummary.astro` — Generic inline list truncation with `+N` overflow and tooltip details
 - `TagSummary.astro` — Generic deterministic tag pill list with `+N` tooltip overflow
@@ -68,6 +69,7 @@ import { forms } from "@at-flux/astroflare/core";
 - `MediaProtect.astro`: `class`, `containerClass`, `drag`, `contextMenu`
 - `FilterPills.astro`: `items`, `includeAll`, `allLabel`, `allHref`, `active`, `itemCase`, `colorOverrides`, `class`
 - `Pager.astro`: `pageCount`, `activePage`, `items`, `class`
+- `Suspense.astro`: `when`, `ready`, `src`, `rootMargin`, `minDisplay`, `graceDelay`, `timeout`, `aspectRatio`, `minHeight`, `duration`, `skeleton`, `accent`, `background`, `frame`, `rounded`, `loadingLabel`, `id`, `class` — slots `placeholder` and `error`
 - `CollectionQuery.astro`: `useServer`, `pathname`, `query`, `totalPages`, `currentPage`, `filters`, `maxPageButtons`, `filtersClass`, `pagerClass`, `perPage`, `class`
 - `PagedGrid.astro`: `columns`, `rows`, `perPage`, `pad`, `placeholderAspect`, `gap`, `gridClass`, `pagerClass`, `maxPageButtons`, `class`
   - when `useServer` is `true`, `pathname`, `query`, `totalPages`, and `currentPage` are required
@@ -140,6 +142,37 @@ derived:
   not fetch a `loading="lazy"` image inside one, so mark gallery images that way.
 - **Paging is progressive enhancement.** Without JavaScript every tile renders
   and the fillers stay hidden.
+
+### Waiting states
+
+`Suspense.astro` covers every case: wrap an `<img>` and it holds the frame until
+the image settles, add `when="visible"` and it gates on the viewport, add `src`
+and it fetches an HTML fragment on demand. The placeholder waits `graceDelay` ms
+before it paints, so anything already cached swaps in without a flash, and stays
+`minDisplay` ms once painted, so a resource that is slow by a hair cannot strobe.
+Slotted content is faded rather than removed, so it is still there without
+JavaScript.
+
+```astro
+<Suspense aspectRatio="16/9" rounded="rounded-2xl">
+  <Image src={hero} alt="…" />
+</Suspense>
+
+<Suspense src="/fragments/policy/" when="dialog-open" minHeight="12rem">
+  <p slot="error">That didn't load. Reload the page to try again.</p>
+</Suspense>
+```
+
+**Deprecated:** `ImageSuspense.astro`, its `ImageFade` alias, and
+`LazyContent.astro` are presets over `Suspense` that expose a subset of its
+props. They are removed in the next major.
+
+| Preset                       | Write instead                                          |
+| ---------------------------- | ------------------------------------------------------ |
+| `<ImageSuspense …>`          | `<Suspense frame …>`, `spinnerColor` → `accent`         |
+| `<LazyContent src=… >`       | `<Suspense src=… when="dialog-open" minHeight="12rem">` |
+| `when="immediate"`           | `when="eager"`                                          |
+| `loading` slot               | `placeholder` slot                                      |
 
 ### Styles (CSS)
 
