@@ -7,4 +7,5 @@ export const nav = [
   { href: "/controls", label: "Controls" },
   { href: "/media", label: "Media" },
   { href: "/suspense", label: "Suspense" },
+  { href: "/headers", label: "Headers" },
 ];
