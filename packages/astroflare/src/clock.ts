@@ -44,7 +44,14 @@ function toClock(source: ClockSource): Clock {
   return () => fixed;
 }
 
-/** Point the clock at a fixed instant, or at a function that decides each read. */
+/**
+ * Point the clock at a fixed instant, or at a function that decides each read.
+ *
+ * Process-global, and deliberately so — see the note above. On a server that
+ * means every in-flight request, so this belongs in tests, styleguides and
+ * build-time previews, never in a request handler wanting its own notion of now.
+ * A request that needs a specific instant should be passed one.
+ */
 export function setClock(source: ClockSource): void {
   current = toClock(source);
 }

@@ -72,6 +72,21 @@ describe("pruneSitemapXml", () => {
     expect(sitemapUrlCount(xml)).toBe(2);
   });
 
+  it("reads a loc through its XML entities", () => {
+    const xml = pruneSitemapXml(
+      `<urlset>
+  <url><loc>https://example.com/about/?a=1&amp;b=2</loc></url>
+  <url><loc>https://example.com/blog/?a=1&amp;b=2</loc></url>
+  <url><loc>https://example.com/&#x66;aq/</loc></url>
+</urlset>`,
+      prodRuntime(),
+    );
+    expect(xml).not.toContain("/about/");
+    expect(xml).not.toContain("aq/");
+    expect(xml).toContain("/blog/");
+    expect(sitemapUrlCount(xml)).toBe(1);
+  });
+
   it("leaves a sitemap with nothing to prune byte-identical", () => {
     const before = urlset(["/", "/blog/"]);
     expect(pruneSitemapXml(before, prodRuntime())).toBe(before);
