@@ -19,10 +19,32 @@ function walkSitemapFiles(dir: string): string[] {
   return out;
 }
 
+/**
+ * `<loc>` is XML, so the five predefined entities and numeric references are all
+ * legal in it. `&amp;` is the one that actually turns up (a query string with two
+ * parameters), but a path that came through an escaper wholesale can carry the
+ * others, and an entity left undecoded turns into a pathname that matches no
+ * route and is silently kept.
+ */
+function decodeXmlEntities(value: string): string {
+  return value
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) =>
+      String.fromCodePoint(Number.parseInt(hex, 16)),
+    )
+    .replace(/&#(\d+);/g, (_, dec: string) =>
+      String.fromCodePoint(Number.parseInt(dec, 10)),
+    )
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 function locPathname(entry: string): string | null {
   const loc = /<loc>\s*([\s\S]*?)\s*<\/loc>/i.exec(entry)?.[1];
   if (!loc) return null;
-  const href = loc.replace(/&amp;/g, "&").trim();
+  const href = decodeXmlEntities(loc).trim();
   try {
     return new URL(href).pathname;
   } catch {

@@ -43,6 +43,15 @@ const {
   labelledBy,
   label,
 } = Astro.props;
+
+/* A `<dialog>` with no accessible name is announced as just "dialog", which
+   tells a screen-reader user nothing about what has taken over their screen.
+   Warn rather than invent a name: only the page knows what this one is. */
+if (import.meta.env.DEV && !labelledBy && !label) {
+  console.warn(
+    `[astroflare] Modal "${id}" has no accessible name. Pass \`labelledBy\` (the id of its heading) or \`label\`.`,
+  );
+}
 ---
 
 <app-modal>
