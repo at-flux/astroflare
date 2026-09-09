@@ -173,10 +173,10 @@ Rewrite call sites this way:
 
 | Was                    | Write instead                                           |
 | ---------------------- | ------------------------------------------------------- |
-| `<ImageSuspense …>`    | `<Suspense frame …>`, `spinnerColor` → `accent`          |
-| `<LazyContent src=… >` | `<Suspense src=… when="dialog-open" minHeight="12rem">`  |
-| `when="immediate"`     | `when="eager"`                                           |
-| `loading` slot         | `placeholder` slot                                       |
+| `<ImageSuspense …>`    | `<Suspense frame …>`, `spinnerColor` → `accent`         |
+| `<LazyContent src=… >` | `<Suspense src=… when="dialog-open" minHeight="12rem">` |
+| `when="immediate"`     | `when="eager"`                                          |
+| `loading` slot         | `placeholder` slot                                      |
 
 ### Styles (CSS)
 
