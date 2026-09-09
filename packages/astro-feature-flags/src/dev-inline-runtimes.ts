@@ -2,6 +2,7 @@ type HeadInlinePayload = {
   featureFlagStyles: string;
   routeFlags: Record<string, string[]>;
   flagNameToToken: Record<string, string>;
+  devLayer: string;
 };
 
 type BootstrapPayload = {
@@ -23,7 +24,33 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
     return p.endsWith("/") ? p : `${p}/`;
   };
   try {
-    const { featureFlagStyles, routeFlags: RF, flagNameToToken: M } = payload;
+    const {
+      featureFlagStyles,
+      routeFlags: RF,
+      flagNameToToken: M,
+      devLayer: L,
+    } = payload;
+
+    // Layer priority is fixed by the order layers are first declared, in
+    // document order. The dev sheet is appended, so it lands after the app's
+    // own stylesheets and its layer would sort last — above Tailwind's
+    // `utilities` — which is the opposite of what the layer is for. A style
+    // element holding nothing but the order statement, inserted as the first
+    // child of <head>, declares the layer before any app sheet and so pins it
+    // below everything the app writes.
+    const ensureLayerOrder = () => {
+      if (document.querySelector("style[data-astro-feature-flags-layer]"))
+        return;
+      const head = document.head || document.documentElement;
+      const s = document.createElement("style");
+      s.setAttribute("data-astro-feature-flags-layer", "");
+      s.setAttribute(
+        "data-astro-transition-persist",
+        "astro-feature-flags-layer",
+      );
+      s.textContent = `@layer ${L};`;
+      head.insertBefore(s, head.firstChild);
+    };
 
     // Inject the dev-chrome stylesheet. Astro's ClientRouter swaps <head> on a
     // view-transition navigation, and a runtime-injected <style> is dropped on
@@ -33,6 +60,7 @@ export function affHeadInlineRuntime(payload: HeadInlinePayload): void {
     // keep the injector idempotent + re-run it on every nav so the styles stay
     // constant across pages even where a swap removes them.
     const ensureFeatureFlagStyles = () => {
+      ensureLayerOrder();
       if (document.querySelector("style[data-astro-feature-flags]")) return;
       const s = document.createElement("style");
       s.setAttribute("data-astro-feature-flags", "");

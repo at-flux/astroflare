@@ -2,6 +2,7 @@
 
 exports[`dev-outline-css snapshots > matches stable output for a minimal two-flag runtime 1`] = `
 "
+@layer aff-dev;
 
 html {
   --aff-outline-c-wip: transparent;
@@ -9,9 +10,11 @@ html {
 html:not([data-ff-outline-wip="off"]) {
   --aff-outline-c-wip: var(--snap-c-wip, #ff0000);
 }
-:where([data-snap~="wip"]:not([data-snap*=" "]), [data-snap-wip]:not([data-snap*=" "])) {
-  position: relative;
-  border-radius: 0.5rem;
+@layer aff-dev {
+  :where([data-snap~="wip"]:not([data-snap*=" "]), [data-snap-wip]:not([data-snap*=" "])) {
+    position: relative;
+    border-radius: 0.5rem;
+  }
 }
 [data-snap~="wip"]:not([data-snap*=" "]), [data-snap-wip]:not([data-snap*=" "]) {
   outline: 2px solid var(--aff-outline-c-wip);
@@ -106,9 +109,11 @@ html {
 html:not([data-ff-outline-beta="off"]) {
   --aff-outline-c-beta: var(--snap-c-beta, #0000ff);
 }
-:where([data-snap~="beta"]:not([data-snap*=" "]), [data-snap-beta]:not([data-snap*=" "])) {
-  position: relative;
-  border-radius: 0.5rem;
+@layer aff-dev {
+  :where([data-snap~="beta"]:not([data-snap*=" "]), [data-snap-beta]:not([data-snap*=" "])) {
+    position: relative;
+    border-radius: 0.5rem;
+  }
 }
 [data-snap~="beta"]:not([data-snap*=" "]), [data-snap-beta]:not([data-snap*=" "]) {
   outline: 2px solid var(--aff-outline-c-beta);
@@ -197,9 +202,11 @@ html[data-ff-enabled-beta="off"] :is([data-snap~="beta"], [data-snap-beta]) {
 }
 
 
-:where([data-snap*=" "]) {
-  position: relative;
-  border-radius: 0.5rem;
+@layer aff-dev {
+  :where([data-snap*=" "]) {
+    position: relative;
+    border-radius: 0.5rem;
+  }
 }
 [data-snap*=" "] {
   outline: none !important;

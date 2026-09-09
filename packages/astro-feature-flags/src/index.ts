@@ -42,13 +42,14 @@ import {
   buildAffDevBootstrapScript,
   createFeatureFlagStyles,
   createProductionGateStyles,
+  DEV_LAYER,
 } from "./dev-outline-css";
 import { applyProductionHtmlCullToDist } from "./production-html-cull";
 import { applySitemapPruneToDist } from "./sitemap-prune";
 import { buildAffDevHeadInline } from "./dev-head-inject";
 import { routePrefixJsHelper } from "./route-prefix-js";
 
-export { createFeatureFlagStyles, createProductionGateStyles };
+export { createFeatureFlagStyles, createProductionGateStyles, DEV_LAYER };
 export {
   cullProductionHtml,
   applyProductionHtmlCullToDist,

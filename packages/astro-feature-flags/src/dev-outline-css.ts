@@ -8,6 +8,13 @@ import { affDevBootstrapRuntime } from "./dev-inline-runtimes";
 import type { ResolvedFeatureRuntime } from "./runtime";
 import { toToken } from "./runtime";
 
+/**
+ * Cascade layer for the declarations the app must be able to override without
+ * writing `!important`. Named rather than anonymous so the order statement in
+ * {@link affHeadInlineRuntime} can name it too.
+ */
+export const DEV_LAYER = "aff-dev";
+
 export type DevOutlineHiddenStrategy = "visibility" | "display";
 
 export interface DevOutlineCssOptions extends ElementBadgeLayoutOptions {
@@ -106,13 +113,18 @@ function featureColorVar(token: string, namespace: string): string {
  * positions itself, or rounds itself, must keep doing so. Marking a flagged
  * element must not move it.
  *
- * So `position` and `border-radius` are emitted inside `:where()`, which drops
- * their specificity to zero. Any author rule at all wins — a Tailwind `absolute`
- * utility, a plain `.hero { position: absolute }` — while an element the app
- * never positioned still gets `relative` and anchors the badge correctly. A
- * cascade layer would do the same job, but its priority depends on where the
- * injected sheet lands relative to the app's own `@layer` statement, and this
- * does not.
+ * So `position` and `border-radius` are emitted inside `:where()` *and* inside
+ * the `aff-dev` cascade layer. `:where()` alone is not enough: an unlayered rule
+ * beats a layered one before specificity is ever consulted, so a zero-specificity
+ * unlayered rule still overrides Tailwind's `.rounded-full` and `.absolute`,
+ * which live in `@layer utilities`. Layering ours is what lets the app win.
+ *
+ * Layer priority follows the order layers are first declared, so the layer only
+ * sorts below the app's own layers if `@layer aff-dev;` appears before them in
+ * document order. The sheet opens with that statement for the case where it
+ * lands first, and {@link affHeadInlineRuntime} also prepends a style element
+ * carrying it as the first child of `<head>`, which is what actually guarantees
+ * the order at runtime.
  *
  * Everything else here is dev chrome the app has no opinion about, and stays at
  * its natural specificity.
@@ -159,9 +171,11 @@ html {
 html:not([data-ff-outline-${token}="off"]) {
   --aff-outline-c-${token}: var(${v}, ${col});
 }
-:where(${selOutline}) {
-  position: relative;
-  border-radius: ${opts.borderRadius};
+@layer ${DEV_LAYER} {
+  :where(${selOutline}) {
+    position: relative;
+    border-radius: ${opts.borderRadius};
+  }
 }
 ${selOutline} {
   outline: ${opts.outlineWidth} solid var(--aff-outline-c-${token});
@@ -249,9 +263,11 @@ html[data-ff-enabled-${token}="off"] ${selIs} {
 
   // Multi-token value on a single element: show combined badge text and a gradient outline.
   chunks.push(`
-:where([${nsAttr}*=" "]) {
-  position: relative;
-  border-radius: ${opts.borderRadius};
+@layer ${DEV_LAYER} {
+  :where([${nsAttr}*=" "]) {
+    position: relative;
+    border-radius: ${opts.borderRadius};
+  }
 }
 [${nsAttr}*=" "] {
   outline: none !important;
@@ -429,7 +445,7 @@ html[data-ff-outline-${token}="off"] ${selIs}[${nsAttr}*=" "]::after {
 `);
   }
 
-  return "\n" + chunks.join("\n") + "\n";
+  return `\n@layer ${DEV_LAYER};\n` + chunks.join("\n") + "\n";
 }
 
 /**

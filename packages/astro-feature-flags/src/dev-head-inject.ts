@@ -2,6 +2,7 @@ import type { ResolvedFeatureRuntime } from "./runtime";
 import { toToken } from "./runtime";
 import { inlineInvoke } from "./inline-script";
 import { affHeadInlineRuntime } from "./dev-inline-runtimes";
+import { DEV_LAYER } from "./dev-outline-css";
 
 /**
  * Single `injectScript('head-inline', …)` payload for `astro dev`: dev-only outline CSS,
@@ -21,6 +22,7 @@ export function buildAffDevHeadInline(args: {
     featureFlagStyles,
     routeFlags: runtime.routeFlags,
     flagNameToToken,
+    devLayer: DEV_LAYER,
   });
   return `${setup}\n${affDevBootstrap}`;
 }
