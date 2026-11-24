@@ -1,3 +1,15 @@
+## @at-flux/astroflare [2.0.1](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@2.0.0...@at-flux/astroflare@2.0.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **collection-query:** initialise on astro:page-load, so ClientRouter navigations stay paged ([d5e2326](https://github.com/at-flux/astroflare/commit/d5e2326b9601342bc5628d14724b0334e2277194))
+
+
+### Performance Improvements
+
+* **suspense:** composited skeleton shimmer, transform on a pseudo-element instead of background-position ([e1fd260](https://github.com/at-flux/astroflare/commit/e1fd260187987ffe6099d435285cbe2974b517b3))
+
 # @at-flux/astroflare [2.0.0](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@1.0.17...@at-flux/astroflare@2.0.0) (2026-09-09)
 
 
