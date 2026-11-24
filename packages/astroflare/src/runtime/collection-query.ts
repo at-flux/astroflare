@@ -14,6 +14,35 @@ export interface CollectionQueryRuntimeOptions {
   maxPageButtons: number;
 }
 
+/** What a rendered page tells the host, on every render. */
+export interface CollectionQueryPageDetail {
+  /** 1-based page now shown. */
+  page: number;
+  totalPages: number;
+  /** Cards passing the active filter, across every page. */
+  totalCards: number;
+  /** The active filter, or `"all"`. */
+  filter: string;
+}
+
+/**
+ * A `<collection-query>` after `initCollectionQueryElement` has run.
+ *
+ * The pager owns the page, and the host that needs to drive it (a lightbox
+ * stepping past the end of a page, a link carrying `?page=3`) reads and sets it
+ * through these. Every render also fires `af:page-change`, which bubbles and
+ * carries `CollectionQueryPageDetail`.
+ */
+export interface CollectionQueryElement extends HTMLElement {
+  /** Show `page`, clamped to what the active filter leaves. Returns the page shown. */
+  afGoToPage(page: number): number;
+  /** The page and the counts as of the last render. */
+  afGetPage(): CollectionQueryPageDetail;
+}
+
+/** Fired on the element, and bubbling, after every render. */
+export const COLLECTION_QUERY_PAGE_EVENT = "af:page-change";
+
 const DEFAULTS: CollectionQueryRuntimeOptions = {
   cardSelector: "[data-card]",
   filterSelector: "[data-filter]",
@@ -80,8 +109,10 @@ export const getClientPageSequence = (
   return sequence;
 };
 
-export const initCollectionQueryElement = (root: HTMLElement): void => {
-  if (root.dataset.afInit === "true") return;
+export const initCollectionQueryElement = (
+  root: HTMLElement,
+): CollectionQueryElement => {
+  if (root.dataset.afInit === "true") return root as CollectionQueryElement;
   root.dataset.afInit = "true";
 
   const config = getConfig(root);
@@ -97,6 +128,12 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     : [];
 
   let page = 1;
+  let lastDetail: CollectionQueryPageDetail = {
+    page: 1,
+    totalPages: 1,
+    totalCards: cards.length,
+    filter: "all",
+  };
   let activeFilter =
     filters.find((button) => button.classList.contains(config.activeClass))
       ?.dataset.filter ?? "all";
@@ -172,6 +209,19 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     });
 
     renderPagination(totalPages);
+
+    lastDetail = {
+      page,
+      totalPages,
+      totalCards: filtered.length,
+      filter: activeFilter,
+    };
+    root.dispatchEvent(
+      new CustomEvent<CollectionQueryPageDetail>(COLLECTION_QUERY_PAGE_EVENT, {
+        detail: lastDetail,
+        bubbles: true,
+      }),
+    );
   };
 
   filters.forEach((button) => {
@@ -185,7 +235,19 @@ export const initCollectionQueryElement = (root: HTMLElement): void => {
     });
   });
 
+  /* The page is the runtime's, not the caller's: a host asks for one and gets
+     back the page it actually landed on, clamped to what the filter leaves. */
+  const element = root as CollectionQueryElement;
+  element.afGoToPage = (requested: number) => {
+    page = Math.max(1, Math.floor(requested) || 1);
+    render();
+    return page;
+  };
+  element.afGetPage = () => ({ ...lastDetail });
+
   render();
+
+  return element;
 };
 
 export const initCollectionQueryRoots = (

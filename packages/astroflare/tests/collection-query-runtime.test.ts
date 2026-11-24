@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
-import { initCollectionQueryElement } from "../src/runtime/collection-query";
+import {
+  COLLECTION_QUERY_PAGE_EVENT,
+  initCollectionQueryElement,
+  type CollectionQueryPageDetail,
+} from "../src/runtime/collection-query";
 
 const createRoot = () => {
   document.body.innerHTML = `
@@ -154,5 +158,51 @@ describe("collection query padding", () => {
     );
     second.click();
     expect(visibleFillers(root)).toBe(0);
+  });
+});
+
+describe("collection query page control", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("moves to a page on request and clamps past the last one", () => {
+    const root = createRoot();
+    const element = initCollectionQueryElement(root);
+
+    expect(element.afGoToPage(2)).toBe(2);
+    const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-card]"));
+    expect(cards[2].style.display).toBe("");
+    expect(cards[0].style.display).toBe("none");
+
+    expect(element.afGoToPage(9)).toBe(2);
+    expect(element.afGoToPage(0)).toBe(1);
+    expect(element.afGetPage()).toMatchObject({
+      page: 1,
+      totalPages: 2,
+      totalCards: 3,
+      filter: "all",
+    });
+  });
+
+  it("announces every render through a bubbling event", () => {
+    const root = createRoot();
+    const seen: CollectionQueryPageDetail[] = [];
+    document.addEventListener(COLLECTION_QUERY_PAGE_EVENT, (event) => {
+      seen.push((event as CustomEvent<CollectionQueryPageDetail>).detail);
+    });
+
+    const element = initCollectionQueryElement(root);
+    element.afGoToPage(2);
+    root
+      .querySelector<HTMLButtonElement>('[data-filter="ai"]')
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(seen.map((detail) => detail.page)).toEqual([1, 2, 1]);
+    expect(seen.at(-1)).toMatchObject({
+      filter: "ai",
+      totalCards: 2,
+      totalPages: 1,
+    });
   });
 });
