@@ -1,3 +1,10 @@
+## @at-flux/astroflare [2.0.2](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@2.0.1...@at-flux/astroflare@2.0.2) (2026-11-24)
+
+
+### Features
+
+* **collection-query:** let a host drive the client pager ([7b8c6f0](https://github.com/at-flux/astroflare/commit/7b8c6f0922d8661d93c7bc61d300ca1653a52c6d))
+
 ## @at-flux/astroflare [2.0.1](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@2.0.0...@at-flux/astroflare@2.0.1) (2026-11-24)
 
 
