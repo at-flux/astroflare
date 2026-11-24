@@ -218,6 +218,12 @@ const pagerItemsWithSticky = pagerItems.map((item) =>
     <script>
       import { initCollectionQueryRoots } from "../runtime/collection-query";
       initCollectionQueryRoots();
+      // A module script runs once per document. After a ClientRouter swap the
+      // new page's roots arrive without it, and would stay one long unpaged
+      // list. `afInit` makes a second pass over an initialised root a no-op.
+      document.addEventListener("astro:page-load", () =>
+        initCollectionQueryRoots(),
+      );
     </script>
   )
 }
