@@ -47,6 +47,8 @@
       }
     },
     "./components/*": "./src/components/*",
+    "./runtime/*.ts": "./src/runtime/*.ts",
+    "./runtime/*": "./src/runtime/*.ts",
     "./styles/*": "./src/styles/*"
   },
   "bin": {

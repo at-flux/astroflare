@@ -146,6 +146,26 @@ derived:
   not fetch a `loading="lazy"` image inside one, so mark gallery images that way.
 - **Paging is progressive enhancement.** Without JavaScript every tile renders
   and the fillers stay hidden.
+- **The page is drivable.** After hydration the `<collection-query>` element
+  carries `afGoToPage(page)` (clamped, returns the page shown) and `afGetPage()`,
+  and every render fires a bubbling `af:page-change` carrying
+  `{ page, totalPages, totalCards, filter }`. That is how a lightbox stepping
+  past the end of a page, or a link arriving with `?page=3`, moves the grid:
+
+  ```ts
+  import type { CollectionQueryElement } from "@at-flux/astroflare/runtime/collection-query";
+
+  const grid =
+    document.querySelector<CollectionQueryElement>("collection-query");
+  grid?.addEventListener("af:page-change", (event) => {
+    history.replaceState(
+      null,
+      "",
+      `?page=${(event as CustomEvent).detail.page}`,
+    );
+  });
+  grid?.afGoToPage(3);
+  ```
 
 ### Waiting states
 
