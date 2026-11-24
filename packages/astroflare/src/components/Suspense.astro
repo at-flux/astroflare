@@ -277,22 +277,37 @@ const style = [
     opacity: 1;
   }
 
+  /* The sweep is a pseudo-element moved with `transform`, which the compositor
+     runs on its own. Animating `background-position` instead repaints every
+     frame on the main thread, for every placeholder on the page. */
   af-suspense.af-suspense.is-skeleton > .af-suspense__placeholder {
+    overflow: hidden;
+    /* Its own stacking context, so the sweep at z-index -1 sits above the
+       tint but under any custom placeholder content, as the old background
+       gradient did. */
+    isolation: isolate;
+    background: color-mix(in oklab, var(--af-s-tint) 6%, transparent);
+  }
+  af-suspense.af-suspense.is-skeleton > .af-suspense__placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
     background: linear-gradient(
       100deg,
-      color-mix(in oklab, var(--af-s-tint) 6%, transparent) 30%,
-      color-mix(in oklab, var(--af-s-tint) 16%, transparent) 50%,
-      color-mix(in oklab, var(--af-s-tint) 6%, transparent) 70%
+      transparent 30%,
+      color-mix(in oklab, var(--af-s-tint) 10%, transparent) 50%,
+      transparent 70%
     );
-    background-size: 200% 100%;
+    z-index: -1;
     animation: af-suspense-shimmer 1.4s ease-in-out infinite;
+    will-change: transform;
   }
   @keyframes af-suspense-shimmer {
     from {
-      background-position: 150% 0;
+      transform: translateX(-100%);
     }
     to {
-      background-position: -50% 0;
+      transform: translateX(100%);
     }
   }
 
@@ -352,8 +367,9 @@ const style = [
     .af-suspense__placeholder {
       transition: none;
     }
-    af-suspense.af-suspense.is-skeleton > .af-suspense__placeholder {
+    af-suspense.af-suspense.is-skeleton > .af-suspense__placeholder::before {
       animation: none;
+      display: none;
     }
   }
 </style>
