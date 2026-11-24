@@ -362,6 +362,18 @@ const style = [
     }
   }
 
+  /* The placeholder is painted only while `is-waiting`. Before that and after
+     the reveal it sits at opacity 0, yet its sweep and any spinner in it would
+     keep animating for the life of the page, one set per placeholder. Pause
+     them while hidden; a paused animation schedules no frames. Kept after the
+     skeleton rules, which it ties with on specificity. */
+  af-suspense.af-suspense:not(.is-waiting) > .af-suspense__placeholder * {
+    animation-play-state: paused;
+  }
+  af-suspense.af-suspense:not(.is-waiting) > .af-suspense__placeholder::before {
+    animation-play-state: paused;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     af-suspense.af-suspense > :not([data-af-ui]),
     .af-suspense__placeholder {
