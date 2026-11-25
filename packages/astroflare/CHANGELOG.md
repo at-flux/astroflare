@@ -1,3 +1,10 @@
+## @at-flux/astroflare [2.0.3](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@2.0.2...@at-flux/astroflare@2.0.3) (2026-11-25)
+
+
+### Performance Improvements
+
+* **suspense:** pause placeholder animations while the placeholder is hidden ([02357e7](https://github.com/at-flux/astroflare/commit/02357e7a07fcebda0f39cb14d2434bd5b1b75d1a))
+
 ## @at-flux/astroflare [2.0.2](https://github.com/at-flux/astroflare/compare/@at-flux/astroflare@2.0.1...@at-flux/astroflare@2.0.2) (2026-11-24)
 
 
